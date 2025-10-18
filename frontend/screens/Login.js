@@ -22,7 +22,6 @@ import { useNavigation } from '@react-navigation/native';
 import { authService } from '../services/authService';
 import 'expo-dev-client';
 
-// Validation Schema
 const LoginSchema = Yup.object().shape({
   email: Yup.string()
     .email('Please enter a valid email address')
@@ -47,7 +46,6 @@ export default function Login() {
       const result = await authService.login(values.email.trim(), values.password);
 
       if (result.success) {
-        // Success toast
         Toast.show({
           type: 'success',
           text1: 'Welcome back!',
@@ -56,18 +54,15 @@ export default function Login() {
           visibilityTime: 3000,
         });
 
-        // Navigate to Home
         setTimeout(() => {
           navigation.replace('Home');
         }, 1000);
 
       } else {
-        // Handle specific error messages from backend
         const errorMessage = result.error || 'Login failed';
         
         console.log('❌ Backend error message:', errorMessage);
-        
-        // Check for specific error patterns
+
         if (errorMessage.includes('password') || errorMessage.includes('Password')) {
           Toast.show({
             type: 'error',
@@ -93,7 +88,6 @@ export default function Login() {
             visibilityTime: 4000,
           });
         } else {
-          // Generic error message
           Toast.show({
             type: 'error',
             text1: 'Login Failed',
@@ -125,7 +119,6 @@ export default function Login() {
       const result = await authService.signInWithGoogle();
       
       if (result.success) {
-        // Success toast
         Toast.show({
           type: 'success',
           text1: result.isNewUser ? 'Welcome to Mindful Map!' : 'Welcome back!',
@@ -136,7 +129,6 @@ export default function Login() {
 
         console.log('✅ Google login successful:', result.user.email);
         
-        // Navigate to Home
         setTimeout(() => {
           navigation.replace('Home');
         }, 1000);
@@ -144,9 +136,7 @@ export default function Login() {
       } else {
         console.log('❌ Google login failed:', result.error);
         
-        // Show error toast
         if (result.error === 'Sign-in was cancelled') {
-          // Don't show error for user cancellation
           console.log('🚫 User cancelled Google Sign-In');
         } else {
           Toast.show({
@@ -172,7 +162,6 @@ export default function Login() {
     }
   };
 
-  // Toggle password visibility
   const togglePasswordVisibility = () => {
     setShowPassword(!showPassword);
   };
@@ -196,7 +185,6 @@ export default function Login() {
             <StatusBar backgroundColor={colors.accent} barStyle="dark-content" />
             
             <View className="flex-1 px-8 pt-20">
-              {/* Logo - Made bigger */}
               <View className="items-center mb-8">
                 <TouchableOpacity 
                   onPress={() => navigation.navigate('Landing')}
@@ -219,7 +207,6 @@ export default function Login() {
                   />
                 </TouchableOpacity>
                 
-                {/* Welcome Text */}
                 <Text 
                   className="text-3xl font-semibold text-center"
                   style={{ fontFamily: fonts.semiBold, color: colors.text }}
@@ -230,7 +217,6 @@ export default function Login() {
 
               {/* Input Fields */}
               <View className="mb-4">
-                {/* Email Input */}
                 <View className="mb-4">
                   <TextInput
                     placeholder="Email"
@@ -251,7 +237,6 @@ export default function Login() {
                     }}
                     placeholderTextColor={colors.text + '80'}
                   />
-                  {/* Email Error */}
                   {touched.email && errors.email && (
                     <Text style={{ 
                       fontFamily: fonts.regular, 
@@ -265,7 +250,6 @@ export default function Login() {
                   )}
                 </View>
 
-                {/* Password Input with Eye Icon */}
                 <View className="mb-3">
                   <View className="relative">
                     <TextInput
@@ -286,7 +270,6 @@ export default function Login() {
                       placeholderTextColor={colors.text + '80'}
                     />
                     
-                    {/* Eye Icon Button */}
                     <TouchableOpacity
                       onPress={togglePasswordVisibility}
                       disabled={loading || googleLoading}
@@ -309,7 +292,6 @@ export default function Login() {
                     </TouchableOpacity>
                   </View>
                   
-                  {/* Password Error */}
                   {touched.password && errors.password && (
                     <Text style={{ 
                       fontFamily: fonts.regular, 
@@ -326,7 +308,6 @@ export default function Login() {
 
               {/* Buttons */}
               <View className="mb-8">
-                {/* Sign In Button */}
                 <TouchableOpacity
                   className="py-4 rounded-xl items-center mb-4"
                   style={{
@@ -360,7 +341,6 @@ export default function Login() {
                   )}
                 </TouchableOpacity>
 
-                {/* Sign In with Google Button - UPDATED with SVG */}
                 <TouchableOpacity
                   className="py-4 rounded-xl items-center flex-row justify-center border-2"
                   style={{
@@ -383,7 +363,6 @@ export default function Login() {
                     </View>
                   ) : (
                     <>
-                      {/* Google SVG Icon */}
                       <Image
                         source={require('../assets/images/login/google.png')}
                         style={{

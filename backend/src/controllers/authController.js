@@ -5,7 +5,6 @@ const cloudinary = require('../config/cloudinary');
 
 class AuthController{
 
-//User login with password verification
 static async login(req, res) {
     try {
       const { email, password } = req.body;
@@ -13,7 +12,7 @@ static async login(req, res) {
       if (!email || !password) {
         return res.status(400).json({ 
           success: false,
-          error: 'Email and password are required'  // Changed from 'message' to 'error'
+          error: 'Email and password are required'  
         });
       }
       
@@ -29,7 +28,7 @@ static async login(req, res) {
         console.log('❌ Firebase user not found:', email);
         return res.status(401).json({ 
           success: false,
-          error: 'No account found with this email address'  // Specific email error
+          error: 'No account found with this email address'  
         });
       }
       
@@ -39,8 +38,7 @@ static async login(req, res) {
           error: 'Account is disabled' 
         });
       }
-      
-      // Verify password with MongoDB
+
       const mongoUser = await User.findOne({ 
         $or: [
           { firebaseUid: firebaseUser.uid },
@@ -52,7 +50,7 @@ static async login(req, res) {
         console.log('❌ MongoDB user not found:', email);
         return res.status(401).json({
           success: false,
-          error: 'No account found with this email address'  // Specific email error
+          error: 'No account found with this email address'  
         });
       }
       
@@ -62,14 +60,13 @@ static async login(req, res) {
         console.log('❌ Invalid password for:', email);
         return res.status(401).json({
           success: false,
-          error: 'Incorrect password. Please try again.'  // Specific password error
+          error: 'Incorrect password. Please try again.' 
         });
       }
       
       // Generate custom token
       const customToken = await auth.createCustomToken(firebaseUser.uid);
       
-      // Mobile-friendly response
       console.log('✅ Login successful for:', email);
       res.json({
         success: true,
@@ -92,31 +89,25 @@ static async login(req, res) {
       console.error('❌ Login error:', error);
       res.status(500).json({ 
         success: false,
-        error: 'Server error during login'  // Changed from 'message' to 'error'
+        error: 'Server error during login'  
       });
     }
   }  
 
-//Register new user with avatar upload - FIXED
 static async register(req, res) {
   try {
-    // Log the entire request to debug
     console.log('📝 Registration request received');
     console.log('Body:', req.body);
     console.log('File:', req.file ? 'Present' : 'Not present');
     console.log('Headers:', req.headers);
     
-    // Handle multipart form data - extract from body or fields
     let email, password, firstName, lastName, middleInitial, gender, section;
     
     if (req.body && Object.keys(req.body).length > 0) {
-      // Standard JSON body
       ({ email, password, firstName, lastName, middleInitial, gender, section } = req.body);
     } else if (req.fields) {
-      // Multipart form fields (if using formidable or similar)
       ({ email, password, firstName, lastName, middleInitial, gender, section } = req.fields);
     } else {
-      // Try to extract from file upload middleware fields
       email = req.body?.email || req.email;
       password = req.body?.password || req.password;
       firstName = req.body?.firstName || req.firstName;
@@ -135,7 +126,6 @@ static async register(req, res) {
     });
     
     if (!email || !password || !firstName || !lastName) {
-      // If avatar was uploaded but registration fails, delete it
       if (req.file) {
         try {
           await cloudinary.uploader.destroy(req.file.filename);
@@ -151,7 +141,6 @@ static async register(req, res) {
     }
     
     if (password.length < 6) {
-      // Delete uploaded avatar if validation fails
       if (req.file) {
         try {
           await cloudinary.uploader.destroy(req.file.filename);
@@ -168,8 +157,6 @@ static async register(req, res) {
     
     const auth = getAuth();
     const firestore = getFirestore();
-    
-    // Get avatar info from uploaded file (if any)
     const avatarUrl = req.file ? req.file.path : '';
     const avatarPublicId = req.file ? req.file.filename : '';
     
@@ -180,7 +167,6 @@ static async register(req, res) {
     });
     
     try {
-      // Hash password
       const hashedPassword = await bcrypt.hash(password, 12);
       
       // Create Firebase user
@@ -189,10 +175,9 @@ static async register(req, res) {
         password,
         displayName: `${firstName} ${lastName}`,
         emailVerified: true,
-        photoURL: avatarUrl // Set avatar URL in Firebase
+        photoURL: avatarUrl 
       });
       
-      // Save to Firestore (optional)
       try {
         await firestore.collection('users').doc(firebaseUser.uid).set({
           firstName,
@@ -201,8 +186,8 @@ static async register(req, res) {
           email,
           gender: gender || 'Rather not say',
           section: section || 'Grade 11 - A',
-          avatar: avatarUrl,              // ADD avatar URL
-          avatarPublicId: avatarPublicId, // ADD avatar public ID
+          avatar: avatarUrl,              
+          avatarPublicId: avatarPublicId, 
           role: 'user',
           createdAt: new Date(),
           firebaseUid: firebaseUser.uid
@@ -211,7 +196,6 @@ static async register(req, res) {
         console.log('⚠️ Firestore save failed:', firestoreError.message);
       }
       
-      // Create MongoDB user
       const mongoUser = new User({
         email,
         firstName,
@@ -221,14 +205,13 @@ static async register(req, res) {
         section: section || 'Grade 11 - A',
         firebaseUid: firebaseUser.uid,
         password: hashedPassword,
-        avatar: avatarUrl,              // ADD avatar URL
-        avatarPublicId: avatarPublicId, // ADD avatar public ID
+        avatar: avatarUrl,              
+        avatarPublicId: avatarPublicId, 
         role: 'user'
       });
       
       await mongoUser.save();
       
-      // Generate token
       const customToken = await auth.createCustomToken(firebaseUser.uid);
       
       console.log('✅ Registration successful with avatar:', avatarUrl);
@@ -251,7 +234,6 @@ static async register(req, res) {
       });
       
     } catch (firebaseError) {
-      // If Firebase user creation fails, delete uploaded avatar
       if (req.file) {
         try {
           await cloudinary.uploader.destroy(req.file.filename);
@@ -278,7 +260,6 @@ static async register(req, res) {
   } catch (error) {
     console.error('❌ Registration error:', error);
     
-    // Clean up uploaded avatar on any error
     if (req.file) {
       try {
         await cloudinary.uploader.destroy(req.file.filename);
@@ -294,8 +275,6 @@ static async register(req, res) {
     });
   }
 }
-
-// Get user profile
 static async getProfile(req, res) {
   try {
     const { uid } = req.params;
@@ -320,7 +299,7 @@ static async getProfile(req, res) {
         gender: mongoUser.gender,
         section: mongoUser.section,
         avatar: mongoUser.avatar,
-        avatarPublicId: mongoUser.avatarPublicId, // ADD THIS LINE
+        avatarPublicId: mongoUser.avatarPublicId, 
         role: mongoUser.role,
         createdAt: mongoUser.createdAt
       }
@@ -334,7 +313,6 @@ static async getProfile(req, res) {
   }
 }
 
-// Replace your existing googleAuth method with this improved version:
 static async googleAuth(req, res) {
   try {
     const { uid, email, firstName, lastName, avatar, displayName } = req.body;
@@ -348,9 +326,7 @@ static async googleAuth(req, res) {
     
     console.log('🔍 Google auth for:', email);
     
-    const auth = getAuth(); // Add this line to get Firebase Auth
-    
-    // Check if user already exists
+    const auth = getAuth(); 
     let mongoUser = await User.findOne({ 
       $or: [
         { firebaseUid: uid },
@@ -370,16 +346,14 @@ static async googleAuth(req, res) {
         firebaseUid: uid,
         avatar: avatar || '',
         role: 'user',
-        // Set default values for required fields
         gender: 'Rather not say',
         section: 'Grade 11 - A',
-        password: 'google-auth', // Placeholder since they use Google auth
+        password: 'google-auth', 
       });
       
       await mongoUser.save();
       console.log('✅ New Google user created:', email);
     } else {
-      // Update existing user info if needed
       if (avatar && !mongoUser.avatar) {
         mongoUser.avatar = avatar;
         await mongoUser.save();
@@ -387,7 +361,6 @@ static async googleAuth(req, res) {
       console.log('✅ Existing Google user logged in:', email);
     }
     
-    // Generate Firebase custom token for consistency with regular login
     const customToken = await auth.createCustomToken(uid);
     
     res.json({
@@ -403,7 +376,7 @@ static async googleAuth(req, res) {
         gender: mongoUser.gender,
         role: mongoUser.role
       },
-      token: customToken, // Add token for consistency
+      token: customToken,
       isNewUser
     });
     

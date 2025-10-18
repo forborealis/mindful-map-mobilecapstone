@@ -6,7 +6,6 @@ import Toast from 'react-native-toast-message';
 import * as Font from 'expo-font';
 import './global.css';
 
-// Import your screens
 import LoginScreen from './screens/Login';
 import SignupScreen from './screens/Signup';
 import LandingScreen from './screens/Landing';
@@ -17,7 +16,6 @@ const Stack = createStackNavigator();
 export default function App() {
   useEffect(() => {
     Font.loadAsync({
-      // Add your custom fonts here
       'Poppins-Regular': require('./assets/fonts/Poppins-Regular.ttf'),
       'Poppins-Bold': require('./assets/fonts/Poppins-Bold.ttf'),
       'Poppins-SemiBold': require('./assets/fonts/Poppins-SemiBold.ttf'),

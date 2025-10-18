@@ -24,7 +24,6 @@ import { useNavigation } from '@react-navigation/native';
 import { authService } from '../services/authService';
 import 'expo-dev-client';
 
-// Validation Schema
 const SignupSchema = Yup.object().shape({
   firstName: Yup.string()
     .min(2, 'First name must be at least 2 characters')
@@ -56,7 +55,7 @@ export default function Signup() {
   const [showPassword, setShowPassword] = useState(false);
   const [avatarUri, setAvatarUri] = useState(null);
   const [loading, setLoading] = useState(false);
-  const [googleLoading, setGoogleLoading] = useState(false); // Add Google loading state
+  const [googleLoading, setGoogleLoading] = useState(false); 
   
   const navigation = useNavigation();
 
@@ -165,7 +164,6 @@ export default function Signup() {
     );
   };
 
- // Take photo with camera
 const takePhotoWithCamera = async () => {
   try {
     const { status } = await ImagePicker.getCameraPermissionsAsync();
@@ -187,8 +185,8 @@ const takePhotoWithCamera = async () => {
       allowsEditing: true,
       aspect: [1, 1],
       quality: 0.8,
-      presentationStyle: 'pageSheet', // Changed from 'fullScreen' to 'pageSheet'
-      showsCropButton: true, // Explicitly show crop button (iOS)
+      presentationStyle: 'pageSheet', 
+      showsCropButton: true, 
     });
 
     console.log('📷 Camera result:', result);
@@ -220,7 +218,6 @@ const takePhotoWithCamera = async () => {
   }
 };
 
-// Select from photo library
 const selectFromLibrary = async () => {
   try {
     const { status } = await ImagePicker.getMediaLibraryPermissionsAsync();
@@ -242,8 +239,8 @@ const selectFromLibrary = async () => {
       allowsEditing: true,
       aspect: [1, 1],
       quality: 0.8,
-      presentationStyle: 'pageSheet', // Changed from 'fullScreen' to 'pageSheet'
-      showsCropButton: true, // Explicitly show crop button (iOS)
+      presentationStyle: 'pageSheet', 
+      showsCropButton: true, 
     });
 
     console.log('📁 Library result:', result);
@@ -275,7 +272,6 @@ const selectFromLibrary = async () => {
   }
 };
 
-  // Remove avatar
   const removeAvatar = () => {
     Alert.alert(
       'Remove Avatar',
@@ -294,12 +290,11 @@ const selectFromLibrary = async () => {
     );
   };
 
-  // Toggle password visibility
+
   const togglePasswordVisibility = () => {
     setShowPassword(!showPassword);
   };
 
-  // Handle Google Sign-In - NEW
   const handleGoogleSignIn = async () => {
     setGoogleLoading(true);
     try {
@@ -308,7 +303,6 @@ const selectFromLibrary = async () => {
       const result = await authService.signInWithGoogle();
       
       if (result.success) {
-        // Success toast
         Toast.show({
           type: 'success',
           text1: result.isNewUser ? 'Welcome to Mindful Map!' : 'Welcome back!',
@@ -318,8 +312,7 @@ const selectFromLibrary = async () => {
         });
 
         console.log('✅ Google sign-up successful:', result.user.email);
-        
-        // Navigate to Home
+
         setTimeout(() => {
           navigation.replace('Home');
         }, 1000);
@@ -327,14 +320,12 @@ const selectFromLibrary = async () => {
       } else {
         console.log('❌ Google sign-up failed:', result.error);
         
-        // Handle different error types
+
         if (result.error === 'Sign-in was cancelled') {
-          // User cancelled - don't show error toast, just log it
           console.log('🚫 User cancelled Google Sign-Up');
-          return; // Exit early without showing error
+          return; 
         }
         
-        // Show error toast only for actual errors (not cancellation)
         Toast.show({
           type: 'error',
           text1: 'Google Sign-Up Failed',
@@ -345,18 +336,16 @@ const selectFromLibrary = async () => {
       }
     } catch (error) {
       console.error('❌ Google sign-up error:', error);
-      
-      // Check if the error is due to user cancellation
+
       if (error.message && (
           error.message.includes('cancelled') || 
           error.message.includes('SIGN_IN_CANCELLED') ||
           error.message.includes('No user data received from Google')
         )) {
         console.log('🚫 User cancelled Google Sign-Up (caught in catch)');
-        return; // Exit early without showing error
+        return;
       }
       
-      // Show error toast only for actual errors
       Toast.show({
         type: 'error',
         text1: 'Google Sign-Up Error',
@@ -369,7 +358,7 @@ const selectFromLibrary = async () => {
     }
   };
 
-  // Handle signup
+
   const handleSignup = async (values) => {
     setLoading(true);
 
@@ -379,7 +368,6 @@ const selectFromLibrary = async () => {
       const result = await authService.register(values, avatarUri);
 
       if (result.success) {
-        // Success toast
         Toast.show({
           type: 'success',
           text1: 'Account Created!',
@@ -388,13 +376,11 @@ const selectFromLibrary = async () => {
           visibilityTime: 3000,
         });
 
-        // Navigate to Home
         setTimeout(() => {
           navigation.replace('Home');
         }, 1000);
 
       } else {
-        // Handle specific error messages from backend
         let errorMessage = result.error || 'Registration failed';
         
         if (errorMessage.includes('email') && errorMessage.includes('exists')) {
@@ -460,7 +446,7 @@ const selectFromLibrary = async () => {
             style={{ flex: 1, backgroundColor: colors.background }}
             contentContainerStyle={{ 
               flexGrow: 1,
-              paddingBottom: 100  // Add extra bottom padding
+              paddingBottom: 100  
             }}
             showsVerticalScrollIndicator={false}
           >
@@ -485,7 +471,6 @@ const selectFromLibrary = async () => {
                   />
                 </TouchableOpacity>
                 
-                {/* Welcome Text */}
                 <Text 
                   className="text-3xl font-semibold text-center"
                   style={{ fontFamily: fonts.semiBold, color: colors.text }}
@@ -496,7 +481,6 @@ const selectFromLibrary = async () => {
 
               {/* Input Fields */}
               <View className="mb-4">
-                {/* Name Row - First Name, M.I, Last Name */}
                 <View className="flex-row mb-4" style={{ gap: 8 }}>
                   <View className="flex-1">
                     <TextInput
@@ -591,7 +575,6 @@ const selectFromLibrary = async () => {
                   </View>
                 </View>
 
-                {/* Gender Dropdown */}
                 <View className="mb-4" style={{ position: 'relative', zIndex: 20 }}>
                   <TouchableOpacity
                     onPress={() => {
@@ -668,7 +651,6 @@ const selectFromLibrary = async () => {
                   )}
                 </View>
 
-                {/* Section Dropdown */}
                 <View className="mb-4" style={{ position: 'relative', zIndex: 10 }}>
                   <TouchableOpacity
                     onPress={() => {
@@ -745,7 +727,6 @@ const selectFromLibrary = async () => {
                   )}
                 </View>
 
-                {/* Email Input */}
                 <View className="mb-4">
                   <TextInput
                     placeholder="Email"
@@ -779,7 +760,6 @@ const selectFromLibrary = async () => {
                   )}
                 </View>
 
-                {/* Password Input with Eye Icon */}
                 <View className="mb-4">
                   <View className="relative">
                     <TextInput
@@ -800,7 +780,6 @@ const selectFromLibrary = async () => {
                       placeholderTextColor={colors.text + '80'}
                     />
                     
-                    {/* Eye Icon Button */}
                     <TouchableOpacity
                       onPress={togglePasswordVisibility}
                       disabled={loading || googleLoading}
@@ -836,10 +815,8 @@ const selectFromLibrary = async () => {
                   )}
                 </View>
 
-                {/* Upload Avatar Section */}
                 <View className="mb-4">
                   {avatarUri ? (
-                    // Show selected avatar
                     <View className="items-center">
                       <View className="relative">
                         <Image
@@ -890,7 +867,6 @@ const selectFromLibrary = async () => {
                       </TouchableOpacity>
                     </View>
                   ) : (
-                    // Show upload button
                     <TouchableOpacity
                       onPress={handleAvatarSelection}
                       disabled={loading || googleLoading}
@@ -928,9 +904,7 @@ const selectFromLibrary = async () => {
                 </View>
               </View>
 
-              {/* Buttons */}
               <View className="mb-8">
-                {/* Sign Up Button */}
                 <TouchableOpacity
                   className="py-4 rounded-xl items-center mb-4"
                   style={{
@@ -964,7 +938,6 @@ const selectFromLibrary = async () => {
                   )}
                 </TouchableOpacity>
 
-                {/* Sign Up with Google Button - UPDATED */}
                 <TouchableOpacity
                   className="py-4 rounded-xl items-center flex-row justify-center border-2"
                   style={{
@@ -987,7 +960,6 @@ const selectFromLibrary = async () => {
                     </View>
                   ) : (
                     <>
-                      {/* Google PNG Icon */}
                       <Image
                         source={require('../assets/images/login/google.png')}
                         style={{
@@ -1007,7 +979,6 @@ const selectFromLibrary = async () => {
                 </TouchableOpacity>
               </View>
 
-              {/* Footer Links */}
               <View className="items-center" style={{ marginBottom: 80 }}>
                 <View className="flex-row items-center">
                   <Text

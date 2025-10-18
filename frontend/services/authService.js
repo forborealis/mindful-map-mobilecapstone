@@ -46,7 +46,6 @@ export const authService = {
       const userInfo = await GoogleSignin.signIn();
       console.log('✅ Google Sign-In response:', userInfo);
       
-        // Check if user cancelled
       if (userInfo.type === 'cancelled' || userInfo.data === null) {
         console.log('🚫 User cancelled Google Sign-In');
         return { success: false, error: 'Sign-in was cancelled' };
@@ -144,16 +143,14 @@ export const authService = {
 
   async logout() {
     try {
-      // Try to sign out from Google - catch any errors gracefully
       try {
         await GoogleSignin.signOut();
         console.log('✅ Google sign-out successful');
       } catch (googleError) {
-        // Ignore Google sign-out errors - user might not be signed in with Google
+ 
         console.log('Google sign-out result (expected if not signed in via Google):', googleError.message);
       }
       
-      // Always remove local storage
       await AsyncStorage.removeItem('user');
       await AsyncStorage.removeItem('token');
       console.log('✅ Local storage cleared');
@@ -161,14 +158,13 @@ export const authService = {
       return { success: true };
     } catch (error) {
       console.error('Logout error:', error);
-      // Still try to remove local storage even if something else fails
       try {
         await AsyncStorage.removeItem('user');
         await AsyncStorage.removeItem('token');
       } catch (storageError) {
         console.error('Failed to clear storage:', storageError);
       }
-      return { success: true }; // Return success anyway since logout should always work
+      return { success: true }; 
     }
   },
 

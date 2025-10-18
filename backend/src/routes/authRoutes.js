@@ -6,7 +6,6 @@ const AuthController = require('../controllers/authController');
 
 const router = express.Router();
 
-// Configure Cloudinary storage for multer
 const storage = new CloudinaryStorage({
   cloudinary: cloudinary,
   params: {
@@ -22,11 +21,10 @@ const storage = new CloudinaryStorage({
 const upload = multer({ 
   storage: storage,
   limits: {
-    fileSize: 5 * 1024 * 1024, // 5MB limit
+    fileSize: 5 * 1024 * 1024, 
   }
 });
 
-// Routes
 router.post('/login', AuthController.login);
 router.post('/register', upload.single('avatar'), AuthController.register); // Make sure this line exists
 router.get('/profile/:uid', AuthController.getProfile);

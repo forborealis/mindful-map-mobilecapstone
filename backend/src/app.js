@@ -8,9 +8,9 @@ require('dotenv').config();
 const app = express();
 const PORT = process.env.PORT || 5001;
 
-// Middleware
+
 app.use(cors({
-  origin: ['http://localhost:3000', 'http://localhost:19006'], // Add Expo dev server
+  origin: ['http://localhost:3000', 'http://localhost:19006'],
   credentials: true
 }));
 app.use(express.json());
@@ -19,7 +19,6 @@ app.use(express.json());
 const authRoutes = require('./routes/authRoutes');
 app.use('/api/auth', authRoutes);
 
-// Health check route
 app.get('/api/health', async (req, res) => {
   try {
     const dbState = mongoose.connection.readyState;
@@ -48,7 +47,7 @@ app.get('/api/health', async (req, res) => {
   }
 });
 
-// Test route
+
 app.get('/api/test', (req, res) => {
   res.json({ 
     success: true,
@@ -59,16 +58,13 @@ app.get('/api/test', (req, res) => {
   });
 });
 
-// Start server
+
 const startServer = async () => {
   try {
-    // Connect to database
     await connectDB();
     
-    // Initialize Firebase
     initializeFirebase();
     
-    // Start the server
     app.listen(PORT, () => {
       console.log(`\n🚀 Server running on port ${PORT}`);
       console.log(`📱 Ready for Expo app connection`);

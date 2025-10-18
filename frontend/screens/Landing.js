@@ -14,7 +14,6 @@ import { useNavigation } from '@react-navigation/native';
 
 const { width } = Dimensions.get('window');
 
-// Hero images array
 const heroImages = [
   require('../assets/images/landing/landing1.png'),
   require('../assets/images/landing/landing2.png'),
@@ -108,7 +107,6 @@ export default function Landing() {
         </View>
 
 
-        {/* CTA Buttons */}
         <View className="space-y-4 mb-8">
           <TouchableOpacity 
             className="py-4 px-8 rounded-full mb-4"
@@ -165,7 +163,6 @@ export default function Landing() {
           />
         </View>
 
-        {/* Feature Cards */}
         <View className="space-y-6">
           <View 
             className="p-6 rounded-2xl"
@@ -241,7 +238,6 @@ export default function Landing() {
         </View>
       </View>
 
-      {/* Call to Action */}
       <View 
         className="py-16 px-6 items-center"
         style={{ backgroundColor: colors.primary }}
