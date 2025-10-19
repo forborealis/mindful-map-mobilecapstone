@@ -9,8 +9,90 @@ GoogleSignin.configure({
 });
 
 export const authService = {
+   async checkAuthStatus() {
+    try {
+      console.log('Checking authentication status...');
+      
+      const userString = await AsyncStorage.getItem('user');
+      const token = await AsyncStorage.getItem('token');
+      const loginTimestamp = await AsyncStorage.getItem('loginTimestamp');
+      
+      if (!userString || !token) {
+        console.log('No session found - user needs to login');
+        return { isAuthenticated: false, user: null, token: null };
+      }
+
+      const user = JSON.parse(userString);
+      
+      // Check if session is still valid (30 days)
+      if (loginTimestamp) {
+        const now = Date.now();
+        const sessionAge = now - parseInt(loginTimestamp);
+        const maxAge = 30 * 24 * 60 * 60 * 1000; 
+        
+        if (sessionAge > maxAge) {
+          console.log('Session expired (older than 30 days)');
+          await this.clearSession();
+          return { isAuthenticated: false, user: null, token: null };
+        }
+      }
+      
+      console.log('Valid session found for:', user.email);
+      return { isAuthenticated: true, user, token };
+      
+    } catch (error) {
+      console.error('Error checking auth status:', error);
+      return { isAuthenticated: false, user: null, token: null };
+    }
+  },
+
+   async saveSession(user, token) {
+    try {
+      await AsyncStorage.setItem('user', JSON.stringify(user));
+      await AsyncStorage.setItem('token', token);
+      await AsyncStorage.setItem('loginTimestamp', Date.now().toString());
+      await AsyncStorage.setItem('isAuthenticated', 'true');
+      
+      console.log('Session saved successfully for:', user.email);
+      console.log('Login timestamp:', new Date().toLocaleString());
+    } catch (error) {
+      console.error('Error saving session:', error);
+      throw error;
+    }
+  },
+
+  async clearSession() {
+    try {
+      await AsyncStorage.multiRemove([
+        'user',
+        'token',
+        'loginTimestamp',
+        'isAuthenticated'
+      ]);
+      console.log('Session cleared successfully');
+    } catch (error) {
+      console.error('Error clearing session:', error);
+      throw error;
+    }
+  },
+
+  async getCurrentUser() {
+    try {
+      const userString = await AsyncStorage.getItem('user');
+      if (userString) {
+        return JSON.parse(userString);
+      }
+      return null;
+    } catch (error) {
+      console.error('Error getting current user:', error);
+      return null;
+    }
+  },
+
   async login(email, password) {
     try {
+      console.log('Attempting login for:', email);
+
       const response = await fetch(`${API_BASE_URL}/api/auth/login`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -19,22 +101,25 @@ export const authService = {
       const data = await response.json();
       
       if (data.success) {
-        await AsyncStorage.setItem('user', JSON.stringify(data.user));
-        await AsyncStorage.setItem('token', data.token);
+        await this.saveSession(data.user, data.token);
+        console.log('Login successful, session saved');
+      } else {
+        console.log('Login failed:', data.error);
       }
+
       return data;
     } catch (error) {
+      console.error('Network error during login:', error);
       return { success: false, error: 'Network error. Please check your connection.' };
     }
   },
 
   async signInWithGoogle() {
     try {
-      console.log('🔍 Checking Play Services...');
+      console.log('Checking Play Services...');
       await GoogleSignin.hasPlayServices({ showPlayServicesUpdateDialog: true });
       
-      // Sign out first to ensure account picker shows
-      console.log('🔍 Signing out to show account picker...');
+      console.log('Signing out to show account picker...');
       try {
         await GoogleSignin.signOut();
       } catch (signOutError) {
@@ -42,19 +127,19 @@ export const authService = {
         console.log('Sign out result (expected if not signed in):', signOutError.message);
       }
       
-      console.log('🔍 Starting Google Sign-In...');
+      console.log('Starting Google Sign-In...');
       const userInfo = await GoogleSignin.signIn();
-      console.log('✅ Google Sign-In response:', userInfo);
+      console.log('Google Sign-In response:', userInfo);
       
       if (userInfo.type === 'cancelled' || userInfo.data === null) {
-        console.log('🚫 User cancelled Google Sign-In');
+        console.log('User cancelled Google Sign-In');
         return { success: false, error: 'Sign-in was cancelled' };
       }
     
       const user = userInfo.user || userInfo.data?.user;
       
       if (!user) {
-        console.log('❌ No user data in response:', userInfo);
+        console.log('No user data in response:', userInfo);
         return { success: false, error: 'Sign-in was cancelled' }; 
       }
 
@@ -65,8 +150,6 @@ export const authService = {
         lastName: user.familyName || '',
         avatar: user.photo || '',
       };
-
-      console.log('🔍 Sending to backend:', userData);
       
       const backendResponse = await fetch(`${API_BASE_URL}/api/auth/google-auth`, {
         method: 'POST',
@@ -75,11 +158,11 @@ export const authService = {
       });
 
       const responseData = await backendResponse.json();
-      console.log('✅ Backend response:', responseData);
+      console.log('Backend response:', responseData);
       
       if (responseData?.success) {
-        await AsyncStorage.setItem('user', JSON.stringify(responseData.user));
-        await AsyncStorage.setItem('token', responseData.token);
+        await this.saveSession(responseData.user, responseData.token);
+        console.log('Google login successful, session saved');
         return { 
           success: true, 
           user: responseData.user, 
@@ -89,7 +172,7 @@ export const authService = {
       }
       throw new Error(responseData?.error || 'Backend authentication failed');
     } catch (error) {
-      console.error('❌ Google Sign-In error:', error);
+      console.error('Google Sign-In error:', error);
       
       if (error?.code === 'sign_in_cancelled') {
         return { success: false, error: 'Sign-in was cancelled' };
@@ -131,12 +214,16 @@ export const authService = {
 
       const data = await response.json();
       
-      if (data.success) {
-        await AsyncStorage.setItem('user', JSON.stringify(data.user));
-        await AsyncStorage.setItem('token', data.token);
+     if (data.success) {
+        await this.saveSession(data.user, data.token);
+        console.log('Registration successful, session saved');
+      } else {
+        console.log('Registration failed:', data.error);
       }
+      
       return data;
     } catch (error) {
+      console.error('Network error during registration:', error);
       return { success: false, error: 'Network error. Please check your connection.' };
     }
   },
@@ -145,22 +232,20 @@ export const authService = {
     try {
       try {
         await GoogleSignin.signOut();
-        console.log('✅ Google sign-out successful');
+        console.log('Google sign-out successful');
       } catch (googleError) {
  
         console.log('Google sign-out result (expected if not signed in via Google):', googleError.message);
       }
       
-      await AsyncStorage.removeItem('user');
-      await AsyncStorage.removeItem('token');
-      console.log('✅ Local storage cleared');
+      await this.clearSession();
+      console.log('Logout successful');
       
       return { success: true };
     } catch (error) {
       console.error('Logout error:', error);
       try {
-        await AsyncStorage.removeItem('user');
-        await AsyncStorage.removeItem('token');
+        await this.clearSession();
       } catch (storageError) {
         console.error('Failed to clear storage:', storageError);
       }

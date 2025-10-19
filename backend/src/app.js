@@ -17,6 +17,8 @@ app.use(express.json());
 
 // Routes
 const authRoutes = require('./routes/authRoutes');
+const moodRoutes = require('./routes/moodDataRoutes');
+app.use('/api/mood-data', moodRoutes);
 app.use('/api/auth', authRoutes);
 
 app.get('/api/health', async (req, res) => {

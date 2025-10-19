@@ -118,24 +118,6 @@ export default function Home() {
     setAvatarError(false);
   };
 
-  // Loading screen while checking user data
-  if (loading) {
-    return (
-      <SafeAreaView className="flex-1" style={{ backgroundColor: colors.accent }}>
-        <StatusBar backgroundColor={colors.accent} barStyle="dark-content" />
-        <View className="flex-1 justify-center items-center">
-          <ActivityIndicator size="large" color={colors.primary} />
-          <Text 
-            className="mt-4 text-lg"
-            style={{ fontFamily: fonts.regular, color: colors.text }}
-          >
-            Loading...
-          </Text>
-        </View>
-      </SafeAreaView>
-    );
-  }
-
   // Main home screen
   return (
     <SafeAreaView className="flex-1" style={{ backgroundColor: colors.accent }}>
@@ -260,6 +242,27 @@ export default function Home() {
           )}
         </View>
 
+        {/* Mood Entries Button */}
+        <TouchableOpacity
+          className="py-4 rounded-xl items-center mb-4"
+          style={{
+            backgroundColor: colors.primary,
+            shadowColor: colors.primary,
+            shadowOffset: { width: 0, height: 2 },
+            shadowOpacity: 0.3,
+            shadowRadius: 4,
+            elevation: 3,
+          }}
+          onPress={() => navigation.navigate('MoodEntries')}
+        >
+          <Text
+            className="text-lg font-semibold"
+            style={{ fontFamily: fonts.semiBold, color: colors.white }}
+          >
+            📊 View Mood Entries
+          </Text>
+        </TouchableOpacity>
+
         {/* Spacer to push sign out button to bottom */}
         <View className="flex-1" />
 
@@ -292,7 +295,7 @@ export default function Home() {
             ) : (
               <Text
                 className="text-lg font-semibold"
-                style={{ fontFamily: fonts.semibold, color: '#FF6B6B' }}
+                style={{ fontFamily: fonts.semiBold, color: '#FF6B6B' }}
               >
                 Sign Out
               </Text>
