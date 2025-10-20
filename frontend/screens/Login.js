@@ -41,21 +41,13 @@ export default function Login() {
     setLoading(true);
 
     try {
-      console.log('🔐 Attempting login for:', values.email);
+      console.log('Attempting login for:', values.email);
       
       const result = await authService.login(values.email.trim(), values.password);
-
       if (result.success) {
-        Toast.show({
-          type: 'success',
-          text1: 'Welcome back!',
-          text2: `Hello ${result.user.firstName}! 👋`,
-          position: 'top',
-          visibilityTime: 3000,
-        });
 
         setTimeout(() => {
-          navigation.replace('Home');
+          navigation.replace('ChooseCategory');
         }, 1000);
 
       } else {
@@ -119,18 +111,11 @@ export default function Login() {
       const result = await authService.signInWithGoogle();
       
       if (result.success) {
-        Toast.show({
-          type: 'success',
-          text1: result.isNewUser ? 'Welcome to Mindful Map!' : 'Welcome back!',
-          text2: `Hello ${result.user.firstName}! 👋`,
-          position: 'top',
-          visibilityTime: 3000,
-        });
 
-        console.log('✅ Google login successful:', result.user.email);
+        console.log('Google login successful:', result.user.email);
         
         setTimeout(() => {
-          navigation.replace('Home');
+          navigation.replace('ChooseCategory');
         }, 1000);
         
       } else {
