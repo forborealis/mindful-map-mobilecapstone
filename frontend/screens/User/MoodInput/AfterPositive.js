@@ -34,7 +34,7 @@ const AfterPositive = ({ navigation }) => {
 
   const handleSubmit = () => {
     if (isButtonEnabled) {
-      // navigation.navigate('NextScreen', { emotion: selectedEmotion, intensity: selectedIntensity, reason });
+      navigation.navigate('ContinueTracking', { emotion: selectedEmotion, intensity: selectedIntensity, reason });
     }
   };
 

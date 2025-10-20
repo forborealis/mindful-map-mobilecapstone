@@ -29,6 +29,8 @@ import AfterValence from './screens/User/MoodInput/AfterValence';
 import AfterPositive from './screens/User/MoodInput/AfterPositive';
 import AfterNegative from './screens/User/MoodInput/AfterNegative';
 
+import ContinueTracking from './screens/User/MoodInput/ContinueTracking';
+
 const Stack = createStackNavigator();
 
 export default function App() {
@@ -158,6 +160,11 @@ export default function App() {
             <Stack.Screen 
               name="AfterNegative" 
               component={AfterNegative}
+              options={{ headerShown: false }}
+            />
+            <Stack.Screen 
+              name="ContinueTracking" 
+              component={ContinueTracking}
               options={{ headerShown: false }}
             />
           </Stack.Navigator>

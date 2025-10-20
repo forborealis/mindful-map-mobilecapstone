@@ -21,7 +21,7 @@ const ChooseCategory = ({ navigation }) => {
 
   const handleSkip = () => {
     console.log('User chose to do it later');
-    navigation.navigate('MoodEntries');
+    navigation.navigate('Home');
   };
 
   return (
