@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { View, Text, TouchableOpacity, TextInput, Image, ScrollView } from 'react-native';
+import { View, Text, TouchableOpacity, TextInput, Image, ScrollView, KeyboardAvoidingView, Platform } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { fonts } from '../../../utils/fonts/fonts';
 import { colors } from '../../../utils/colors/colors';
@@ -40,6 +40,11 @@ const AfterPositive = ({ navigation }) => {
 
   return (
     <SafeAreaView className="flex-1" style={{ backgroundColor: colors.background }}>
+      <KeyboardAvoidingView
+        style={{ flex: 1 }}
+        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+        keyboardVerticalOffset={Platform.OS === 'ios' ? 0 : 24}
+      >
       <ScrollView
         className="flex-1 px-6"
         showsVerticalScrollIndicator={false}
@@ -200,7 +205,7 @@ const AfterPositive = ({ navigation }) => {
               onChangeText={setReason}
               className="rounded-xl px-4 py-3 text-base"
               style={{
-                backgroundColor: colors.secondary,
+                backgroundColor: colors.accent,
                 color: colors.text,
                 fontFamily: fonts.regular,
                 borderWidth: 1,
@@ -228,7 +233,7 @@ const AfterPositive = ({ navigation }) => {
           <Text
             className="text-center text-lg"
             style={{
-              color: colors.text,
+              color: isButtonEnabled ? colors.background : colors.text,
               fontFamily: fonts.semiBold,
               lineHeight: 24
             }}
@@ -237,6 +242,7 @@ const AfterPositive = ({ navigation }) => {
           </Text>
         </TouchableOpacity>
       </ScrollView>
+      </KeyboardAvoidingView>
     </SafeAreaView>
   );
 };

@@ -4,7 +4,6 @@ import {
   Text,
   ScrollView,
   TouchableOpacity,
-  ActivityIndicator,
   RefreshControl,
   TextInput,
   Modal,
@@ -64,6 +63,21 @@ const activityImages = {
   'eat-unhealthy': require('../../assets/images/mood/eatUnhealthy.png'),
   'drink-alcohol': require('../../assets/images/mood/drinkAlcohol.png')
 };
+
+const SkeletonBox = ({ width, height, style }) => (
+  <View
+    style={[
+      {
+        backgroundColor: colors.secondary,
+        borderRadius: 8,
+        width,
+        height,
+        marginBottom: 8
+      },
+      style
+    ]}
+  />
+);
 
 const MoodEntries = ({ navigation }) => {
   const [moodLogs, setMoodLogs] = useState([]);
@@ -561,16 +575,34 @@ const MoodEntries = ({ navigation }) => {
         }
       >
         {loading ? (
-          <View style={{ alignItems: 'center', marginTop: 40 }}>
-            <ActivityIndicator size="large" color={colors.primary} />
-            <Text style={{
-              fontFamily: fonts.regular,
-              fontSize: 16,
-              color: colors.text,
-              marginTop: 16
-            }}>
-              Loading entries...
-            </Text>
+          <View>
+            {[...Array(3)].map((_, idx) => (
+              <View key={idx} style={{
+                backgroundColor: colors.accent,
+                borderRadius: 18,
+                borderWidth: 1,
+                borderColor: colors.primary,
+                marginBottom: 18,
+                padding: 16
+              }}>
+                <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 10 }}>
+                  <SkeletonBox width={40} height={40} style={{ marginRight: 10, borderRadius: 20 }} />
+                  <View style={{ flex: 1 }}>
+                    <SkeletonBox width="60%" height={18} />
+                    <SkeletonBox width="40%" height={14} />
+                    <SkeletonBox width="30%" height={12} />
+                  </View>
+                </View>
+                <View style={{ flexDirection: 'row', gap: 10 }}>
+                  <View style={{ flex: 1 }}>
+                    <SkeletonBox width="100%" height={80} style={{ borderRadius: 14 }} />
+                  </View>
+                  <View style={{ flex: 1 }}>
+                    <SkeletonBox width="100%" height={80} style={{ borderRadius: 14 }} />
+                  </View>
+                </View>
+              </View>
+            ))}
           </View>
         ) : renderGroupedLogs()}
       </ScrollView>
