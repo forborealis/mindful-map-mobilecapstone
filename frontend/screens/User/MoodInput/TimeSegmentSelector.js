@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import { View, Text, TouchableOpacity, ScrollView, Alert, Modal, TextInput } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { fonts } from '../../../utils/fonts/fonts';
@@ -14,12 +14,16 @@ const TimeSegmentSelector = ({ navigation, route }) => {
   const [customPeriod, setCustomPeriod] = useState('PM');
   const [showTimeModal, setShowTimeModal] = useState(false);
   const [timeType, setTimeType] = useState('segment'); // 'segment' or 'specific'
+  
+  const hourScrollRef = useRef(null);
+  const minuteScrollRef = useRef(null);
+  const periodScrollRef = useRef(null);
 
   const timeSegments = [
-    { id: 'morning', label: 'Morning', time: '06:00 - 12:00', icon: '🌅' },
-    { id: 'afternoon', label: 'Afternoon', time: '12:00 - 17:00', icon: '☀️' },
-    { id: 'evening', label: 'Evening', time: '17:00 - 22:00', icon: '🌇' },
-    { id: 'night', label: 'Night', time: '22:00 - 06:00', icon: '🌙' }
+    { id: 'morning', label: 'Morning', time: '06:00 - 12:00', icon: '🌅', midTime: '09:00' },
+    { id: 'afternoon', label: 'Afternoon', time: '12:00 - 17:00', icon: '☀️', midTime: '14:30' },
+    { id: 'evening', label: 'Evening', time: '17:00 - 22:00', icon: '🌇', midTime: '19:30' },
+    { id: 'night', label: 'Night', time: '22:00 - 06:00', icon: '🌙', midTime: '02:00' }
   ];
 
   const handleTimeRememberChoice = (remembers) => {
@@ -55,6 +59,157 @@ const TimeSegmentSelector = ({ navigation, route }) => {
     return `${customHour}:${customMinute} ${customPeriod}`;
   };
 
+  const convertTo24Hour = (hour12, minute, period) => {
+    let hour24 = parseInt(hour12);
+    if (period === 'AM' && hour24 === 12) hour24 = 0;
+    if (period === 'PM' && hour24 !== 12) hour24 += 12;
+    return `${hour24.toString().padStart(2, '0')}:${minute}`;
+  };
+
+  const createTimeFromSegment = (segmentId, baseDate) => {
+    const segment = timeSegments.find(s => s.id === segmentId);
+    if (!segment) return null;
+    
+    const [hours, minutes] = segment.midTime.split(':').map(Number);
+    return new Date(baseDate.getFullYear(), baseDate.getMonth(), baseDate.getDate(), hours, minutes, 0);
+  };
+
+  // Generate arrays for scrollable pickers
+  const hours = Array.from({ length: 12 }, (_, i) => (i + 1).toString());
+  const minutes = Array.from({ length: 60 }, (_, i) => i.toString().padStart(2, '0'));
+  const periods = ['AM', 'PM'];
+
+  const ITEM_HEIGHT = 50;
+
+  const ScrollablePicker = ({ data, selectedValue, onSelect, scrollRef, label }) => {
+    const selectedIndex = data.indexOf(selectedValue);
+    const [isScrolling, setIsScrolling] = useState(false);
+    const scrollTimeoutRef = useRef(null);
+    
+    const handleScrollBegin = () => {
+      setIsScrolling(true);
+      if (scrollTimeoutRef.current) {
+        clearTimeout(scrollTimeoutRef.current);
+      }
+    };
+
+    const snapToNearestItem = (y) => {
+      const index = Math.round(y / ITEM_HEIGHT);
+      const clampedIndex = Math.max(0, Math.min(index, data.length - 1));
+      const targetY = clampedIndex * ITEM_HEIGHT;
+      
+      scrollRef.current?.scrollTo({
+        y: targetY,
+        animated: true
+      });
+      
+      onSelect(data[clampedIndex]);
+    };
+
+    const handleScrollEnd = (event) => {
+      const y = event.nativeEvent.contentOffset.y;
+      
+      // Clear any existing timeout
+      if (scrollTimeoutRef.current) {
+        clearTimeout(scrollTimeoutRef.current);
+      }
+      
+      // Set a small delay to allow momentum to finish
+      scrollTimeoutRef.current = setTimeout(() => {
+        setIsScrolling(false);
+        snapToNearestItem(y);
+      }, 100);
+    };
+
+    const scrollToIndex = (index) => {
+      if (scrollRef.current) {
+        scrollRef.current.scrollTo({
+          y: index * ITEM_HEIGHT,
+          animated: true
+        });
+      }
+    };
+
+    React.useEffect(() => {
+      if (selectedIndex >= 0) {
+        setTimeout(() => scrollToIndex(selectedIndex), 100);
+      }
+    }, [selectedIndex]);
+
+    React.useEffect(() => {
+      return () => {
+        if (scrollTimeoutRef.current) {
+          clearTimeout(scrollTimeoutRef.current);
+        }
+      };
+    }, []);
+
+    return (
+      <View className="flex-1 items-center">
+        <Text 
+          className="text-sm mb-2 opacity-70"
+          style={{ 
+            color: colors.text,
+            fontFamily: fonts.medium
+          }}
+        >
+          {label}
+        </Text>
+        <View 
+          className="h-32 w-16 relative overflow-hidden rounded-xl"
+          style={{ backgroundColor: colors.secondary }}
+        >
+          {/* Selection highlight */}
+          <View 
+            className="absolute left-0 right-0 rounded-lg"
+            style={{
+              top: ITEM_HEIGHT,
+              height: ITEM_HEIGHT,
+              backgroundColor: colors.primary,
+              opacity: 0.3,
+              zIndex: 1
+            }}
+          />
+          
+          <ScrollView
+            ref={scrollRef}
+            showsVerticalScrollIndicator={false}
+            onScrollBeginDrag={handleScrollBegin}
+            onMomentumScrollEnd={handleScrollEnd}
+            decelerationRate="fast"
+            scrollEventThrottle={64}
+            bounces={false}
+            contentContainerStyle={{
+              paddingVertical: ITEM_HEIGHT
+            }}
+          >
+            {data.map((item, index) => (
+              <TouchableOpacity
+                key={index}
+                onPress={() => {
+                  onSelect(item);
+                  scrollToIndex(index);
+                }}
+                className="justify-center items-center"
+                style={{ height: ITEM_HEIGHT }}
+              >
+                <Text 
+                  className={`text-lg ${selectedValue === item ? 'opacity-100' : 'opacity-50'}`}
+                  style={{ 
+                    color: colors.text,
+                    fontFamily: selectedValue === item ? fonts.semiBold : fonts.regular
+                  }}
+                >
+                  {item}
+                </Text>
+              </TouchableOpacity>
+            ))}
+          </ScrollView>
+        </View>
+      </View>
+    );
+  };
+
   const handleContinue = () => {
     // Check validation based on current state
     if (rememberTime === null) {
@@ -85,14 +240,9 @@ const TimeSegmentSelector = ({ navigation, route }) => {
       
       timeValue = new Date(baseDate.getFullYear(), baseDate.getMonth(), baseDate.getDate(), hour, parseInt(customMinute), 0).toISOString();
     } else {
-      // Create a time based on the middle of the segment
-      const segmentTimes = {
-        'morning': new Date(baseDate.getFullYear(), baseDate.getMonth(), baseDate.getDate(), 9, 0, 0),
-        'afternoon': new Date(baseDate.getFullYear(), baseDate.getMonth(), baseDate.getDate(), 14, 30, 0),
-        'evening': new Date(baseDate.getFullYear(), baseDate.getMonth(), baseDate.getDate(), 19, 0, 0),
-        'night': new Date(baseDate.getFullYear(), baseDate.getMonth(), baseDate.getDate(), 23, 30, 0)
-      };
-      timeValue = segmentTimes[selectedTime].toISOString();
+      // Use the middle time of the selected segment
+      const segmentTime = createTimeFromSegment(selectedTime, baseDate);
+      timeValue = segmentTime ? segmentTime.toISOString() : null;
     }
 
     // If we have activity (coming from activity screen), go to BeforeValence
@@ -255,14 +405,14 @@ const TimeSegmentSelector = ({ navigation, route }) => {
               <TouchableOpacity
                 key={segment.id}
                 onPress={() => handleSegmentPress(segment)}
-                className={`rounded-2xl p-4 border-2 active:scale-95 ${
-                  selectedTime === segment.id && timeType === 'segment' ? 'border-opacity-100' : 'border-opacity-20'
-                }`}
+                className="rounded-2xl p-4 border-2 active:scale-95"
                 style={{ 
-                  backgroundColor: selectedTime === segment.id && timeType === 'segment'
-                    ? colors.primary 
-                    : colors.secondary,
-                  borderColor: colors.primary
+                  backgroundColor: selectedTime === segment.id && timeType === 'segment' 
+                    ? 'rgba(78, 205, 196, 0.1)' // light mint green background for selected
+                    : 'white',
+                  borderColor: selectedTime === segment.id && timeType === 'segment'
+                    ? '#4ECDC4' // darker mint green border for selected
+                    : '#B0E5E1' // lighter mint green border for unselected
                 }}
                 activeOpacity={0.8}
               >
@@ -273,7 +423,9 @@ const TimeSegmentSelector = ({ navigation, route }) => {
                       className="text-lg"
                       style={{ 
                         color: colors.text,
-                        fontFamily: fonts.semiBold
+                        fontFamily: selectedTime === segment.id && timeType === 'segment' 
+                          ? fonts.semiBold 
+                          : fonts.medium
                       }}
                     >
                       {segment.label}
@@ -288,6 +440,11 @@ const TimeSegmentSelector = ({ navigation, route }) => {
                       {segment.time}
                     </Text>
                   </View>
+                  {selectedTime === segment.id && timeType === 'segment' && (
+                    <View className="ml-2">
+                      <Text className="text-xl" style={{ color: '#4ECDC4' }}>✓</Text>
+                    </View>
+                  )}
                 </View>
               </TouchableOpacity>
             ))}
@@ -310,49 +467,34 @@ const TimeSegmentSelector = ({ navigation, route }) => {
           
           <TouchableOpacity
             onPress={handleSpecificTimePress}
-            className={`rounded-2xl p-4 border-2 active:scale-95 ${
-              selectedTime === 'specific' ? 'border-opacity-100' : 'border-opacity-20'
-            }`}
+            className="rounded-2xl p-4 border-2 active:scale-95"
             style={{ 
-              backgroundColor: selectedTime === 'specific' 
-                ? colors.primary 
-                : colors.secondary,
-              borderColor: colors.primary
+              backgroundColor: 'white',
+              borderColor: '#4ECDC4' // mint green
             }}
             activeOpacity={0.8}
           >
-            <View className="flex-row items-center justify-between">
-              <View>
-                <Text 
-                  className="text-lg"
-                  style={{ 
-                    color: colors.text,
-                    fontFamily: fonts.semiBold
-                  }}
-                >
-                  Specific Time
-                </Text>
-                <Text 
-                  className="text-sm opacity-70"
-                  style={{ 
-                    color: colors.text,
-                    fontFamily: fonts.regular
-                  }}
-                >
-                  {selectedTime === 'specific' 
-                    ? formatCustomTime()
-                    : 'Tap to set exact time'
-                  }
-                </Text>
-              </View>
-              <Text className="text-2xl">🕒</Text>
+            <View className="flex-row items-center justify-center">
+              <Text className="text-2xl mr-3">🕒</Text>
+              <Text 
+                className="text-lg"
+                style={{ 
+                  color: colors.text,
+                  fontFamily: fonts.semiBold
+                }}
+              >
+                {selectedTime === 'specific' 
+                  ? formatCustomTime()
+                  : 'Tap to set time'
+                }
+              </Text>
             </View>
           </TouchableOpacity>
         </View>
         )}
 
-        {/* Time Preview Section */}
-        {selectedTime && (
+        {/* Time Preview Section - Only for segment selection */}
+        {selectedTime && timeType === 'segment' && (
           <View 
             className="mb-6 p-4 rounded-2xl"
             style={{ 
@@ -379,14 +521,14 @@ const TimeSegmentSelector = ({ navigation, route }) => {
                 fontFamily: fonts.semiBold
               }}
             >
-              {timeType === 'specific' 
-                ? formatCustomTime()
-                : selectedTime === 'morning' ? '9:00 AM'
-                : selectedTime === 'afternoon' ? '2:30 PM'
-                : selectedTime === 'evening' ? '7:00 PM'
-                : selectedTime === 'night' ? '11:30 PM'
-                : ''
-              }
+              {(() => {
+                const segment = timeSegments.find(s => s.id === selectedTime);
+                if (!segment) return '';
+                const [hours, minutes] = segment.midTime.split(':').map(Number);
+                const period = hours >= 12 ? 'PM' : 'AM';
+                const displayHour = hours === 0 ? 12 : hours > 12 ? hours - 12 : hours;
+                return `${displayHour}:${minutes.toString().padStart(2, '0')} ${period}`;
+              })()}
             </Text>
             <Text 
               className="text-center text-xs mt-1"
@@ -396,10 +538,7 @@ const TimeSegmentSelector = ({ navigation, route }) => {
                 opacity: 0.6
               }}
             >
-              {timeType === 'specific' 
-                ? 'Exact time you specified'
-                : `Default time for ${selectedTime} period`
-              }
+              Middle time for {selectedTime} period
             </Text>
           </View>
         )}
@@ -458,7 +597,7 @@ const TimeSegmentSelector = ({ navigation, route }) => {
         <Modal transparent animationType="fade">
           <View className="flex-1 justify-center items-center" style={{ backgroundColor: 'rgba(0,0,0,0.5)' }}>
             <View 
-              className="rounded-2xl p-6 m-4"
+              className="rounded-2xl p-6 m-4 w-80"
               style={{ backgroundColor: colors.background }}
             >
               <Text 
@@ -471,94 +610,42 @@ const TimeSegmentSelector = ({ navigation, route }) => {
                 Select Time
               </Text>
               
-              <View className="flex-row items-center justify-center mb-6">
-                {/* Hour Input */}
-                <TextInput
-                  value={customHour}
-                  onChangeText={(text) => {
-                    const num = text.replace(/[^0-9]/g, '');
-                    const hour = Math.min(Math.max(parseInt(num) || 1, 1), 12);
-                    setCustomHour(hour.toString());
-                  }}
-                  className="w-16 h-12 text-center rounded-xl mr-2"
-                  style={{
-                    backgroundColor: colors.secondary,
-                    color: colors.text,
-                    fontFamily: fonts.semiBold,
-                    fontSize: 18,
-                    borderWidth: 1,
-                    borderColor: colors.primary
-                  }}
-                  keyboardType="number-pad"
-                  maxLength={2}
+              <View className="flex-row justify-between items-center mb-6 px-4">
+                <ScrollablePicker
+                  data={hours}
+                  selectedValue={customHour}
+                  onSelect={setCustomHour}
+                  scrollRef={hourScrollRef}
+                  label="Hour"
                 />
                 
-                <Text className="text-xl mx-2" style={{ color: colors.text }}>:</Text>
+                <Text 
+                  className="text-2xl mx-4 mt-8"
+                  style={{ color: colors.text, fontFamily: fonts.semiBold }}
+                >
+                  :
+                </Text>
                 
-                {/* Minute Input */}
-                <TextInput
-                  value={customMinute}
-                  onChangeText={(text) => {
-                    const num = text.replace(/[^0-9]/g, '');
-                    const minute = Math.min(Math.max(parseInt(num) || 0, 0), 59);
-                    setCustomMinute(minute.toString().padStart(2, '0'));
-                  }}
-                  className="w-16 h-12 text-center rounded-xl ml-2 mr-4"
-                  style={{
-                    backgroundColor: colors.secondary,
-                    color: colors.text,
-                    fontFamily: fonts.semiBold,
-                    fontSize: 18,
-                    borderWidth: 1,
-                    borderColor: colors.primary
-                  }}
-                  keyboardType="number-pad"
-                  maxLength={2}
+                <ScrollablePicker
+                  data={minutes}
+                  selectedValue={customMinute}
+                  onSelect={setCustomMinute}
+                  scrollRef={minuteScrollRef}
+                  label="Minute"
                 />
                 
-                {/* AM/PM Selector */}
-                <View className="flex-row">
-                  <TouchableOpacity
-                    onPress={() => setCustomPeriod('AM')}
-                    className="px-3 py-2 rounded-l-xl"
-                    style={{
-                      backgroundColor: customPeriod === 'AM' ? colors.primary : colors.secondary,
-                      borderWidth: 1,
-                      borderColor: colors.primary,
-                      borderRightWidth: 0.5
-                    }}
-                  >
-                    <Text style={{ 
-                      color: colors.text, 
-                      fontFamily: fonts.semiBold,
-                      fontSize: 16 
-                    }}>
-                      AM
-                    </Text>
-                  </TouchableOpacity>
-                  
-                  <TouchableOpacity
-                    onPress={() => setCustomPeriod('PM')}
-                    className="px-3 py-2 rounded-r-xl"
-                    style={{
-                      backgroundColor: customPeriod === 'PM' ? colors.primary : colors.secondary,
-                      borderWidth: 1,
-                      borderColor: colors.primary,
-                      borderLeftWidth: 0.5
-                    }}
-                  >
-                    <Text style={{ 
-                      color: colors.text, 
-                      fontFamily: fonts.semiBold,
-                      fontSize: 16 
-                    }}>
-                      PM
-                    </Text>
-                  </TouchableOpacity>
-                </View>
+                <ScrollablePicker
+                  data={periods}
+                  selectedValue={customPeriod}
+                  onSelect={setCustomPeriod}
+                  scrollRef={periodScrollRef}
+                  label="Period"
+                />
               </View>
               
-              <View className="flex-row gap-3 mt-4">
+
+              
+              <View className="flex-row gap-3">
                 <TouchableOpacity
                   onPress={() => setShowTimeModal(false)}
                   className="flex-1 rounded-xl py-3"

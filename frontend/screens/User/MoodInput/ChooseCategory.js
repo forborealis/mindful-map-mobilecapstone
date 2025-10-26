@@ -8,9 +8,9 @@ import { moodDataService } from '../../../services/moodDataService';
 const ChooseCategory = ({ navigation, route }) => {
     const { selectedDate } = route.params || {};
     const categories = [
-    { id: 'activity', title: 'Activities', image: require('../../../assets/images/mood/others/activities.png'), screen: 'OverallActivities' },
-    { id: 'social', title: 'Social Interactions', image: require('../../../assets/images/mood/others/social.png'), screen: 'Social' },
-    { id: 'health', title: 'Health-related Activities', image: require('../../../assets/images/mood/others/health.png'), screen: 'Health' },
+    { id: 'activity', title: 'Activity', image: require('../../../assets/images/mood/others/activities.png'), screen: 'OverallActivities' },
+    { id: 'social', title: 'Social Interaction', image: require('../../../assets/images/mood/others/social.png'), screen: 'Social' },
+    { id: 'health', title: 'Health-related Activity', image: require('../../../assets/images/mood/others/health.png'), screen: 'Health' },
     { id: 'sleep', title: "Previous Night's Sleep (Hours)", image: require('../../../assets/images/mood/others/sleep.png'), screen: 'Sleep' }
     ];
 
