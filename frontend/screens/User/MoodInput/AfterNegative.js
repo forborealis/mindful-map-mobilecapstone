@@ -302,7 +302,7 @@ const AfterNegative = ({ navigation, route }) => {
         }}
         onDone={() => {
           setShowModal(false);
-          navigation.navigate('MoodEntries');
+          navigation.navigate('Home', { screen: 'MoodEntries' });
         }}
       />
     </SafeAreaView>

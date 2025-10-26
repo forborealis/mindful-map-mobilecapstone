@@ -1,15 +1,42 @@
 import React from 'react';
-import { Alert } from 'react-native';
-import { NavigationContainer } from '@react-navigation/native';
-import { createDrawerNavigator } from '@react-navigation/drawer';
-import MoodEntries from './screens/User/MoodEntries';
-import Home from './screens/User/Home'; // Example screen
-import { authService } from './services/authService'; // Import authService
+import { Alert, TouchableOpacity, View } from 'react-native';
+import { createDrawerNavigator, DrawerContentScrollView, DrawerItemList } from '@react-navigation/drawer';
+import MoodEntries from '../screens/User/MoodEntries';
+import Home from '../screens/User/Home';
+import { authService } from '../services/authService';
 import Toast from 'react-native-toast-message';
+import { Ionicons } from '@expo/vector-icons';
+import { colors } from '../utils/colors/colors';
+import { fonts } from '../utils/fonts/fonts';
 
 const Drawer = createDrawerNavigator();
 
-export default function AppNavigator({ navigation }) {
+const Placeholder = () => <></>;
+
+function CustomDrawerContent(props) {
+  return (
+    <DrawerContentScrollView {...props} contentContainerStyle={{ flex: 1 }}>
+      <DrawerItemList {...props} />
+      <View style={{ flex: 1 }} />
+      <View style={{ alignItems: 'center', marginBottom: 24 }}>
+        <TouchableOpacity
+          onPress={() => props.navigation.closeDrawer()}
+          style={{
+            backgroundColor: colors.primary,
+            borderRadius: 30,
+            padding: 12,
+            alignItems: 'center',
+            justifyContent: 'center',
+          }}
+        >
+          <Ionicons name="arrow-back" size={28} color={colors.background} />
+        </TouchableOpacity>
+      </View>
+    </DrawerContentScrollView>
+  );
+}
+
+export default function SideBarNav() {
   const handleSignOut = async (navigation) => {
     Alert.alert(
       'Sign Out',
@@ -33,9 +60,7 @@ export default function AppNavigator({ navigation }) {
                   position: 'top',
                   visibilityTime: 2000,
                 });
-
-                // Navigate to Signin screen
-                navigation.replace('Signin');
+                navigation.replace('Login');
               } else {
                 Toast.show({
                   type: 'error',
@@ -62,32 +87,67 @@ export default function AppNavigator({ navigation }) {
   };
 
   return (
-    <NavigationContainer>
-      <Drawer.Navigator
-        initialRouteName="MoodEntries"
-        screenOptions={{
-          drawerStyle: {
-            backgroundColor: '#fff', // Sidebar background color
-            width: 240, // Sidebar width
-          },
-          drawerActiveTintColor: '#0d9488', // Active item color
-          drawerInactiveTintColor: 'gray', // Inactive item color
-          headerShown: true, // Show header for each screen
+    <Drawer.Navigator
+      initialRouteName="Mood Entries"
+      drawerContent={props => <CustomDrawerContent {...props} />}
+      screenOptions={({ navigation }) => ({
+        drawerStyle: {
+          backgroundColor: colors.background,
+          width: 240,
+        },
+        drawerActiveTintColor: colors.primary,
+        drawerInactiveTintColor: colors.text,
+        drawerLabelStyle: {
+          fontFamily: fonts.semiBold,
+          fontSize: 16,
+        },
+        headerStyle: {
+          backgroundColor: colors.secondary,
+          height: 70,
+        },
+        headerTintColor: colors.white,
+        headerTitle: '',
+        headerLeft: () => (
+          <TouchableOpacity onPress={() => navigation.toggleDrawer()} style={{ marginLeft: 15 }}>
+            <Ionicons name="menu" size={24} color={colors.white} />
+          </TouchableOpacity>
+        ),
+        headerShown: true,
+      })}
+    >
+      <Drawer.Screen
+        name="Mood Entries"
+        component={MoodEntries}
+        options={{
+          drawerIcon: ({ color, size }) => (
+            <Ionicons name="list" size={size} color={color} />
+          ),
         }}
-      >
-        <Drawer.Screen name="MoodEntries" component={MoodEntries} />
-        <Drawer.Screen name="Home" component={Home} />
-        <Drawer.Screen
-          name="Sign Out"
-          component={() => null} // Empty screen for sign-out logic
-          listeners={({ navigation }) => ({
-            drawerItemPress: (e) => {
-              e.preventDefault(); // Prevent navigation
-              handleSignOut(navigation); // Call the sign-out logic
-            },
-          })}
-        />
-      </Drawer.Navigator>
-    </NavigationContainer>
+      />
+      <Drawer.Screen
+        name="Home"
+        component={Home}
+        options={{
+          drawerIcon: ({ color, size }) => (
+            <Ionicons name="home" size={size} color={color} />
+          ),
+        }}
+      />
+      <Drawer.Screen
+        name="Sign Out"
+        component={Placeholder}
+        options={{
+          drawerIcon: ({ color, size }) => (
+            <Ionicons name="log-out" size={size} color={color} />
+          ),
+        }}
+        listeners={({ navigation }) => ({
+          drawerItemPress: (e) => {
+            e.preventDefault();
+            handleSignOut(navigation);
+          },
+        })}
+      />
+    </Drawer.Navigator>
   );
 }

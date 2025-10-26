@@ -124,9 +124,7 @@ export default function Home() {
       <StatusBar backgroundColor={colors.accent} barStyle="dark-content" />
       
       <View className="flex-1 px-8 pt-12">
-        {/* Welcome Section with Avatar */}
         <View className="items-center mb-12">
-          {/* User Avatar */}
           <View className="mb-6">
             {user?.avatar && !avatarError ? (
               <View className="relative">
@@ -137,7 +135,6 @@ export default function Home() {
                   onError={handleAvatarError}
                   onLoad={handleAvatarLoad}
                 />
-                {/* Avatar border */}
                 <View
                   className="absolute -top-1 -left-1 w-26 h-26 rounded-full border-2"
                   style={{
@@ -253,7 +250,7 @@ export default function Home() {
             shadowRadius: 4,
             elevation: 3,
           }}
-          onPress={() => navigation.navigate('MoodEntries')}
+          onPress={() => navigation.navigate('Home', { screen: 'MoodEntries' })}
         >
           <Text
             className="text-lg font-semibold"
@@ -263,10 +260,8 @@ export default function Home() {
           </Text>
         </TouchableOpacity>
 
-        {/* Spacer to push sign out button to bottom */}
         <View className="flex-1" />
 
-        {/* Sign Out Button */}
         <View className="mb-8">
           <TouchableOpacity
             className="py-4 rounded-xl items-center border-2"

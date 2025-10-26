@@ -14,16 +14,24 @@ import BeforeNegative from '../screens/User/MoodInput/BeforeNegative';
 import AfterValence from '../screens/User/MoodInput/AfterValence';
 import AfterPositive from '../screens/User/MoodInput/AfterPositive';
 import AfterNegative from '../screens/User/MoodInput/AfterNegative';
-import ContinueTracking from '../screens/User/MoodInput/ContinueTracking';
+import TimeSegmentSelector from '../screens/User/MoodInput/TimeSegmentSelector';
+import Home from '../screens/User/Home';
+import MoodEntries from '../screens/User/MoodEntries';
+import SideBarNav from '../components/SideBarNav';
 
 const Stack = createStackNavigator();
 
 export default function MainStack({ initialRoute }) {
   return (
     <Stack.Navigator initialRouteName={initialRoute}>
-      <Stack.Screen 
+        <Stack.Screen 
         name="Landing" 
         component={LandingScreen}
+        options={{ headerShown: false }}
+      />
+      <Stack.Screen 
+        name="Home" 
+        component={SideBarNav}
         options={{ headerShown: false }}
       />
       <Stack.Screen 
@@ -39,6 +47,11 @@ export default function MainStack({ initialRoute }) {
       <Stack.Screen 
         name="ChooseCategory" 
         component={ChooseCategory}
+        options={{ headerShown: false }}
+      />
+      <Stack.Screen 
+        name="TimeSegmentSelector" 
+        component={TimeSegmentSelector}
         options={{ headerShown: false }}
       />
       <Stack.Screen 
@@ -89,11 +102,6 @@ export default function MainStack({ initialRoute }) {
       <Stack.Screen 
         name="AfterNegative" 
         component={AfterNegative}
-        options={{ headerShown: false }}
-      />
-      <Stack.Screen 
-        name="ContinueTracking" 
-        component={ContinueTracking}
         options={{ headerShown: false }}
       />
     </Stack.Navigator>

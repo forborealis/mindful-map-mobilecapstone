@@ -182,7 +182,6 @@ const MoodEntries = ({ navigation }) => {
     return <Text style={{ fontSize: 28 }}>📝</Text>;
   };
 
-  // Entry card
   const renderMoodEntry = (log) => (
     <View
       key={log._id}
@@ -485,31 +484,45 @@ const MoodEntries = ({ navigation }) => {
         borderBottomWidth: 1,
         borderBottomColor: colors.primary
       }}>
+        {/* Header with Mood Insights, Add Entry button, and Sort icon */}
         <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
+          <Text style={{
+            fontFamily: fonts.semiBold,
+            fontSize: 22,
+            color: colors.text
+          }}>
+            Mood Insights
+          </Text>
           <View style={{ flexDirection: 'row', alignItems: 'center' }}>
             <TouchableOpacity
-              onPress={() => navigation.goBack()}
-              style={{ marginRight: 10 }}
+              style={{
+                backgroundColor: colors.primary,
+                paddingVertical: 6,
+                paddingHorizontal: 12,
+                borderRadius: 20,
+                alignItems: 'center',
+                justifyContent: 'center',
+                marginRight: 8
+              }}
+              onPress={() => navigation.navigate('ChooseCategory')}
             >
-              <Ionicons name="arrow-back" size={24} color={colors.text} />
+              <Text style={{
+                fontFamily: fonts.semiBold,
+                fontSize: 13,
+                color: colors.background
+              }}>
+                + Add Entry
+              </Text>
             </TouchableOpacity>
-            <Ionicons name="trending-up" size={24} color={colors.text} />
-            <Text style={{
-              fontFamily: fonts.semiBold,
-              fontSize: 22,
-              color: colors.text,
-              marginLeft: 8
-            }}>
-              Mood Insights
-            </Text>
+            <TouchableOpacity
+              style={{ padding: 6 }}
+              onPress={() => setShowSortModal(true)}
+            >
+              <Ionicons name="filter-outline" size={22} color={colors.primary} />
+            </TouchableOpacity>
           </View>
-          <TouchableOpacity
-            onPress={() => setShowSortModal(true)}
-            style={{ marginLeft: 10 }}
-          >
-            <Ionicons name="swap-vertical" size={24} color={colors.text} />
-          </TouchableOpacity>
         </View>
+        {/* Search Bar */}
         <View style={{
           flexDirection: 'row',
           backgroundColor: colors.background,
@@ -538,28 +551,6 @@ const MoodEntries = ({ navigation }) => {
             placeholderTextColor={colors.primary}
           />
         </View>
-        <TouchableOpacity
-          style={{
-            backgroundColor: colors.primary,
-            paddingVertical: 12,
-            borderRadius: 24,
-            alignItems: 'center',
-            marginBottom: 10,
-            marginTop: 2,
-            width: '70%',
-            alignContent: 'center',
-            alignSelf: 'center'
-          }}
-          onPress={() => navigation.navigate('ChooseCategory')}
-        >
-          <Text style={{
-            fontFamily: fonts.semiBold,
-            fontSize: 16,
-            color: colors.background
-          }}>
-            + Add Entry
-          </Text>
-        </TouchableOpacity>
       </View>
 
       <ScrollView

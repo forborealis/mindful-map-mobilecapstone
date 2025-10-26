@@ -57,7 +57,7 @@ const ChooseCategory = ({ navigation }) => {
 
   const handleSkip = () => {
     console.log('User chose to do it later');
-    navigation.navigate('Home');
+    navigation.navigate('Home', { screen: 'MoodEntries' });
   };
 
   return (
@@ -115,7 +115,7 @@ const ChooseCategory = ({ navigation }) => {
                     fontFamily: fonts.regular
                   }}
                 >
-                  {category.title}
+                  {category.title || 'Untitled'}
                 </Text>
                 <Text className="text-2xl opacity-50" style={{ color: colors.text }}>
                   ›
