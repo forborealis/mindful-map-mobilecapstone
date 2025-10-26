@@ -1,8 +1,9 @@
-import React, { useState } from 'react';
-import { View, Text, TextInput, TouchableOpacity, KeyboardAvoidingView, Platform, Image } from 'react-native';
+import React, { useState, useEffect } from 'react';
+import { View, Text, TextInput, TouchableOpacity, KeyboardAvoidingView, Platform, Image, Alert } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { fonts } from '../../../utils/fonts/fonts';
 import { colors } from '../../../utils/colors/colors';
+import { moodDataService } from '../../../services/moodDataService';
 
 const tips = [
   { image: require('../../../assets/images/mood/others/sleep1.png'), text: 'Stick to a consistent sleep schedule.' },
@@ -10,9 +11,31 @@ const tips = [
   { image: require('../../../assets/images/mood/others/sleep3.png'), text: 'Limit your caffeine intake.' }
 ];
 
-const Sleep = ({ navigation }) => {
+const Sleep = ({ navigation, route }) => {
   const [hours, setHours] = useState('');
   const [isValid, setIsValid] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+  const [existingLog, setExistingLog] = useState(null);
+  
+  // Get time data from TimeSegmentSelector
+  const { category, selectedTime, timeSegment } = route.params || {};
+
+  useEffect(() => {
+    checkExistingSleepLog();
+  }, []);
+
+  const checkExistingSleepLog = async () => {
+    try {
+      const result = await moodDataService.getTodaysSleepLog();
+      if (result.success && result.sleepLog) {
+        setExistingLog(result.sleepLog);
+        setHours(result.sleepLog.hrs.toString());
+        setIsValid(true);
+      }
+    } catch (error) {
+      console.error('Error checking existing sleep log:', error);
+    }
+  };
 
   const handleChange = (value) => {
     const num = value.replace(/[^0-9]/g, '');
@@ -20,9 +43,44 @@ const Sleep = ({ navigation }) => {
     setIsValid(num !== '' && Number(num) > 0 && Number(num) <= 24);
   };
 
-  const handleSubmit = () => {
-    if (isValid) {
-      console.log('Sleep hours:', hours);
+  const handleSubmit = async () => {
+    if (!isValid) return;
+
+    setIsLoading(true);
+    try {
+      let result;
+      
+      if (existingLog) {
+        // Update existing sleep log hours only
+        result = await moodDataService.updateSleepHours(Number(hours));
+        if (result.success) {
+          Alert.alert(
+            'Sleep Hours Updated', 
+            'Your sleep hours have been updated successfully.',
+            [
+              {
+                text: 'OK',
+                onPress: () => navigation.navigate('ContinueTracking')
+              }
+            ]
+          );
+        } else {
+          Alert.alert('Error', result.message || 'Failed to update sleep hours');
+        }
+      } else {
+        // Navigate to before valence for new sleep log
+        navigation.navigate('BeforeValence', {
+          category: 'sleep',
+          hrs: Number(hours),
+          selectedTime,
+          timeSegment
+        });
+      }
+    } catch (error) {
+      console.error('Error handling sleep submission:', error);
+      Alert.alert('Error', 'Something went wrong. Please try again.');
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -158,13 +216,30 @@ const Sleep = ({ navigation }) => {
               hours
             </Text>
           </View>
+          {existingLog && (
+            <View 
+              className="mb-4 px-4 py-3 rounded-xl"
+              style={{ backgroundColor: colors.primary }}
+            >
+              <Text
+                className="text-center text-sm"
+                style={{
+                  color: colors.text,
+                  fontFamily: fonts.regular,
+                }}
+              >
+                💡 You already logged sleep today. Update your hours or track the mood impact.
+              </Text>
+            </View>
+          )}
+
           <TouchableOpacity
             onPress={handleSubmit}
-            disabled={!isValid}
+            disabled={!isValid || isLoading}
             className="rounded-full py-4 px-8 shadow-lg mt-6 active:scale-95"
             style={{
               backgroundColor: isValid ? colors.primary : colors.secondary,
-              opacity: isValid ? 1 : 0.5
+              opacity: isValid && !isLoading ? 1 : 0.5
             }}
             activeOpacity={0.8}
           >
@@ -176,7 +251,12 @@ const Sleep = ({ navigation }) => {
                 lineHeight: 24
               }}
             >
-              Enter sleep hours
+              {isLoading 
+                ? 'Saving...'
+                : existingLog 
+                  ? 'Update sleep hours' 
+                  : 'Continue with mood tracking'
+              }
             </Text>
           </TouchableOpacity>
         </View>

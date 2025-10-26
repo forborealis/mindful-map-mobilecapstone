@@ -1,8 +1,10 @@
 import React, { useState } from 'react';
-import { View, Text, TouchableOpacity, TextInput, Image, ScrollView, KeyboardAvoidingView, Platform } from 'react-native';
+import { View, Text, TouchableOpacity, TextInput, Image, ScrollView, KeyboardAvoidingView, Platform, Alert } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { fonts } from '../../../utils/fonts/fonts';
 import { colors } from '../../../utils/colors/colors';
+import { moodDataService } from '../../../services/moodDataService';
+import ContinueTrackingModal from './ContinueTrackingModal';
 
 const emotions = [
   { id: 'bored', title: 'Bored', image: require('../../../assets/images/mood/emotions/bored.png') },
@@ -22,19 +24,67 @@ const chunkArray = (arr, size) => {
   return result;
 };
 
-const AfterNegative = ({ navigation }) => {
+const AfterNegative = ({ navigation, route }) => {
   const [selectedEmotion, setSelectedEmotion] = useState(null);
   const [selectedIntensity, setSelectedIntensity] = useState(null);
   const [reason, setReason] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
+  const [showModal, setShowModal] = useState(false);
+
+  // Get all the data from previous screens
+  const { 
+    category, 
+    activity, 
+    hrs, 
+    selectedTime,
+    beforeValence,
+    beforeEmotion,
+    beforeIntensity,
+    beforeReason
+  } = route.params || {};
 
   const isInputEnabled = selectedEmotion && selectedIntensity;
   const isButtonEnabled = isInputEnabled && reason.trim().length > 0;
 
   const emotionRows = chunkArray(emotions, 3);
 
-  const handleSubmit = () => {
-    if (isButtonEnabled) {
-      navigation.navigate('ContinueTracking', { emotion: selectedEmotion, intensity: selectedIntensity, reason });
+  const handleSubmit = async () => {
+    if (!isButtonEnabled || isLoading) return;
+
+    setIsLoading(true);
+    
+    try {
+      // Prepare mood data for saving
+      const moodData = {
+        category,
+        activity,
+        hrs,
+        selectedTime,
+        beforeValence,
+        beforeEmotion,
+        beforeIntensity,
+        beforeReason,
+        afterValence: 'negative',
+        afterEmotion: selectedEmotion,
+        afterIntensity: selectedIntensity,
+        afterReason: reason.trim()
+      };
+
+      console.log('Saving mood data:', moodData);
+      
+      const result = await moodDataService.saveMoodLog(moodData);
+      
+      if (result.success) {
+        console.log('Mood log saved successfully');
+        setShowModal(true);
+      } else {
+        Alert.alert('Error', result.error || 'Failed to save mood log');
+      }
+    } catch (error) {
+      console.error('Error saving mood log:', error);
+      Alert.alert('Error', 'Something went wrong while saving. Please try again.');
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -222,27 +272,39 @@ const AfterNegative = ({ navigation }) => {
 
         <TouchableOpacity
           onPress={handleSubmit}
-          disabled={!isButtonEnabled}
+          disabled={!isButtonEnabled || isLoading}
           className="rounded-full py-4 px-8 shadow-lg active:scale-95 mb-4"
           style={{
-            backgroundColor: isButtonEnabled ? colors.primary : colors.secondary,
-            opacity: isButtonEnabled ? 1 : 0.5
+            backgroundColor: isButtonEnabled && !isLoading ? colors.primary : colors.secondary,
+            opacity: isButtonEnabled && !isLoading ? 1 : 0.5
           }}
           activeOpacity={0.8}
         >
           <Text
             className="text-center text-lg"
             style={{
-              color: isButtonEnabled ? colors.background : colors.text,
+              color: isButtonEnabled && !isLoading ? colors.background : colors.text,
               fontFamily: fonts.semiBold,
               lineHeight: 24
             }}
           >
-            Enter
+            {isLoading ? 'Saving...' : 'Save & Continue'}
           </Text>
         </TouchableOpacity>
       </ScrollView>
       </KeyboardAvoidingView>
+
+      <ContinueTrackingModal
+        visible={showModal}
+        onContinue={() => {
+          setShowModal(false);
+          navigation.navigate('ChooseCategory');
+        }}
+        onDone={() => {
+          setShowModal(false);
+          navigation.navigate('MoodEntries');
+        }}
+      />
     </SafeAreaView>
   );
 };

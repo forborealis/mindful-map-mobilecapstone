@@ -22,10 +22,13 @@ const chunkArray = (arr, size) => {
   return result;
 };
 
-const BeforeNegative = ({ navigation }) => {
+const BeforeNegative = ({ navigation, route }) => {
   const [selectedEmotion, setSelectedEmotion] = useState(null);
   const [selectedIntensity, setSelectedIntensity] = useState(null);
   const [reason, setReason] = useState('');
+
+  // Get parameters from previous screens
+  const { category, activity, hrs, selectedTime, beforeValence } = route.params || {};
 
   const isInputEnabled = selectedEmotion && selectedIntensity;
   const isButtonEnabled = isInputEnabled && reason.trim().length > 0;
@@ -34,7 +37,16 @@ const BeforeNegative = ({ navigation }) => {
 
   const handleSubmit = () => {
     if (isButtonEnabled) {
-      navigation.navigate('AfterValence', { emotion: selectedEmotion, intensity: selectedIntensity, reason });
+      navigation.navigate('AfterValence', { 
+        category, 
+        activity, 
+        hrs, 
+        selectedTime,
+        beforeValence,
+        beforeEmotion: selectedEmotion, 
+        beforeIntensity: selectedIntensity, 
+        beforeReason: reason.trim()
+      });
     }
   };
 

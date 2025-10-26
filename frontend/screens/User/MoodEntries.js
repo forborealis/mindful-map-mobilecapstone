@@ -53,6 +53,7 @@ const activityImages = {
   family: require('../../assets/images/mood/family.png'),
   classmates: require('../../assets/images/mood/classmate.png'),
   relationship: require('../../assets/images/mood/relationship.png'),
+  online: require('../../assets/images/mood/onlineInteraction.png'),
   pet: require('../../assets/images/mood/pet.png'),
   jog: require('../../assets/images/mood/jog.png'),
   walk: require('../../assets/images/mood/walk.png'),

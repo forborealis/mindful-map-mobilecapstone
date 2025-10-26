@@ -1,5 +1,7 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { GoogleSignin } from '@react-native-google-signin/google-signin';
+import { signInWithCustomToken, signInWithEmailAndPassword, signOut } from 'firebase/auth';
+import { auth } from '../config/firebase';
 
 const API_BASE_URL = process.env.EXPO_PUBLIC_API_URL || 'http://localhost:5001';
 
@@ -37,6 +39,26 @@ export const authService = {
         }
       }
       
+      // Check if the current Firebase user exists and get fresh token
+      const currentUser = auth.currentUser;
+      console.log('Current Firebase user in checkAuthStatus:', currentUser ? currentUser.email : 'None');
+      
+      if (currentUser) {
+        try {
+          const freshToken = await currentUser.getIdToken(false);
+          await AsyncStorage.setItem('token', freshToken);
+          console.log('Valid session found for:', user.email);
+          console.log('Fresh token length:', freshToken.length);
+          return { isAuthenticated: true, user, token: freshToken };
+        } catch (tokenError) {
+          console.log('Token refresh failed, need to re-login:', tokenError);
+          await this.clearSession();
+          return { isAuthenticated: false, user: null, token: null };
+        }
+      } else {
+        console.log('No Firebase user found, but AsyncStorage has user data. This indicates a session mismatch.');
+      }
+      
       console.log('Valid session found for:', user.email);
       return { isAuthenticated: true, user, token };
       
@@ -46,10 +68,34 @@ export const authService = {
     }
   },
 
-   async saveSession(user, token) {
+   async saveSession(user, customToken) {
     try {
+      console.log('Saving session with custom token...');
+      console.log('Custom token length:', customToken ? customToken.length : 0);
+      
+      // Sign in with the custom token to get a valid Firebase user
+      console.log('Signing in with custom token...');
+      const userCredential = await signInWithCustomToken(auth, customToken);
+      const firebaseUser = userCredential.user;
+      console.log('Firebase user signed in:', firebaseUser.email);
+      console.log('Firebase user UID:', firebaseUser.uid);
+      
+      // Verify the user is actually signed in by checking auth.currentUser
+      console.log('Verifying Firebase user session...');
+      const currentUser = auth.currentUser;
+      console.log('Current Firebase user after sign in:', currentUser ? currentUser.email : 'None');
+      
+      if (!currentUser) {
+        throw new Error('Firebase user session was not established properly');
+      }
+      
+      // Get the ID token for API calls
+      console.log('Getting ID token...');
+      const idToken = await firebaseUser.getIdToken();
+      console.log('ID token received, length:', idToken ? idToken.length : 0);
+      
       await AsyncStorage.setItem('user', JSON.stringify(user));
-      await AsyncStorage.setItem('token', token);
+      await AsyncStorage.setItem('token', idToken);
       await AsyncStorage.setItem('loginTimestamp', Date.now().toString());
       await AsyncStorage.setItem('isAuthenticated', 'true');
       
@@ -93,6 +139,7 @@ export const authService = {
     try {
       console.log('Attempting login for:', email);
 
+      // First verify credentials with backend
       const response = await fetch(`${API_BASE_URL}/api/auth/login`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -101,13 +148,36 @@ export const authService = {
       const data = await response.json();
       
       if (data.success) {
-        await this.saveSession(data.user, data.token);
-        console.log('Login successful, session saved');
+        // Instead of using custom token, sign in directly with Firebase
+        console.log('Backend login successful, signing in with Firebase...');
+        
+        try {
+          const userCredential = await signInWithEmailAndPassword(auth, email, password);
+          const firebaseUser = userCredential.user;
+          console.log('Firebase sign-in successful for:', firebaseUser.email);
+          
+          // Get ID token for API calls
+          const idToken = await firebaseUser.getIdToken();
+          console.log('ID token obtained, length:', idToken.length);
+          
+          // Save session with the ID token instead of custom token
+          await AsyncStorage.setItem('user', JSON.stringify(data.user));
+          await AsyncStorage.setItem('token', idToken);
+          await AsyncStorage.setItem('loginTimestamp', Date.now().toString());
+          await AsyncStorage.setItem('isAuthenticated', 'true');
+          
+          console.log('Session saved successfully for:', data.user.email);
+          console.log('Login timestamp:', new Date().toLocaleString());
+          
+          return data;
+        } catch (firebaseError) {
+          console.error('Firebase sign-in failed:', firebaseError);
+          return { success: false, error: 'Authentication failed. Please check your credentials.' };
+        }
       } else {
         console.log('Login failed:', data.error);
+        return data;
       }
-
-      return data;
     } catch (error) {
       console.error('Network error during login:', error);
       return { success: false, error: 'Network error. Please check your connection.' };
@@ -230,11 +300,19 @@ export const authService = {
 
   async logout() {
     try {
+      // Sign out from Firebase Auth
+      try {
+        await signOut(auth);
+        console.log('Firebase sign-out successful');
+      } catch (firebaseError) {
+        console.log('Firebase sign-out result (expected if not signed in):', firebaseError.message);
+      }
+
+      // Sign out from Google
       try {
         await GoogleSignin.signOut();
         console.log('Google sign-out successful');
       } catch (googleError) {
- 
         console.log('Google sign-out result (expected if not signed in via Google):', googleError.message);
       }
       
@@ -263,6 +341,27 @@ export const authService = {
       return { success: false };
     } catch (error) {
       return { success: false };
+    }
+  },
+
+  async getFreshToken() {
+    try {
+      console.log('Getting fresh token...');
+      const currentUser = auth.currentUser;
+      console.log('Current Firebase user:', currentUser ? currentUser.email : 'None');
+      
+      if (currentUser) {
+        console.log('Requesting fresh ID token...');
+        const freshToken = await currentUser.getIdToken(true); // Force refresh
+        console.log('Fresh token received, length:', freshToken ? freshToken.length : 0);
+        await AsyncStorage.setItem('token', freshToken);
+        return freshToken;
+      }
+      console.log('No current Firebase user found');
+      return null;
+    } catch (error) {
+      console.error('Error getting fresh token:', error);
+      return null;
     }
   }
 };

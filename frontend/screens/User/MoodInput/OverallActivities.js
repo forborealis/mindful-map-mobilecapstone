@@ -12,17 +12,21 @@ const chunkArray = (arr, size) => {
   return result;
 };
 
-const OverallActivities = ({ navigation }) => {
+const OverallActivities = ({ navigation, route }) => {
   const [selectedActivity, setSelectedActivity] = useState(null);
+  
+  // Get time data from TimeSegmentSelector
+  const { category, selectedTime, timeSegment } = route.params || {};
 
   const activities = [
     { id: 'study', title: 'Study', image: require('../../../assets/images/mood/study.png') },
     { id: 'read', title: 'Read', image: require('../../../assets/images/mood/read.png') },
-    { id: 'extracurricular-activities', title: 'Extracurricular Activities', image: require('../../../assets/images/mood/extraCurricularActivities.png') },
+    { id: 'extracurricular', title: 'Extracurricular Activities', image: require('../../../assets/images/mood/extraCurricularActivities.png') },
     { id: 'relax', title: 'Relax', image: require('../../../assets/images/mood/relax.png') },
     { id: 'watch-movie', title: 'Watch Movie', image: require('../../../assets/images/mood/watchMovie.png') },
-    { id: 'listen-to-music', title: 'Listen to Music', image: require('../../../assets/images/mood/listenToMusic.png') },
-    { id: 'browse-the-internet', title: 'Browse the Internet', image: require('../../../assets/images/mood/browseInternet.png') },
+    { id: 'listen-music', title: 'Listen to Music', image: require('../../../assets/images/mood/listenToMusic.png') },
+    { id: 'gaming', title: 'Gaming', image: require('../../../assets/images/mood/gaming.png') },
+    { id: 'browse-internet', title: 'Browse the Internet', image: require('../../../assets/images/mood/browseInternet.png') },
     { id: 'shopping', title: 'Shopping', image: require('../../../assets/images/mood/shopping.png') },
     { id: 'travel', title: 'Travel', image: require('../../../assets/images/mood/travel.png') }
   ];
@@ -31,12 +35,17 @@ const OverallActivities = ({ navigation }) => {
 
   const handleSelect = (id) => {
     setSelectedActivity(id);
-    console.log('Selected activity:', id);
+    //console.log('Selected activity:', id);
   };
 
   const handleSubmit = () => {
     if (selectedActivity) {
-      navigation.navigate('BeforeValence', { activity: selectedActivity });
+      navigation.navigate('BeforeValence', { 
+        category,
+        selectedTime,
+        timeSegment,
+        activity: selectedActivity 
+      });
     }
   };
 

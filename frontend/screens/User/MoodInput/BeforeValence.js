@@ -10,19 +10,30 @@ const options = [
   { id: 'unknown', label: "I can't remember", emoji: '❓' }
 ];
 
-const BeforeValence = ({ navigation }) => {
+const BeforeValence = ({ navigation, route }) => {
   const [selected, setSelected] = useState(null);
+  
+  // Get parameters from previous screen
+  const { category, activity, hrs, selectedTime } = route.params || {};
 
   const handleSelect = (id) => {
     setSelected(id);
+    const params = { category, activity, hrs, selectedTime, beforeValence: id };
+    
     if (id === 'positive') {
-      navigation.navigate('BeforePositive');
+      navigation.navigate('BeforePositive', params);
     }
     else if (id === 'negative') {
-      navigation.navigate('BeforeNegative');
+      navigation.navigate('BeforeNegative', params);
     }
     else{
-      navigation.navigate('AfterValence');
+      navigation.navigate('AfterValence', { 
+        ...params,
+        beforeValence: "can't remember",
+        beforeEmotion: null,
+        beforeIntensity: 0,
+        beforeReason: null
+      });
     }
   };
 

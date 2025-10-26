@@ -30,6 +30,7 @@ import AfterPositive from './screens/User/MoodInput/AfterPositive';
 import AfterNegative from './screens/User/MoodInput/AfterNegative';
 
 import ContinueTracking from './screens/User/MoodInput/ContinueTracking';
+import TimeSegmentSelector from './screens/User/MoodInput/TimeSegmentSelector';
 
 const Stack = createStackNavigator();
 
@@ -130,6 +131,11 @@ export default function App() {
             <Stack.Screen 
               name="Sleep" 
               component={Sleep}
+              options={{ headerShown: false }}
+            />
+            <Stack.Screen 
+              name="TimeSegmentSelector" 
+              component={TimeSegmentSelector}
               options={{ headerShown: false }}
             />
             <Stack.Screen 

@@ -9,16 +9,39 @@ const options = [
   { id: 'negative', label: 'Negative', emoji: '👎' }
 ];
 
-const AfterValence = ({ navigation }) => {
+const AfterValence = ({ navigation, route }) => {
   const [selected, setSelected] = useState(null);
+
+  // Get all parameters from previous screens
+  const { 
+    category, 
+    activity, 
+    hrs, 
+    selectedTime,
+    beforeValence,
+    beforeEmotion,
+    beforeIntensity,
+    beforeReason
+  } = route.params || {};
 
   const handleSelect = (id) => {
     setSelected(id);
+    const params = {
+      category, 
+      activity, 
+      hrs, 
+      selectedTime,
+      beforeValence,
+      beforeEmotion,
+      beforeIntensity,
+      beforeReason
+    };
+    
     if (id === 'positive') {
-      navigation.navigate('AfterPositive');
+      navigation.navigate('AfterPositive', params);
     }
     else {
-      navigation.navigate('AfterNegative');
+      navigation.navigate('AfterNegative', params);
     }
   };
 
@@ -48,7 +71,7 @@ const AfterValence = ({ navigation }) => {
             lineHeight: 34
           }}
         >
-          How do you feel before the activity?
+          How do you feel after the activity?
         </Text>
         <View className="mb-10">
           {options.map((option) => (

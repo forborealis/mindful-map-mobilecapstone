@@ -3,21 +3,57 @@ import { View, Text, TouchableOpacity, ScrollView, Image } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { fonts } from '../../../utils/fonts/fonts';
 import { colors } from '../../../utils/colors/colors';
+import { moodDataService } from '../../../services/moodDataService';
 
 const ChooseCategory = ({ navigation }) => {
     const categories = [
-    { id: 'activities', title: 'Activities', image: require('../../../assets/images/mood/others/activities.png'), screen: 'OverallActivities' },
+    { id: 'activity', title: 'Activities', image: require('../../../assets/images/mood/others/activities.png'), screen: 'OverallActivities' },
     { id: 'social', title: 'Social Interactions', image: require('../../../assets/images/mood/others/social.png'), screen: 'Social' },
     { id: 'health', title: 'Health-related Activities', image: require('../../../assets/images/mood/others/health.png'), screen: 'Health' },
     { id: 'sleep', title: "Previous Night's Sleep (Hours)", image: require('../../../assets/images/mood/others/sleep.png'), screen: 'Sleep' }
     ];
 
-  const handleCategoryPress = (categoryId) => {
-  const selected = categories.find(cat => cat.id === categoryId);
-  if (selected && selected.screen) {
-    navigation.navigate(selected.screen);
-  }
-};
+  const handleCategoryPress = async (categoryId) => {
+    const selected = categories.find(cat => cat.id === categoryId);
+    if (selected) {
+      // For sleep category, check if there's already a sleep log
+      if (categoryId === 'sleep') {
+        try {
+          const result = await moodDataService.getTodaysSleepLog();
+          if (result.success && result.sleepLog) {
+            // If there's already a sleep log, go directly to Sleep screen to update hours
+            navigation.navigate('Sleep', { 
+              category: categoryId,
+              categoryTitle: selected.title,
+              hasExistingLog: true
+            });
+          } else {
+            // No existing log, go through TimeSegmentSelector
+            navigation.navigate('TimeSegmentSelector', { 
+              category: categoryId,
+              categoryTitle: selected.title,
+              nextScreen: selected.screen
+            });
+          }
+        } catch (error) {
+          console.error('Error checking sleep log:', error);
+          // On error, default to TimeSegmentSelector flow
+          navigation.navigate('TimeSegmentSelector', { 
+            category: categoryId,
+            categoryTitle: selected.title,
+            nextScreen: selected.screen
+          });
+        }
+      } else {
+        // For other categories, go to TimeSegmentSelector first
+        navigation.navigate('TimeSegmentSelector', { 
+          category: categoryId,
+          categoryTitle: selected.title,
+          nextScreen: selected.screen
+        });
+      }
+    }
+  };
 
   const handleSkip = () => {
     console.log('User chose to do it later');
