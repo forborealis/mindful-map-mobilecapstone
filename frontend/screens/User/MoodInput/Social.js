@@ -12,8 +12,11 @@ const chunkArray = (arr, size) => {
   return result;
 };
 
-const Social = ({ navigation }) => {
+const Social = ({ navigation, route }) => {
   const [selectedInteraction, setSelectedInteraction] = useState(null);
+  
+  // Get time data from TimeSegmentSelector
+  const { category, selectedTime, timeSegment } = route.params || {};
 
   const interactions = [
     { id: 'alone', title: 'Alone', image: require('../../../assets/images/mood/alone.png') },
@@ -34,7 +37,12 @@ const Social = ({ navigation }) => {
 
   const handleSubmit = () => {
     if (selectedInteraction) {
-      console.log('Submitting interaction:', selectedInteraction);
+      navigation.navigate('BeforeValence', { 
+        category,
+        selectedTime,
+        timeSegment,
+        activity: selectedInteraction 
+      });
     }
   };
 

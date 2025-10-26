@@ -12,8 +12,11 @@ const chunkArray = (arr, size) => {
   return result;
 };
 
-const Health = ({ navigation }) => {
+const Health = ({ navigation, route }) => {
   const [selectedHealth, setSelectedHealth] = useState(null);
+  
+  // Get time data from TimeSegmentSelector
+  const { category, selectedTime, timeSegment } = route.params || {};
 
   const healthActivities = [
     { id: 'jog', title: 'Jog', image: require('../../../assets/images/mood/jog.png') },
@@ -21,8 +24,9 @@ const Health = ({ navigation }) => {
     { id: 'exercise', title: 'Exercise', image: require('../../../assets/images/mood/exercise.png') },
     { id: 'meditate', title: 'Meditate', image: require('../../../assets/images/mood/meditate.png') },
     { id: 'eat-healthy', title: 'Eat Healthy', image: require('../../../assets/images/mood/eatHealthy.png') },
-    { id: 'no-physical-activity', title: 'No Physical Activity', image: require('../../../assets/images/mood/noPhysicalActivity.png') },
-    { id: 'eat-unhealthy', title: 'Eat Unhealthy', image: require('../../../assets/images/mood/eatUnhealthy.png') }
+    { id: 'no-physical', title: 'No Physical Activity', image: require('../../../assets/images/mood/noPhysicalActivity.png') },
+    { id: 'eat-unhealthy', title: 'Eat Unhealthy', image: require('../../../assets/images/mood/eatUnhealthy.png') },
+    { id: 'drink-alcohol', title: 'Drink Alcohol', image: require('../../../assets/images/mood/drinkAlcohol.png') }
   ];
 
   const rows = chunkArray(healthActivities, 3);
@@ -34,7 +38,12 @@ const Health = ({ navigation }) => {
 
   const handleSubmit = () => {
     if (selectedHealth) {
-      console.log('Submitting health activity:', selectedHealth);
+      navigation.navigate('BeforeValence', { 
+        category,
+        selectedTime,
+        timeSegment,
+        activity: selectedHealth 
+      });
     }
   };
 
