@@ -6,8 +6,10 @@ import Toast from 'react-native-toast-message';
 import * as Font from 'expo-font';
 import './global.css';
 import { initializeAuth } from './services/authInitializer';
-import MainStack from './navigation/MainStack'; // Import MainStack
-import Ionicons from 'react-native-vector-icons/Ionicons'
+import Ionicons from 'react-native-vector-icons/Ionicons';
+
+import MainStack from './navigation/MainStack';
+
 export default function App() {
   const [isLoading, setIsLoading] = useState(true);
   const [initialRoute, setInitialRoute] = useState('Landing');
@@ -15,8 +17,6 @@ export default function App() {
   useEffect(() => {
     async function prepare() {
       try {
-        console.log('App starting...');
-
         await Font.loadAsync({
           'Poppins-Regular': require('./assets/fonts/Poppins-Regular.ttf'),
           'Poppins-Bold': require('./assets/fonts/Poppins-Bold.ttf'),
@@ -25,18 +25,14 @@ export default function App() {
           'Poppins-Light': require('./assets/fonts/Poppins-Light.ttf'),
           ...Ionicons.font,
         });
-        console.log('Fonts loaded');
-
         const authResult = await initializeAuth();
         setInitialRoute(authResult.initialRoute);
       } catch (error) {
-        console.error('Error during app initialization:', error);
         setInitialRoute('Landing');
       } finally {
         setIsLoading(false);
       }
     }
-
     prepare();
   }, []);
 
@@ -55,7 +51,7 @@ export default function App() {
     <>
       <PaperProvider>
         <NavigationContainer>
-          <MainStack initialRoute={initialRoute} /> {/* Render MainStack */}
+          <MainStack initialRoute={initialRoute} />
         </NavigationContainer>
       </PaperProvider>
       <Toast />

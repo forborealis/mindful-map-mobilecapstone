@@ -12,7 +12,7 @@ import { fonts } from '../utils/fonts/fonts';
 
 const Drawer = createDrawerNavigator();
 
-const Placeholder = () => <></>;
+const Placeholder = () => <View />;
 
 function CustomDrawerContent(props) {
   return (
@@ -43,10 +43,7 @@ export default function SideBarNav() {
       'Sign Out',
       'Are you sure you want to sign out?',
       [
-        {
-          text: 'Cancel',
-          style: 'cancel',
-        },
+        { text: 'Cancel', style: 'cancel' },
         {
           text: 'Sign Out',
           style: 'destructive',
