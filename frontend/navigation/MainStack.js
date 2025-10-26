@@ -30,7 +30,7 @@ export default function MainStack({ initialRoute }) {
         options={{ headerShown: false }}
       />
       <Stack.Screen 
-        name="Home" 
+        name="SideBar" 
         component={SideBarNav}
         options={{ headerShown: false }}
       />

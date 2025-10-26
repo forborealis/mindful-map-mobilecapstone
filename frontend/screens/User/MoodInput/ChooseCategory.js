@@ -57,7 +57,7 @@ const ChooseCategory = ({ navigation }) => {
 
   const handleSkip = () => {
     console.log('User chose to do it later');
-    navigation.navigate('Home', { screen: 'MoodEntries' });
+    navigation.navigate('SideBar', { screen: 'MoodEntries' });
   };
 
   return (

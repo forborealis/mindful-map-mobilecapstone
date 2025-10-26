@@ -250,7 +250,7 @@ export default function Home() {
             shadowRadius: 4,
             elevation: 3,
           }}
-          onPress={() => navigation.navigate('Home', { screen: 'MoodEntries' })}
+          onPress={() => navigation.navigate('SideBar', { screen: 'MoodEntries' })}
         >
           <Text
             className="text-lg font-semibold"
