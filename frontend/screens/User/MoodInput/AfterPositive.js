@@ -37,6 +37,7 @@ const AfterPositive = ({ navigation, route }) => {
     activity, 
     hrs, 
     selectedTime,
+    selectedDate,
     beforeValence,
     beforeEmotion,
     beforeIntensity,
@@ -60,6 +61,7 @@ const AfterPositive = ({ navigation, route }) => {
         activity,
         hrs,
         selectedTime,
+        selectedDate,
         beforeValence,
         beforeEmotion,
         beforeIntensity,
@@ -302,7 +304,7 @@ const AfterPositive = ({ navigation, route }) => {
         }}
         onDone={() => {
           setShowModal(false);
-          navigation.navigate('SideBar', { screen: 'MoodEntries' });;
+          navigation.navigate('SideBar', { screen: 'MoodEntries' });
         }}
       />
     </SafeAreaView>

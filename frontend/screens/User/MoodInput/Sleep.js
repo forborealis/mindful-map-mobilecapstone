@@ -4,6 +4,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { fonts } from '../../../utils/fonts/fonts';
 import { colors } from '../../../utils/colors/colors';
 import { moodDataService } from '../../../services/moodDataService';
+import ContinueTrackingModal from './ContinueTrackingModal';
 
 const tips = [
   { image: require('../../../assets/images/mood/others/sleep1.png'), text: 'Stick to a consistent sleep schedule.' },
@@ -16,21 +17,42 @@ const Sleep = ({ navigation, route }) => {
   const [isValid, setIsValid] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [existingLog, setExistingLog] = useState(null);
+  const [showContinueModal, setShowContinueModal] = useState(false);
   
-  // Get time data from TimeSegmentSelector
-  const { category, selectedTime, timeSegment } = route.params || {};
+  // Get time data from TimeSegmentSelector and existing log data
+  const { category, selectedTime, timeSegment, selectedDate, hasExistingLog, existingLog: passedExistingLog } = route.params || {};
 
   useEffect(() => {
-    checkExistingSleepLog();
-  }, []);
+    // If we have an existing log passed from ChooseCategory, use it
+    if (hasExistingLog && passedExistingLog) {
+      setExistingLog(passedExistingLog);
+      setHours(passedExistingLog.hrs ? passedExistingLog.hrs.toString() : '');
+      setIsValid(!!passedExistingLog.hrs);
+    } else {
+      // Otherwise check for existing sleep log
+      checkExistingSleepLog();
+    }
+  }, [hasExistingLog, passedExistingLog]);
 
   const checkExistingSleepLog = async () => {
     try {
-      const result = await moodDataService.getTodaysSleepLog();
-      if (result.success && result.sleepLog) {
-        setExistingLog(result.sleepLog);
-        setHours(result.sleepLog.hrs.toString());
-        setIsValid(true);
+      let result;
+      if (selectedDate) {
+        // Check for sleep log on the selected date
+        result = await moodDataService.getTodaysLastMoodLog('sleep', selectedDate);
+        if (result.success && result.lastLog) {
+          setExistingLog(result.lastLog);
+          setHours(result.lastLog.hrs ? result.lastLog.hrs.toString() : '');
+          setIsValid(!!result.lastLog.hrs);
+        }
+      } else {
+        // Check for today's sleep log
+        result = await moodDataService.getTodaysSleepLog();
+        if (result.success && result.sleepLog) {
+          setExistingLog(result.sleepLog);
+          setHours(result.sleepLog.hrs.toString());
+          setIsValid(true);
+        }
       }
     } catch (error) {
       console.error('Error checking existing sleep log:', error);
@@ -38,9 +60,47 @@ const Sleep = ({ navigation, route }) => {
   };
 
   const handleChange = (value) => {
-    const num = value.replace(/[^0-9]/g, '');
-    setHours(num);
-    setIsValid(num !== '' && Number(num) > 0 && Number(num) <= 24);
+    // Allow numbers and one decimal point
+    const validValue = value.replace(/[^0-9.]/g, '');
+    // Ensure only one decimal point
+    const parts = validValue.split('.');
+    if (parts.length > 2) {
+      return; // Don't allow multiple decimal points
+    }
+    // Limit to one decimal place
+    if (parts[1] && parts[1].length > 1) {
+      return;
+    }
+    
+    setHours(validValue);
+    const numValue = Number(validValue);
+    setIsValid(validValue !== '' && numValue > 0 && numValue <= 24);
+  };
+
+  const handleIncrease = () => {
+    const currentValue = hours === '' ? 0 : Number(hours);
+    const newValue = Math.min(currentValue + 0.5, 24);
+    const formattedValue = newValue % 1 === 0 ? newValue.toString() : newValue.toFixed(1);
+    setHours(formattedValue);
+    setIsValid(newValue > 0 && newValue <= 24);
+  };
+
+  const handleDecrease = () => {
+    const currentValue = hours === '' ? 0 : Number(hours);
+    const newValue = Math.max(currentValue - 0.5, 0);
+    const formattedValue = newValue === 0 ? '' : (newValue % 1 === 0 ? newValue.toString() : newValue.toFixed(1));
+    setHours(formattedValue);
+    setIsValid(newValue > 0 && newValue <= 24);
+  };
+
+  const handleContinueTracking = () => {
+    setShowContinueModal(false);
+    navigation.navigate('ChooseCategory');
+  };
+
+  const handleDoneTracking = () => {
+    setShowContinueModal(false);
+    navigation.navigate('MoodEntries');
   };
 
   const handleSubmit = async () => {
@@ -51,19 +111,10 @@ const Sleep = ({ navigation, route }) => {
       let result;
       
       if (existingLog) {
-        // Update existing sleep log hours only
-        result = await moodDataService.updateSleepHours(Number(hours));
+        // Update existing sleep log hours only - pass the date if available
+        result = await moodDataService.updateSleepHours(Number(hours), selectedDate);
         if (result.success) {
-          Alert.alert(
-            'Sleep Hours Updated', 
-            'Your sleep hours have been updated successfully.',
-            [
-              {
-                text: 'OK',
-                onPress: () => navigation.navigate('ContinueTracking')
-              }
-            ]
-          );
+          setShowContinueModal(true);
         } else {
           Alert.alert('Error', result.message || 'Failed to update sleep hours');
         }
@@ -73,7 +124,8 @@ const Sleep = ({ navigation, route }) => {
           category: 'sleep',
           hrs: Number(hours),
           selectedTime,
-          timeSegment
+          timeSegment,
+          selectedDate
         });
       }
     } catch (error) {
@@ -117,7 +169,7 @@ const Sleep = ({ navigation, route }) => {
             Previous Night's Sleep
           </Text>
           <Text
-            className="text-base text-center mb-3"
+            className="text-base text-center mb-2"
             style={{
               color: colors.text,
               fontFamily: fonts.regular,
@@ -127,6 +179,7 @@ const Sleep = ({ navigation, route }) => {
           >
             How many hours did you sleep last night?
           </Text>
+         
         <View
         className="mb-8 px-4 py-5 rounded-2xl"
         style={{
@@ -181,33 +234,92 @@ const Sleep = ({ navigation, route }) => {
         ))}
         </View>
           <View className="items-center mb-4">
-            <TextInput
-              value={hours}
-              onChangeText={handleChange}
-              keyboardType="number-pad"
-              maxLength={2}
-              className="w-32 h-20 text-4xl text-center rounded-2xl"
-              style={{
-                backgroundColor: colors.background,
-                color: colors.text,
-                fontFamily: fonts.semiBold,
-                borderWidth: 2,
-                borderColor: colors.primary,
-                shadowColor: colors.primary,
-                shadowOpacity: 0.15,
-                shadowRadius: 8,
-                shadowOffset: { width: 0, height: 2 },
-                paddingVertical: 0,
-                paddingTop: 0,
-                paddingBottom: 0,
-                marginBottom: 0,
-                textAlignVertical: 'center'
-              }}
-              placeholder="0"
-              placeholderTextColor={colors.text}
-            />
+            {/* Sleep Input Container with Buttons */}
+            <View className="flex-row items-center justify-center mb-4">
+              {/* Decrease Button */}
+              <TouchableOpacity
+                onPress={handleDecrease}
+                disabled={hours === '' || Number(hours) <= 0}
+                className="w-12 h-12 rounded-full items-center justify-center mr-4"
+                style={{
+                  backgroundColor: (hours !== '' && Number(hours) > 0) ? colors.primary : colors.secondary,
+                  opacity: (hours !== '' && Number(hours) > 0) ? 1 : 0.5,
+                  shadowColor: colors.primary,
+                  shadowOpacity: 0.2,
+                  shadowRadius: 4,
+                  shadowOffset: { width: 0, height: 2 }
+                }}
+                activeOpacity={0.7}
+              >
+                <Text
+                  style={{
+                    fontSize: 24,
+                    color: colors.text,
+                    fontFamily: fonts.bold,
+                    lineHeight: 24
+                  }}
+                >
+                  −
+                </Text>
+              </TouchableOpacity>
+
+              {/* Input Field */}
+              <TextInput
+                value={hours}
+                onChangeText={handleChange}
+                keyboardType="decimal-pad"
+                maxLength={4}
+                className="w-32 h-20 text-4xl text-center rounded-2xl"
+                style={{
+                  backgroundColor: colors.background,
+                  color: colors.text,
+                  fontFamily: fonts.semiBold,
+                  borderWidth: 2,
+                  borderColor: colors.primary,
+                  shadowColor: colors.primary,
+                  shadowOpacity: 0.15,
+                  shadowRadius: 8,
+                  shadowOffset: { width: 0, height: 2 },
+                  paddingVertical: 0,
+                  paddingTop: 0,
+                  paddingBottom: 0,
+                  marginBottom: 0,
+                  textAlignVertical: 'center'
+                }}
+                placeholder="0.0"
+                placeholderTextColor={colors.text}
+              />
+
+              {/* Increase Button */}
+              <TouchableOpacity
+                onPress={handleIncrease}
+                disabled={Number(hours) >= 24}
+                className="w-12 h-12 rounded-full items-center justify-center ml-4"
+                style={{
+                  backgroundColor: (Number(hours) < 24) ? colors.primary : colors.secondary,
+                  opacity: (Number(hours) < 24) ? 1 : 0.5,
+                  shadowColor: colors.primary,
+                  shadowOpacity: 0.2,
+                  shadowRadius: 4,
+                  shadowOffset: { width: 0, height: 2 }
+                }}
+                activeOpacity={0.7}
+              >
+                <Text
+                  style={{
+                    fontSize: 24,
+                    color: colors.text,
+                    fontFamily: fonts.bold,
+                    lineHeight: 24
+                  }}
+                >
+                  +
+                </Text>
+              </TouchableOpacity>
+            </View>
+
             <Text
-              className="text-lg mt-2"
+              className="text-lg"
               style={{
                 color: colors.text,
                 fontFamily: fonts.semiBold
@@ -261,6 +373,12 @@ const Sleep = ({ navigation, route }) => {
           </TouchableOpacity>
         </View>
       </KeyboardAvoidingView>
+      
+      <ContinueTrackingModal
+        visible={showContinueModal}
+        onContinue={handleContinueTracking}
+        onDone={handleDoneTracking}
+      />
     </SafeAreaView>
   );
 };

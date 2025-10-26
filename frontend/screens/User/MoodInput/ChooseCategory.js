@@ -5,7 +5,8 @@ import { fonts } from '../../../utils/fonts/fonts';
 import { colors } from '../../../utils/colors/colors';
 import { moodDataService } from '../../../services/moodDataService';
 
-const ChooseCategory = ({ navigation }) => {
+const ChooseCategory = ({ navigation, route }) => {
+    const { selectedDate } = route.params || {};
     const categories = [
     { id: 'activity', title: 'Activities', image: require('../../../assets/images/mood/others/activities.png'), screen: 'OverallActivities' },
     { id: 'social', title: 'Social Interactions', image: require('../../../assets/images/mood/others/social.png'), screen: 'Social' },
@@ -16,23 +17,35 @@ const ChooseCategory = ({ navigation }) => {
   const handleCategoryPress = async (categoryId) => {
     const selected = categories.find(cat => cat.id === categoryId);
     if (selected) {
-      // For sleep category, check if there's already a sleep log
+      // For sleep category, check if there's already a sleep log for the selected date
       if (categoryId === 'sleep') {
         try {
-          const result = await moodDataService.getTodaysSleepLog();
-          if (result.success && result.sleepLog) {
+          // If we have a selected date, check for sleep log on that specific date
+          let result;
+          if (selectedDate) {
+            // Check for sleep log on the selected date
+            result = await moodDataService.getTodaysLastMoodLog('sleep', selectedDate);
+          } else {
+            // Check for today's sleep log if no specific date selected
+            result = await moodDataService.getTodaysSleepLog();
+          }
+          
+          if (result.success && (result.sleepLog || result.lastLog)) {
             // If there's already a sleep log, go directly to Sleep screen to update hours
             navigation.navigate('Sleep', { 
               category: categoryId,
               categoryTitle: selected.title,
-              hasExistingLog: true
+              hasExistingLog: true,
+              selectedDate,
+              existingLog: result.sleepLog || result.lastLog
             });
           } else {
             // No existing log, go through TimeSegmentSelector
             navigation.navigate('TimeSegmentSelector', { 
               category: categoryId,
               categoryTitle: selected.title,
-              nextScreen: selected.screen
+              nextScreen: selected.screen,
+              selectedDate
             });
           }
         } catch (error) {
@@ -41,7 +54,8 @@ const ChooseCategory = ({ navigation }) => {
           navigation.navigate('TimeSegmentSelector', { 
             category: categoryId,
             categoryTitle: selected.title,
-            nextScreen: selected.screen
+            nextScreen: selected.screen,
+            selectedDate
           });
         }
       } else {
@@ -49,7 +63,8 @@ const ChooseCategory = ({ navigation }) => {
         navigation.navigate('TimeSegmentSelector', { 
           category: categoryId,
           categoryTitle: selected.title,
-          nextScreen: selected.screen
+          nextScreen: selected.screen,
+          selectedDate
         });
       }
     }
@@ -115,7 +130,7 @@ const ChooseCategory = ({ navigation }) => {
                     fontFamily: fonts.regular
                   }}
                 >
-                  {category.title || 'Untitled'}
+                  {category.title}
                 </Text>
                 <Text className="text-2xl opacity-50" style={{ color: colors.text }}>
                   ›

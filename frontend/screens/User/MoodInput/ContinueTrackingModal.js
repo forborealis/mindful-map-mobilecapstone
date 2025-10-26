@@ -55,10 +55,10 @@ const ContinueTrackingModal = ({ visible, onContinue, onDone }) => {
               className="text-lg"
               style={{
                 color: colors.text,
-                fontFamily: fonts.semiBold
+                fontFamily: fonts.regular
               }}
             >
-              Track Another Category
+              Yes, track another
             </Text>
           </TouchableOpacity>
 

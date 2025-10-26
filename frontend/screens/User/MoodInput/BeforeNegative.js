@@ -28,7 +28,7 @@ const BeforeNegative = ({ navigation, route }) => {
   const [reason, setReason] = useState('');
 
   // Get parameters from previous screens
-  const { category, activity, hrs, selectedTime, beforeValence } = route.params || {};
+  const { category, activity, hrs, selectedTime, selectedDate, beforeValence } = route.params || {};
 
   const isInputEnabled = selectedEmotion && selectedIntensity;
   const isButtonEnabled = isInputEnabled && reason.trim().length > 0;
@@ -42,6 +42,7 @@ const BeforeNegative = ({ navigation, route }) => {
         activity, 
         hrs, 
         selectedTime,
+        selectedDate,
         beforeValence,
         beforeEmotion: selectedEmotion, 
         beforeIntensity: selectedIntensity, 

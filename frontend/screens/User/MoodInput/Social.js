@@ -16,7 +16,7 @@ const Social = ({ navigation, route }) => {
   const [selectedInteraction, setSelectedInteraction] = useState(null);
   
   // Get time data from TimeSegmentSelector
-  const { category, selectedTime, timeSegment } = route.params || {};
+  const { category, selectedTime, timeSegment, selectedDate } = route.params || {};
 
   const interactions = [
     { id: 'alone', title: 'Alone', image: require('../../../assets/images/mood/alone.png') },
@@ -41,7 +41,8 @@ const Social = ({ navigation, route }) => {
         category,
         selectedTime,
         timeSegment,
-        activity: selectedInteraction 
+        activity: selectedInteraction,
+        selectedDate
       });
     }
   };

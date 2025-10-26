@@ -16,7 +16,7 @@ const OverallActivities = ({ navigation, route }) => {
   const [selectedActivity, setSelectedActivity] = useState(null);
   
   // Get time data from TimeSegmentSelector
-  const { category, selectedTime, timeSegment } = route.params || {};
+  const { category, selectedTime, timeSegment, selectedDate } = route.params || {};
 
   const activities = [
     { id: 'study', title: 'Study', image: require('../../../assets/images/mood/study.png') },
@@ -35,7 +35,7 @@ const OverallActivities = ({ navigation, route }) => {
 
   const handleSelect = (id) => {
     setSelectedActivity(id);
-    //console.log('Selected activity:', id);
+    console.log('Selected activity:', id);
   };
 
   const handleSubmit = () => {
@@ -44,7 +44,8 @@ const OverallActivities = ({ navigation, route }) => {
         category,
         selectedTime,
         timeSegment,
-        activity: selectedActivity 
+        activity: selectedActivity,
+        selectedDate
       });
     }
   };

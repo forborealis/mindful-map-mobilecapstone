@@ -14,11 +14,11 @@ const BeforeValence = ({ navigation, route }) => {
   const [selected, setSelected] = useState(null);
   
   // Get parameters from previous screen
-  const { category, activity, hrs, selectedTime } = route.params || {};
+  const { category, activity, hrs, selectedTime, selectedDate } = route.params || {};
 
   const handleSelect = (id) => {
     setSelected(id);
-    const params = { category, activity, hrs, selectedTime, beforeValence: id };
+    const params = { category, activity, hrs, selectedTime, selectedDate, beforeValence: id };
     
     if (id === 'positive') {
       navigation.navigate('BeforePositive', params);

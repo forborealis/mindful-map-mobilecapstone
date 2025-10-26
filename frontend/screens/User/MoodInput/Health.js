@@ -16,7 +16,7 @@ const Health = ({ navigation, route }) => {
   const [selectedHealth, setSelectedHealth] = useState(null);
   
   // Get time data from TimeSegmentSelector
-  const { category, selectedTime, timeSegment } = route.params || {};
+  const { category, selectedTime, timeSegment, selectedDate } = route.params || {};
 
   const healthActivities = [
     { id: 'jog', title: 'Jog', image: require('../../../assets/images/mood/jog.png') },
@@ -42,7 +42,8 @@ const Health = ({ navigation, route }) => {
         category,
         selectedTime,
         timeSegment,
-        activity: selectedHealth 
+        activity: selectedHealth,
+        selectedDate
       });
     }
   };

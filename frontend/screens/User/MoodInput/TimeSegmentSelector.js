@@ -5,7 +5,7 @@ import { fonts } from '../../../utils/fonts/fonts';
 import { colors } from '../../../utils/colors/colors';
 
 const TimeSegmentSelector = ({ navigation, route }) => {
-  const { category, activity, categoryTitle, nextScreen } = route.params || {};
+  const { category, activity, categoryTitle, nextScreen, selectedDate } = route.params || {};
   
   const [rememberTime, setRememberTime] = useState(null); // null, true, false
   const [selectedTime, setSelectedTime] = useState(null);
@@ -74,22 +74,23 @@ const TimeSegmentSelector = ({ navigation, route }) => {
 
     let timeValue = null;
     
+    // Use selectedDate if provided, otherwise use current date
+    const baseDate = selectedDate ? new Date(selectedDate) : new Date();
+    
     if (timeType === 'specific') {
       // Convert 12-hour format to 24-hour and create date
       let hour = parseInt(customHour);
       if (customPeriod === 'PM' && hour !== 12) hour += 12;
       if (customPeriod === 'AM' && hour === 12) hour = 0;
       
-      const now = new Date();
-      timeValue = new Date(now.getFullYear(), now.getMonth(), now.getDate(), hour, parseInt(customMinute), 0).toISOString();
+      timeValue = new Date(baseDate.getFullYear(), baseDate.getMonth(), baseDate.getDate(), hour, parseInt(customMinute), 0).toISOString();
     } else {
       // Create a time based on the middle of the segment
-      const now = new Date();
       const segmentTimes = {
-        'morning': new Date(now.getFullYear(), now.getMonth(), now.getDate(), 9, 0, 0),
-        'afternoon': new Date(now.getFullYear(), now.getMonth(), now.getDate(), 14, 30, 0),
-        'evening': new Date(now.getFullYear(), now.getMonth(), now.getDate(), 19, 0, 0),
-        'night': new Date(now.getFullYear(), now.getMonth(), now.getDate(), 23, 30, 0)
+        'morning': new Date(baseDate.getFullYear(), baseDate.getMonth(), baseDate.getDate(), 9, 0, 0),
+        'afternoon': new Date(baseDate.getFullYear(), baseDate.getMonth(), baseDate.getDate(), 14, 30, 0),
+        'evening': new Date(baseDate.getFullYear(), baseDate.getMonth(), baseDate.getDate(), 19, 0, 0),
+        'night': new Date(baseDate.getFullYear(), baseDate.getMonth(), baseDate.getDate(), 23, 30, 0)
       };
       timeValue = segmentTimes[selectedTime].toISOString();
     }
@@ -100,7 +101,8 @@ const TimeSegmentSelector = ({ navigation, route }) => {
         category,
         activity,
         selectedTime: timeValue,
-        timeSegment: timeType === 'segment' ? selectedTime : null
+        timeSegment: timeType === 'segment' ? selectedTime : null,
+        selectedDate
       });
     } 
     // If sleep category, go directly to Sleep screen
@@ -108,7 +110,8 @@ const TimeSegmentSelector = ({ navigation, route }) => {
       navigation.navigate('Sleep', {
         category,
         selectedTime: timeValue,
-        timeSegment: timeType === 'segment' ? selectedTime : null
+        timeSegment: timeType === 'segment' ? selectedTime : null,
+        selectedDate
       });
     }
     // Otherwise, go to the appropriate activity selection screen
@@ -116,7 +119,8 @@ const TimeSegmentSelector = ({ navigation, route }) => {
       navigation.navigate(nextScreen, {
         category,
         selectedTime: timeValue,
-        timeSegment: timeType === 'segment' ? selectedTime : null
+        timeSegment: timeType === 'segment' ? selectedTime : null,
+        selectedDate
       });
     }
   };
@@ -345,6 +349,59 @@ const TimeSegmentSelector = ({ navigation, route }) => {
             </View>
           </TouchableOpacity>
         </View>
+        )}
+
+        {/* Time Preview Section */}
+        {selectedTime && (
+          <View 
+            className="mb-6 p-4 rounded-2xl"
+            style={{ 
+              backgroundColor: 'rgba(59, 130, 246, 0.1)', 
+              borderWidth: 1.5,
+              borderColor: '#3B82F6', 
+              borderStyle: 'dashed'
+            }}
+          >
+            <Text 
+              className="text-center text-sm mb-2"
+              style={{ 
+                color: colors.text,
+                fontFamily: fonts.medium,
+                opacity: 0.8
+              }}
+            >
+              📅 Time to be saved:
+            </Text>
+            <Text 
+              className="text-center text-lg"
+              style={{ 
+                color: colors.text,
+                fontFamily: fonts.semiBold
+              }}
+            >
+              {timeType === 'specific' 
+                ? formatCustomTime()
+                : selectedTime === 'morning' ? '9:00 AM'
+                : selectedTime === 'afternoon' ? '2:30 PM'
+                : selectedTime === 'evening' ? '7:00 PM'
+                : selectedTime === 'night' ? '11:30 PM'
+                : ''
+              }
+            </Text>
+            <Text 
+              className="text-center text-xs mt-1"
+              style={{ 
+                color: colors.text,
+                fontFamily: fonts.regular,
+                opacity: 0.6
+              }}
+            >
+              {timeType === 'specific' 
+                ? 'Exact time you specified'
+                : `Default time for ${selectedTime} period`
+              }
+            </Text>
+          </View>
         )}
 
         {/* Continue Button */}
