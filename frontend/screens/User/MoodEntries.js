@@ -477,9 +477,9 @@ const MoodEntries = ({ navigation }) => {
   return (
     <View style={{ flex: 1, backgroundColor: colors.background }}>
       <View style={{
-        paddingTop: 40,
-        paddingHorizontal: 18,
-        paddingBottom: 18,
+        paddingTop: 30,
+        paddingHorizontal: 10,
+        paddingBottom: 5,
         backgroundColor: colors.secondary,
         borderBottomWidth: 1,
         borderBottomColor: colors.primary
