@@ -38,14 +38,16 @@ export const authService = {
           return { isAuthenticated: false, user: null, token: null };
         }
       }
+
+      // Wait for Firebase Auth to be ready before checking currentUser
+      console.log('Waiting for Firebase Auth to initialize...');
+      const firebaseUser = await this.waitForFirebaseAuth();
       
-      // Check if the current Firebase user exists and get fresh token
-      const currentUser = auth.currentUser;
-      console.log('Current Firebase user in checkAuthStatus:', currentUser ? currentUser.email : 'None');
+      console.log('Firebase Auth ready. Current user:', firebaseUser ? firebaseUser.email : 'None');
       
-      if (currentUser) {
+      if (firebaseUser) {
         try {
-          const freshToken = await currentUser.getIdToken(false);
+          const freshToken = await firebaseUser.getIdToken(false);
           await AsyncStorage.setItem('token', freshToken);
           console.log('Valid session found for:', user.email);
           console.log('Fresh token length:', freshToken.length);
@@ -56,11 +58,12 @@ export const authService = {
           return { isAuthenticated: false, user: null, token: null };
         }
       } else {
-        console.log('No Firebase user found, but AsyncStorage has user data. This indicates a session mismatch.');
+        // No Firebase user found after waiting - session mismatch
+        console.log('No Firebase user found after auth initialization. Session mismatch detected.');
+        console.log('Clearing local session to prevent future errors.');
+        await this.clearSession();
+        return { isAuthenticated: false, user: null, token: null };
       }
-      
-      console.log('Valid session found for:', user.email);
-      return { isAuthenticated: true, user, token };
       
     } catch (error) {
       console.error('Error checking auth status:', error);
@@ -342,6 +345,31 @@ export const authService = {
     } catch (error) {
       return { success: false };
     }
+  },
+
+  async waitForFirebaseAuth() {
+    return new Promise((resolve) => {
+      let hasResolved = false;
+      
+      const unsubscribe = auth.onAuthStateChanged((user) => {
+        if (!hasResolved) {
+          hasResolved = true;
+          console.log('Firebase auth state changed:', user ? user.email : 'No user');
+          unsubscribe();
+          resolve(user);
+        }
+      });
+      
+      // Fallback timeout in case the listener doesn't fire
+      setTimeout(() => {
+        if (!hasResolved) {
+          hasResolved = true;
+          console.log('Firebase auth state timeout, proceeding with current user...');
+          unsubscribe();
+          resolve(auth.currentUser);
+        }
+      }, 3000); // Increased to 3 seconds for better reliability
+    });
   },
 
   async getFreshToken() {

@@ -52,16 +52,37 @@ const TimeSegmentSelector = ({ navigation, route }) => {
     
     return selectedTime > now;
   };
+
+  // Check if a time segment is in the future or hasn't occurred yet
+  const isSegmentAvailable = (segmentId) => {
+    if (!isToday()) return true; // All segments available for past dates
+    
+    const now = new Date();
+    const currentHour = now.getHours();
+    
+    switch(segmentId) {
+      case 'early-morning': // 12:00 AM - 5:59 AM
+        return currentHour >= 0 && currentHour <= 5 ? true : currentHour >= 6; // Available if currently in range or past 6 AM
+      case 'morning': // 6:00 AM - 11:59 AM
+        return currentHour >= 6;
+      case 'afternoon': // 12:00 PM - 5:59 PM
+        return currentHour >= 12;
+      case 'evening': // 6:00 PM - 11:59 PM
+        return currentHour >= 18;
+      default:
+        return true;
+    }
+  };
   
   const hourScrollRef = useRef(null);
   const minuteScrollRef = useRef(null);
   const periodScrollRef = useRef(null);
 
   const timeSegments = [
-    { id: 'morning', label: 'Morning', time: '06:00 - 12:00', icon: '🌅', midTime: '09:00' },
-    { id: 'afternoon', label: 'Afternoon', time: '12:00 - 17:00', icon: '☀️', midTime: '14:30' },
-    { id: 'evening', label: 'Evening', time: '17:00 - 22:00', icon: '🌇', midTime: '19:30' },
-    { id: 'night', label: 'Night', time: '22:00 - 06:00', icon: '🌙', midTime: '02:00' }
+    { id: 'early-morning', label: 'Early Morning', time: '12:00 AM - 5:59 AM', icon: '🌌', midTime: '03:00' },
+    { id: 'morning', label: 'Morning', time: '6:00 AM - 11:59 AM', icon: '🌅', midTime: '09:00' },
+    { id: 'afternoon', label: 'Afternoon', time: '12:00 PM - 5:59 PM', icon: '☀️', midTime: '15:00' },
+    { id: 'evening', label: 'Evening', time: '6:00 PM - 11:59 PM', icon: '🌇', midTime: '21:00' }
   ];
 
   const handleTimeRememberChoice = (remembers) => {
@@ -75,6 +96,19 @@ const TimeSegmentSelector = ({ navigation, route }) => {
       setTimeType('segment');
     } else if (remembers === true) {
       setTimeType('specific');
+      // Only auto-set current time for today, not for past dates
+      if (isToday()) {
+        const currentTime = getCurrentTime();
+        setCustomHour(currentTime.hour);
+        setCustomMinute(currentTime.minute);
+        setCustomPeriod(currentTime.period);
+        setSelectedTime('current');
+      } else {
+        // For past dates, reset to default time picker values
+        setCustomHour('12');
+        setCustomMinute('00');
+        setCustomPeriod('PM');
+      }
     } else if (remembers === 'current') {
       setTimeType('current');
       setSelectedTime('current');
@@ -95,6 +129,16 @@ const TimeSegmentSelector = ({ navigation, route }) => {
   };
 
   const handleTimeConfirm = () => {
+    // Check if the selected time is in the future (for today only)
+    if (isToday() && isTimeInFuture(customHour, customMinute, customPeriod)) {
+      Alert.alert(
+        'Invalid Time', 
+        'Please choose a time that has already passed today.',
+        [{ text: 'OK' }]
+      );
+      return;
+    }
+    
     setSelectedTime('specific');
     setTimeType('specific');
     setShowTimeModal(false);
@@ -140,7 +184,34 @@ const TimeSegmentSelector = ({ navigation, route }) => {
 
     const snapToNearestItem = (y) => {
       const index = Math.round(y / ITEM_HEIGHT);
-      const clampedIndex = Math.max(0, Math.min(index, data.length - 1));
+      let clampedIndex = Math.max(0, Math.min(index, data.length - 1));
+      
+      // Find the nearest non-disabled item
+      if (isItemDisabled(data[clampedIndex])) {
+        // Try to find a non-disabled item before this index
+        let foundValidIndex = -1;
+        for (let i = clampedIndex - 1; i >= 0; i--) {
+          if (!isItemDisabled(data[i])) {
+            foundValidIndex = i;
+            break;
+          }
+        }
+        
+        // If no valid item found before, try after
+        if (foundValidIndex === -1) {
+          for (let i = clampedIndex + 1; i < data.length; i++) {
+            if (!isItemDisabled(data[i])) {
+              foundValidIndex = i;
+              break;
+            }
+          }
+        }
+        
+        if (foundValidIndex !== -1) {
+          clampedIndex = foundValidIndex;
+        }
+      }
+      
       const targetY = clampedIndex * ITEM_HEIGHT;
       
       scrollRef.current?.scrollTo({
@@ -193,14 +264,16 @@ const TimeSegmentSelector = ({ navigation, route }) => {
     const isItemDisabled = (item) => {
       if (!isToday()) return false;
       
-      if (label === 'Hour') {
-        return isTimeInFuture(item, customMinute, customPeriod);
-      } else if (label === 'Minute') {
-        return isTimeInFuture(customHour, item, customPeriod);
-      } else if (label === 'Period') {
-        return isTimeInFuture(customHour, customMinute, item);
-      }
-      return false;
+      let testHour = customHour;
+      let testMinute = customMinute;
+      let testPeriod = customPeriod;
+      
+      // Update the test value based on which picker this is for
+      if (label === 'Hour') testHour = item;
+      if (label === 'Minute') testMinute = item;
+      if (label === 'Period') testPeriod = item;
+      
+      return isTimeInFuture(testHour, testMinute, testPeriod);
     };
 
     return (
@@ -305,13 +378,18 @@ const TimeSegmentSelector = ({ navigation, route }) => {
     // Use selectedDate if provided, otherwise use current date
     const baseDate = selectedDate ? new Date(selectedDate) : new Date();
     
-    if (timeType === 'specific' || timeType === 'current') {
-      // Convert 12-hour format to 24-hour and create date
-      let hour = parseInt(customHour);
-      if (customPeriod === 'PM' && hour !== 12) hour += 12;
-      if (customPeriod === 'AM' && hour === 12) hour = 0;
-      
-      timeValue = new Date(baseDate.getFullYear(), baseDate.getMonth(), baseDate.getDate(), hour, parseInt(customMinute), 0).toISOString();
+    if (timeType === 'specific') {
+      if (selectedTime === 'current' && isToday()) {
+        // Use current time for today
+        timeValue = new Date().toISOString();
+      } else {
+        // Convert 12-hour format to 24-hour and create date
+        let hour = parseInt(customHour);
+        if (customPeriod === 'PM' && hour !== 12) hour += 12;
+        if (customPeriod === 'AM' && hour === 12) hour = 0;
+        
+        timeValue = new Date(baseDate.getFullYear(), baseDate.getMonth(), baseDate.getDate(), hour, parseInt(customMinute), 0).toISOString();
+      }
     } else {
       // Use the middle time of the selected segment
       const segmentTime = createTimeFromSegment(selectedTime, baseDate);
@@ -412,120 +490,52 @@ const TimeSegmentSelector = ({ navigation, route }) => {
               fontFamily: fonts.semiBold
             }}
           >
-            {isToday() ? 'Set the time for this entry' : 'Do you remember the specific time?'}
+            Do you remember the specific time?
           </Text>
           
-          {isToday() ? (
-            // Today's options: Only Current time or Specific time (no time period since it's fresh in memory)
-            <View className="flex-row gap-4 mb-6">
-              <TouchableOpacity
-                onPress={() => handleTimeRememberChoice('current')}
-                className={`py-4 px-4 rounded-xl ${
-                  rememberTime === 'current' 
-                    ? 'bg-purple-100 border-2 border-purple-500' 
-                    : 'bg-gray-100 border-2 border-gray-300'
-                }`}
-                style={{ width: '48%' }}
-              >
-                <View className="items-center">
-                  <Text className="text-2xl mb-2">🕐</Text>
-                  <Text 
-                    className={`font-medium text-center ${
-                      rememberTime === 'current' ? 'text-purple-700' : 'text-gray-700'
-                    }`}
-                    style={{ fontFamily: fonts.medium }}
-                  >
-                    Current time
-                  </Text>
-                  <Text 
-                    className={`text-xs mt-1 text-center ${
-                      rememberTime === 'current' ? 'text-purple-600' : 'text-gray-600'
-                    }`}
-                    style={{ fontFamily: fonts.regular }}
-                    numberOfLines={1}
-                    adjustsFontSizeToFit={true}
-                  >
-                    {getCurrentTime().fullTime}
-                  </Text>
-                </View>
-              </TouchableOpacity>
-              
-              <TouchableOpacity
-                onPress={() => handleTimeRememberChoice(true)}
-                className={`py-4 px-4 rounded-xl ${
-                  rememberTime === true 
-                    ? 'bg-green-100 border-2 border-green-500' 
-                    : 'bg-gray-100 border-2 border-gray-300'
-                }`}
-                style={{ width: '48%' }}
-              >
-                <View className="items-center">
-                  <Text className="text-2xl mb-2">⏰</Text>
-                  <Text 
-                    className={`font-medium text-center ${
-                      rememberTime === true ? 'text-green-700' : 'text-gray-700'
-                    }`}
-                    style={{ fontFamily: fonts.medium }}
-                  >
-                    Specific time
-                  </Text>
-                  <Text 
-                    className={`text-xs mt-1 text-center ${
-                      rememberTime === true ? 'text-green-600' : 'text-gray-600'
-                    }`}
-                    style={{ fontFamily: fonts.regular }}
-                  >
-                    Set exact time
-                  </Text>
-                </View>
-              </TouchableOpacity>
-            </View>
-          ) : (
-            // Past date options: Remember specific time or not
-            <View className="flex-row gap-4 mb-6">
-              <TouchableOpacity
-                onPress={() => handleTimeRememberChoice(true)}
-                className={`flex-1 py-4 px-4 rounded-xl ${
-                  rememberTime === true 
-                    ? 'bg-green-100 border-2 border-green-500' 
-                    : 'bg-gray-100 border-2 border-gray-300'
-                }`}
-              >
-                <View className="items-center">
-                  <Text className="text-2xl mb-2">⏰</Text>
-                  <Text 
-                    className={`font-medium ${
-                      rememberTime === true ? 'text-green-700' : 'text-gray-700'
-                    }`}
-                    style={{ fontFamily: fonts.medium }}
-                  >
-                    Yes, I remember
-                  </Text>
-                </View>
-              </TouchableOpacity>
-              
-              <TouchableOpacity
-                onPress={() => handleTimeRememberChoice(false)}
-                className={`flex-1 py-4 px-4 rounded-xl ${
-                  rememberTime === false 
-                    ? 'bg-blue-100 border-2 border-blue-500' 
-                    : 'bg-gray-100 border-2 border-gray-300'
+          <View className="flex-row gap-4 mb-6">
+            <TouchableOpacity
+              onPress={() => handleTimeRememberChoice(true)}
+              className={`flex-1 py-4 px-4 rounded-xl ${
+                rememberTime === true 
+                  ? 'bg-green-100 border-2 border-green-500' 
+                  : 'bg-gray-100 border-2 border-gray-300'
+              }`}
+            >
+              <View className="items-center">
+                <Text className="text-2xl mb-2">⏰</Text>
+                <Text 
+                  className={`font-medium ${
+                    rememberTime === true ? 'text-green-700' : 'text-gray-700'
                   }`}
+                  style={{ fontFamily: fonts.medium }}
                 >
-                <View className="items-center">
-                  <Text className="text-2xl mb-2">❓</Text>
-                  <Text 
-                    className={`font-medium ${
-                      rememberTime === false ? 'text-blue-700' : 'text-gray-700'
-                    }`}
-                    style={{ fontFamily: fonts.medium }}
-                  >
-                    No, I don't
-                  </Text>
-                </View>
-              </TouchableOpacity>
-            </View>
-          )}
+                  Yes, I remember
+                </Text>
+              </View>
+            </TouchableOpacity>
+            
+            <TouchableOpacity
+              onPress={() => handleTimeRememberChoice(false)}
+              className={`flex-1 py-4 px-4 rounded-xl ${
+                rememberTime === false 
+                  ? 'bg-blue-100 border-2 border-blue-500' 
+                  : 'bg-gray-100 border-2 border-gray-300'
+                }`}
+              >
+              <View className="items-center">
+                <Text className="text-2xl mb-2">❓</Text>
+                <Text 
+                  className={`font-medium ${
+                    rememberTime === false ? 'text-blue-700' : 'text-gray-700'
+                  }`}
+                  style={{ fontFamily: fonts.medium }}
+                >
+                  No, I don't
+                </Text>
+              </View>
+            </TouchableOpacity>
+          </View>
         </View>
 
         {/* Time Segments - If they don't remember */}
@@ -540,94 +550,111 @@ const TimeSegmentSelector = ({ navigation, route }) => {
             >
               Select the time period when it happened
             </Text>
+            
+            {isToday() && (
+              <View 
+                className="mb-4 p-3 rounded-xl"
+                style={{ 
+                  backgroundColor: 'rgba(59, 130, 246, 0.1)', 
+                  borderWidth: 1,
+                  borderColor: '#3B82F6'
+                }}
+              >
+                <Text 
+                  className="text-sm text-center"
+                  style={{ 
+                    color: '#1E40AF',
+                    fontFamily: fonts.medium
+                  }}
+                >
+                  ℹ️ Only time periods that have already occurred today are available
+                </Text>
+              </View>
+            )}
           
           <View className="gap-3">
-            {timeSegments.map((segment) => (
-              <TouchableOpacity
-                key={segment.id}
-                onPress={() => handleSegmentPress(segment)}
-                className="rounded-2xl p-4 border-2 active:scale-95"
-                style={{ 
-                  backgroundColor: selectedTime === segment.id && timeType === 'segment' 
-                    ? 'rgba(78, 205, 196, 0.1)' // light mint green background for selected
-                    : 'white',
-                  borderColor: selectedTime === segment.id && timeType === 'segment'
-                    ? '#4ECDC4' // darker mint green border for selected
-                    : '#B0E5E1' // lighter mint green border for unselected
-                }}
-                activeOpacity={0.8}
-              >
-                <View className="flex-row items-center">
-                  <Text className="text-2xl mr-3">{segment.icon}</Text>
-                  <View className="flex-1">
+            {timeSegments.map((segment) => {
+              const isAvailable = isSegmentAvailable(segment.id);
+              const isDisabled = !isAvailable;
+              
+              return (
+                <TouchableOpacity
+                  key={segment.id}
+                  onPress={() => !isDisabled && handleSegmentPress(segment)}
+                  disabled={isDisabled}
+                  className="rounded-2xl p-4 border-2"
+                  style={{ 
+                    backgroundColor: selectedTime === segment.id && timeType === 'segment' 
+                      ? 'rgba(78, 205, 196, 0.1)'
+                      : isDisabled 
+                        ? '#F3F4F6' 
+                        : 'white',
+                    borderColor: selectedTime === segment.id && timeType === 'segment'
+                      ? '#4ECDC4' 
+                      : isDisabled
+                        ? '#D1D5DB'
+                        : '#B0E5E1',
+                    opacity: isDisabled ? 0.6 : 1
+                  }}
+                  activeOpacity={isDisabled ? 1 : 0.8}
+                >
+                  <View className="flex-row items-center">
                     <Text 
-                      className="text-lg"
-                      style={{ 
-                        color: colors.text,
-                        fontFamily: selectedTime === segment.id && timeType === 'segment' 
-                          ? fonts.semiBold 
-                          : fonts.medium
-                      }}
+                      className="text-2xl mr-3"
+                      style={{ opacity: isDisabled ? 0.5 : 1 }}
                     >
-                      {segment.label}
+                      {segment.icon}
                     </Text>
-                    <Text 
-                      className="text-sm opacity-70"
-                      style={{ 
-                        color: colors.text,
-                        fontFamily: fonts.regular
-                      }}
-                    >
-                      {segment.time}
-                    </Text>
-                  </View>
-                  {selectedTime === segment.id && timeType === 'segment' && (
-                    <View className="ml-2">
-                      <Text className="text-xl" style={{ color: '#4ECDC4' }}>✓</Text>
+                    <View className="flex-1">
+                      <View className="flex-row items-center">
+                        <Text 
+                          className="text-lg"
+                          style={{ 
+                            color: isDisabled ? '#9CA3AF' : colors.text,
+                            fontFamily: selectedTime === segment.id && timeType === 'segment' 
+                              ? fonts.semiBold 
+                              : fonts.medium
+                          }}
+                        >
+                          {segment.label}
+                        </Text>
+                        {isDisabled && (
+                          <Text 
+                            className="text-xs ml-2 px-2 py-1 rounded-full"
+                            style={{ 
+                              backgroundColor: '#FEE2E2',
+                              color: '#DC2626',
+                              fontFamily: fonts.medium
+                            }}
+                          >
+                            Not yet
+                          </Text>
+                        )}
+                      </View>
+                      <Text 
+                        className="text-sm opacity-70"
+                        style={{ 
+                          color: isDisabled ? '#9CA3AF' : colors.text,
+                          fontFamily: fonts.regular
+                        }}
+                      >
+                        {segment.time}
+                      </Text>
                     </View>
-                  )}
-                </View>
-              </TouchableOpacity>
-            ))}
+                    {selectedTime === segment.id && timeType === 'segment' && !isDisabled && (
+                      <View className="ml-2">
+                        <Text className="text-xl" style={{ color: '#4ECDC4' }}>✓</Text>
+                      </View>
+                    )}
+                  </View>
+                </TouchableOpacity>
+              );
+            })}
           </View>
         </View>
         )}
 
-        {/* Current Time Display - If they chose current time */}
-        {rememberTime === 'current' && (
-          <View className="mb-8">
-            <Text 
-              className="text-lg mb-4"
-              style={{ 
-                color: colors.text,
-                fontFamily: fonts.semiBold
-              }}
-            >
-              Current time selected
-            </Text>
-          
-            <View
-              className="rounded-2xl p-4 border-2"
-              style={{ 
-                backgroundColor: 'rgba(147, 51, 234, 0.1)', // light purple background
-                borderColor: '#9333EA' // purple border
-              }}
-            >
-              <View className="flex-row items-center justify-center">
-                <Text className="text-2xl mr-3">🕐</Text>
-                <Text 
-                  className="text-lg"
-                  style={{ 
-                    color: colors.text,
-                    fontFamily: fonts.semiBold
-                  }}
-                >
-                  {getCurrentTime().fullTime}
-                </Text>
-              </View>
-            </View>
-          </View>
-        )}
+
 
         {/* Specific Time Input - If they remember */}
         {rememberTime === true && (
@@ -639,86 +666,76 @@ const TimeSegmentSelector = ({ navigation, route }) => {
                 fontFamily: fonts.semiBold
               }}
             >
-              Enter the specific time
+              {isToday() ? 'Time for this entry' : 'Enter the specific time'}
             </Text>
-          
-          <TouchableOpacity
-            onPress={handleSpecificTimePress}
-            className="rounded-2xl p-4 border-2 active:scale-95"
-            style={{ 
-              backgroundColor: 'white',
-              borderColor: '#4ECDC4' // mint green
-            }}
-            activeOpacity={0.8}
-          >
-            <View className="flex-row items-center justify-center">
-              <Text className="text-2xl mr-3">🕒</Text>
-              <Text 
-                className="text-lg"
+            
+            {/* Show current time preview if auto-selected for today */}
+            {isToday() && selectedTime === 'current' && (
+              <View
+                className="rounded-2xl p-4 border-2 mb-4"
                 style={{ 
-                  color: colors.text,
-                  fontFamily: fonts.semiBold
+                  backgroundColor: 'rgba(34, 197, 94, 0.1)', 
+                  borderColor: '#22C55E'
                 }}
               >
-                {selectedTime === 'specific' 
-                  ? formatCustomTime()
-                  : 'Tap to set time'
-                }
-              </Text>
-            </View>
-          </TouchableOpacity>
+                <View className="flex-row items-center justify-center">
+                  <Text className="text-2xl mr-3">⏰</Text>
+                  <Text 
+                    className="text-lg"
+                    style={{ 
+                      color: colors.text,
+                      fontFamily: fonts.semiBold
+                    }}
+                  >
+                    Current Time: {formatCustomTime()}
+                  </Text>
+                  <View className="ml-3">
+                    <Text className="text-xl" style={{ color: '#22C55E' }}>✓</Text>
+                  </View>
+                </View>
+              </View>
+            )}
+          
+            <TouchableOpacity
+              onPress={handleSpecificTimePress}
+              className="rounded-2xl p-4 border-2 active:scale-95"
+              style={{ 
+                backgroundColor: selectedTime === 'specific'
+                  ? 'rgba(78, 205, 196, 0.1)' 
+                  : 'white',
+                borderColor: selectedTime === 'specific'
+                  ? '#4ECDC4' 
+                  : '#B0E5E1'
+              }}
+              activeOpacity={0.8}
+            >
+              <View className="flex-row items-center justify-center">
+                <Text className="text-2xl mr-3">🕒</Text>
+                <Text 
+                  className="text-lg"
+                  style={{ 
+                    color: colors.text,
+                    fontFamily: fonts.semiBold
+                  }}
+                >
+                  {selectedTime === 'specific' 
+                    ? formatCustomTime()
+                    : (isToday() && selectedTime === 'current')
+                      ? 'Change to different time'
+                      : 'Tap to set time'
+                  }
+                </Text>
+                {selectedTime === 'specific' && (
+                  <View className="ml-2">
+                    <Text className="text-xl" style={{ color: '#4ECDC4' }}>✓</Text>
+                  </View>
+                )}
+              </View>
+            </TouchableOpacity>
         </View>
         )}
 
-        {/* Time Preview Section - Only for segment selection */}
-        {selectedTime && timeType === 'segment' && (
-          <View 
-            className="mb-6 p-4 rounded-2xl"
-            style={{ 
-              backgroundColor: 'rgba(59, 130, 246, 0.1)', 
-              borderWidth: 1.5,
-              borderColor: '#3B82F6', 
-              borderStyle: 'dashed'
-            }}
-          >
-            <Text 
-              className="text-center text-sm mb-2"
-              style={{ 
-                color: colors.text,
-                fontFamily: fonts.medium,
-                opacity: 0.8
-              }}
-            >
-              📅 Time to be saved:
-            </Text>
-            <Text 
-              className="text-center text-lg"
-              style={{ 
-                color: colors.text,
-                fontFamily: fonts.semiBold
-              }}
-            >
-              {(() => {
-                const segment = timeSegments.find(s => s.id === selectedTime);
-                if (!segment) return '';
-                const [hours, minutes] = segment.midTime.split(':').map(Number);
-                const period = hours >= 12 ? 'PM' : 'AM';
-                const displayHour = hours === 0 ? 12 : hours > 12 ? hours - 12 : hours;
-                return `${displayHour}:${minutes.toString().padStart(2, '0')} ${period}`;
-              })()}
-            </Text>
-            <Text 
-              className="text-center text-xs mt-1"
-              style={{ 
-                color: colors.text,
-                fontFamily: fonts.regular,
-                opacity: 0.6
-              }}
-            >
-              Middle time for {selectedTime} period
-            </Text>
-          </View>
-        )}
+
 
         {/* Continue Button */}
         <TouchableOpacity
@@ -732,13 +749,11 @@ const TimeSegmentSelector = ({ navigation, route }) => {
           style={{
             backgroundColor: (rememberTime !== null && 
                              ((rememberTime === true && selectedTime) ||
-                              (rememberTime === false && selectedTime) ||
-                              (rememberTime === 'current')))
+                              (rememberTime === false && selectedTime)))
                            ? colors.primary : colors.secondary,
             opacity: (rememberTime !== null && 
                      ((rememberTime === true && selectedTime) ||
-                      (rememberTime === false && selectedTime) ||
-                      (rememberTime === 'current')))
+                      (rememberTime === false && selectedTime)))
                     ? 1 : 0.5
           }}
           activeOpacity={0.8}
@@ -751,9 +766,10 @@ const TimeSegmentSelector = ({ navigation, route }) => {
               lineHeight: 24
             }}
           >
-            {rememberTime === null ? (isToday() ? 'Choose how to set time' : 'Choose if you remember the time') :
+            {rememberTime === null ? 'Choose if you remember the time' :
              rememberTime === true && !selectedTime ? 'Set specific time' :
              rememberTime === false && !selectedTime ? 'Select a time period' :
+             selectedTime === 'current' ? 'Continue with Current Time' :
              'Continue'}
           </Text>
         </TouchableOpacity>
