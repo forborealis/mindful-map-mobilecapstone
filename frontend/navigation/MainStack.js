@@ -20,6 +20,7 @@ import MoodEntries from '../screens/User/MoodEntries';
 import SideBarNav from '../components/SideBarNav';
 import StatisticsDashboard from '../screens/User/Statistics/StatisticsDashboard';
 import MoodCount from '../screens/User/Statistics/MoodCount';
+import ActivitiesStatistics from '../screens/User/Statistics/ActivitiesStatistics';
 
 const Stack = createStackNavigator();
 
@@ -114,6 +115,11 @@ export default function MainStack({ initialRoute }) {
       <Stack.Screen      
         name="MoodCount" 
         component={MoodCount}
+        options={{ headerShown: false }}
+      />
+      <Stack.Screen
+        name="ActivitiesStatistics"
+        component={ActivitiesStatistics}
         options={{ headerShown: false }}
       />
     </Stack.Navigator>

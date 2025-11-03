@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { View, Text, TouchableOpacity, Image, Dimensions, ScrollView } from 'react-native';
 import { PieChart } from 'react-native-chart-kit';
+import { useNavigation } from '@react-navigation/native';
 import { moodDataService } from '../../../services/moodDataService';
 import { colors } from '../../../utils/colors/colors';
 import { fonts } from '../../../utils/fonts/fonts';
@@ -22,7 +23,6 @@ const moodImages = {
   relaxed: require('../../../assets/images/mood/emotions/relaxed.png'),
 };
 
-// Mood color mapping as requested
 const moodColorMap = {
   calm: '#8FABD4',
   relaxed: '#59AC77',
@@ -33,7 +33,7 @@ const moodColorMap = {
   sad: '#092b9cff',
   disappointed: '#4e4d4dff',
   angry: '#cc062dff',
-  tense: '#973197ff',
+  tense: '#a854a8ff',
 };
 
 function capitalize(str) {
@@ -41,8 +41,9 @@ function capitalize(str) {
 }
 
 export default function MoodCount() {
+  const navigation = useNavigation();
   const [period, setPeriod] = useState('daily');
-  const [type, setType] = useState('after'); // 'before' or 'after'
+  const [type, setType] = useState('after');
   const [moodCounts, setMoodCounts] = useState({});
   const [total, setTotal] = useState(0);
   const [loading, setLoading] = useState(true);
@@ -73,36 +74,44 @@ export default function MoodCount() {
     setShowSummary(false);
   }
 
-  const chartData = Object.keys(moodCounts)
+  // Sort moods from highest to lowest count
+  const sortedMoodKeys = Object.keys(moodCounts)
     .filter(mood => mood !== '_summary')
-    .map((mood, idx) => {
-      const percent = total ? Math.round((moodCounts[mood] / total) * 100) : 0;
-      return {
-        name: capitalize(mood),
-        population: moodCounts[mood],
-        color: moodColorMap[mood] || '#ccc',
-        legendFontColor: colors.text,
-        legendFontSize: 16,
-        key: mood,
-        percent: percent,
-      };
-    });
+    .sort((a, b) => moodCounts[b] - moodCounts[a]);
+
+  const chartData = sortedMoodKeys.map(mood => {
+    const percent = total ? Math.round((moodCounts[mood] / total) * 100) : 0;
+    return {
+      name: capitalize(mood),
+      population: moodCounts[mood],
+      color: moodColorMap[mood] || '#ccc',
+      legendFontColor: colors.text,
+      legendFontSize: 16,
+      key: mood,
+      percent: percent,
+    };
+  });
 
   let topMood = '';
   if (summary && summary.topMood) {
     topMood = capitalize(summary.topMood);
   }
-  const uniqueMoods = Object.keys(moodCounts).filter(mood => mood !== '_summary');
+  const uniqueMoods = sortedMoodKeys;
   const uniqueCount = uniqueMoods.length;
 
   const moodCardSize = screenWidth * 0.20;
-  const moodCardHeight = moodCardSize + 21;
+  const moodCardHeight = moodCardSize + 20;
 
-  // Mood containers with assigned colors
-  const moodCards = chartData.map((item, idx) => (
-    <View
+  // Mood containers with assigned colors and navigation, sorted by count
+  const moodCards = chartData.map(item => (
+    <TouchableOpacity
       key={item.name}
-      className="rounded-xl mb-1 items-center justify-center"
+      onPress={() => navigation.navigate('ActivitiesStatistics', {
+        mood: item.key,
+        type,
+        period
+      })}
+      activeOpacity={0.8}
       style={{
         width: moodCardSize,
         height: moodCardHeight,
@@ -113,12 +122,16 @@ export default function MoodCount() {
         shadowRadius: 4,
         shadowOffset: { width: 0, height: 1 },
         padding: 6,
-        marginHorizontal: 6, // bring inward
+        marginHorizontal: 6,
+        borderRadius: 16,
+        alignItems: 'center',
+        justifyContent: 'center',
+        marginBottom: 12,
       }}
     >
       <Text
-        className="text-white"
         style={{
+          color: '#fff',
           fontFamily: fonts.semiBold,
           fontSize: 10,
           letterSpacing: 0.5,
@@ -133,16 +146,16 @@ export default function MoodCount() {
       </Text>
       <Image
         source={moodImages[item.name.toLowerCase()]}
-        className="mb-1 rounded-lg"
         style={{
           width: 30,
           height: 30,
+          marginBottom: 2,
         }}
         resizeMode="contain"
       />
       <Text
-        className="text-white "
         style={{
+          color: '#fff',
           fontFamily: fonts.bold,
           fontSize: 15,
           textShadowColor: 'rgba(0,0,0,0.08)',
@@ -153,8 +166,8 @@ export default function MoodCount() {
         {item.population}
       </Text>
       <Text
-        className="text-white "
         style={{
+          color: '#fff',
           fontFamily: fonts.semiBold,
           fontSize: 12,
           opacity: 0.85,
@@ -162,14 +175,14 @@ export default function MoodCount() {
       >
         {item.percent}%
       </Text>
-    </View>
+    </TouchableOpacity>
   ));
 
   // Only 4 per row
   const moodRows = [];
   for (let i = 0; i < moodCards.length; i += 4) {
     moodRows.push(
-      <View key={i} className="flex-row justify-center mb-1">
+      <View key={i} style={{ flexDirection: 'row', justifyContent: 'center', marginBottom: 2 }}>
         {moodCards.slice(i, i + 4)}
       </View>
     );
@@ -179,7 +192,7 @@ export default function MoodCount() {
   function renderPieLabels() {
     if (!chartData.length || !total) return null;
     let angle = -Math.PI / 2;
-    const radius = chartWidth / 2 - 70; // bring labels more inward
+    const radius = chartWidth / 2 - 70;
     return chartData.map((slice, idx) => {
       const sliceAngle = (slice.population / total) * 2 * Math.PI;
       const midAngle = angle + sliceAngle / 2;
@@ -403,7 +416,7 @@ export default function MoodCount() {
               shadowRadius: 6,
               shadowOffset: { width: 0, height: 1 },
             }}>
-            <Text className=" text-lg mb-3 text-center" style={{ color: colors.primary, fontFamily: fonts.semiBold, letterSpacing: 0.5 }}>
+            <Text className="font-bold text-lg mb-3" style={{ color: colors.primary, fontFamily: fonts.bold, letterSpacing: 0.5 }}>
               Summary
             </Text>
             <View className="pl-2">

@@ -502,129 +502,222 @@ export const moodDataService = {
   },
 
   
-    async getAfterEmotionCounts(period = 'week') {
-    try {
-      const result = await this.getUserMoodLogs();
-      if (!result.success) return {};
+async getAfterEmotionCounts(period = 'week') {
+  try {
+    const result = await this.getUserMoodLogs();
+    if (!result.success) return {};
 
-      const logs = result.moodLogs || [];
-      const now = new Date();
+    const logs = result.moodLogs || [];
+    const now = new Date();
 
-      // Get start date for week/month
-      let startDate;
-      if (period === 'week') {
-        // Start of week (Sunday)
-        startDate = new Date(now);
-        startDate.setDate(now.getDate() - now.getDay());
-        startDate.setHours(0, 0, 0, 0);
-      } else {
-        // Start of month
-        startDate = new Date(now.getFullYear(), now.getMonth(), 1);
-      }
-
-      // Filter logs by afterEmotion and date
-      const filtered = logs.filter(log => {
-        const logDate = new Date(log.selectedDate || log.date || log.createdAt);
-        return (
-          log.afterEmotion &&
-          logDate >= startDate
-        );
-      });
-
-      // Count moods
-      const counts = {};
-      filtered.forEach(log => {
-        const mood = log.afterEmotion;
-        counts[mood] = (counts[mood] || 0) + 1;
-      });
-
-      // Add summary logic
-      const entries = Object.entries(counts);
-      let topMood = '', leastMood = '', topType = '', leastType = '', uniqueCount = 0;
-      if (entries.length > 0) {
-        const sorted = entries.sort((a, b) => b[1] - a[1]);
-        topMood = sorted[0][0];
-        leastMood = sorted[sorted.length - 1][0];
-        const positiveMoods = ['happy', 'calm', 'excited', 'pleased', 'relaxed'];
-        topType = positiveMoods.includes(topMood) ? 'positive' : 'negative';
-        leastType = positiveMoods.includes(leastMood) ? 'positive' : 'negative';
-        uniqueCount = entries.length;
-      }
-
-      counts._summary = {
-        topMood,
-        topType,
-        leastMood,
-        leastType,
-        uniqueCount,
-      };
-
-      return counts;
-    } catch (error) {
-      console.error('Error in getAfterEmotionCounts:', error);
-      return {};
+    let startDate, endDate;
+    if (period === 'daily') {
+      startDate = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+      endDate = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1);
+    } else if (period === 'week') {
+      // Monday as start of week
+      const dayOfWeek = now.getDay();
+      const mondayOffset = dayOfWeek === 0 ? -6 : 1 - dayOfWeek;
+      startDate = new Date(now.getFullYear(), now.getMonth(), now.getDate() + mondayOffset);
+      startDate.setHours(0, 0, 0, 0);
+      endDate = new Date(startDate);
+      endDate.setDate(startDate.getDate() + 7);
+    } else if (period === 'month') {
+      startDate = new Date(now.getFullYear(), now.getMonth(), 1);
+      endDate = new Date(now.getFullYear(), now.getMonth() + 1, 1);
     }
-  },
 
-  async getBeforeEmotionCounts(period = 'week') {
-    try {
-      const result = await this.getUserMoodLogs();
-      if (!result.success) return {};
+    // Filter logs by afterEmotion and date range
+    const filtered = logs.filter(log => {
+      const logDate = new Date(log.selectedDate || log.date || log.createdAt);
+      return (
+        log.afterEmotion &&
+        logDate >= startDate &&
+        logDate < endDate
+      );
+    });
 
-      const logs = result.moodLogs || [];
-      const now = new Date();
+    // Count moods
+    const counts = {};
+    filtered.forEach(log => {
+      const mood = log.afterEmotion;
+      counts[mood] = (counts[mood] || 0) + 1;
+    });
 
-      // Get start date for week/month
-      let startDate;
-      if (period === 'week') {
-        startDate = new Date(now);
-        startDate.setDate(now.getDate() - now.getDay());
-        startDate.setHours(0, 0, 0, 0);
-      } else {
-        startDate = new Date(now.getFullYear(), now.getMonth(), 1);
-      }
-
-      // Filter logs by beforeEmotion and date
-      const filtered = logs.filter(log => {
-        const logDate = new Date(log.selectedDate || log.date || log.createdAt);
-        return (
-          log.beforeEmotion &&
-          logDate >= startDate
-        );
-      });
-
-      // Count moods
-      const counts = {};
-      filtered.forEach(log => {
-        const mood = log.beforeEmotion;
-        counts[mood] = (counts[mood] || 0) + 1;
-      });
-
-      // Add summary logic
-      const entries = Object.entries(counts);
-      let topMood = '', leastMood = '', topType = '', leastType = '', uniqueCount = 0;
-      if (entries.length > 0) {
-        const sorted = entries.sort((a, b) => b[1] - a[1]);
-        topMood = sorted[0][0];
-        leastMood = sorted[sorted.length - 1][0];
-        const positiveMoods = ['happy', 'calm', 'excited', 'pleased', 'relaxed'];
-        topType = positiveMoods.includes(topMood) ? 'positive' : 'negative';
-        leastType = positiveMoods.includes(leastMood) ? 'positive' : 'negative';
-        uniqueCount = entries.length;
-      }
-
-      counts._summary = {
-        topMood,
-        topType,
-        leastMood,
-        leastType,
-        uniqueCount,
-      };
-
-      return counts;
-    } catch (error) {
-      console.error('Error in getBeforeEmotionCounts:', error);
-      return {};
+    // Add summary logic
+    const entries = Object.entries(counts);
+    let topMood = '', leastMood = '', topType = '', leastType = '', uniqueCount = 0;
+    if (entries.length > 0) {
+      const sorted = entries.sort((a, b) => b[1] - a[1]);
+      topMood = sorted[0][0];
+      leastMood = sorted[sorted.length - 1][0];
+      topType = positiveMoods.includes(topMood) ? 'positive' : 'negative';
+      leastType = positiveMoods.includes(leastMood) ? 'positive' : 'negative';
+      uniqueCount = entries.length;
     }
+
+    counts._summary = {
+      topMood,
+      topType,
+      leastMood,
+      leastType,
+      uniqueCount,
+    };
+
+    return counts;
+  } catch (error) {
+    console.error('Error in getAfterEmotionCounts:', error);
+    return {};
   }
+},
+
+async getBeforeEmotionCounts(period = 'week') {
+  try {
+    const result = await this.getUserMoodLogs();
+    if (!result.success) return {};
+
+    const logs = result.moodLogs || [];
+    const now = new Date();
+
+    let startDate, endDate;
+    if (period === 'daily') {
+      startDate = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+      endDate = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1);
+    } else if (period === 'week') {
+      // Monday as start of week
+      const dayOfWeek = now.getDay();
+      const mondayOffset = dayOfWeek === 0 ? -6 : 1 - dayOfWeek;
+      startDate = new Date(now.getFullYear(), now.getMonth(), now.getDate() + mondayOffset);
+      startDate.setHours(0, 0, 0, 0);
+      endDate = new Date(startDate);
+      endDate.setDate(startDate.getDate() + 7);
+    } else if (period === 'month') {
+      startDate = new Date(now.getFullYear(), now.getMonth(), 1);
+      endDate = new Date(now.getFullYear(), now.getMonth() + 1, 1);
+    }
+
+    // Filter logs by beforeEmotion and date range
+    const filtered = logs.filter(log => {
+      const logDate = new Date(log.selectedDate || log.date || log.createdAt);
+      return (
+        log.beforeEmotion &&
+        logDate >= startDate &&
+        logDate < endDate
+      );
+    });
+
+    // Count moods
+    const counts = {};
+    filtered.forEach(log => {
+      const mood = log.beforeEmotion;
+      counts[mood] = (counts[mood] || 0) + 1;
+    });
+
+    // Add summary logic
+    const entries = Object.entries(counts);
+    let topMood = '', leastMood = '', topType = '', leastType = '', uniqueCount = 0;
+    if (entries.length > 0) {
+      const sorted = entries.sort((a, b) => b[1] - a[1]);
+      topMood = sorted[0][0];
+      leastMood = sorted[sorted.length - 1][0];
+      topType = positiveMoods.includes(topMood) ? 'positive' : 'negative';
+      leastType = positiveMoods.includes(leastMood) ? 'positive' : 'negative';
+      uniqueCount = entries.length;
+    }
+
+    counts._summary = {
+      topMood,
+      topType,
+      leastMood,
+      leastType,
+      uniqueCount,
+    };
+
+    return counts;
+  } catch (error) {
+    console.error('Error in getBeforeEmotionCounts:', error);
+    return {};
+  }
+},
+
+async getMoodCategoryGroupBreakdown(mood, type = 'after', period = 'daily') {
+  try {
+    const result = await this.getUserMoodLogs();
+    if (!result.success) return {};
+
+    const logs = result.moodLogs || [];
+    const now = new Date();
+
+    // Set date range for filtering
+    let startDate, endDate;
+    if (period === 'daily') {
+      startDate = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+      endDate = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1);
+    } else if (period === 'week') {
+      const dayOfWeek = now.getDay();
+      const mondayOffset = dayOfWeek === 0 ? -6 : 1 - dayOfWeek;
+      startDate = new Date(now.getFullYear(), now.getMonth(), now.getDate() + mondayOffset);
+      startDate.setHours(0, 0, 0, 0);
+      endDate = new Date(startDate);
+      endDate.setDate(startDate.getDate() + 7);
+    } else if (period === 'month') {
+      startDate = new Date(now.getFullYear(), now.getMonth(), 1);
+      endDate = new Date(now.getFullYear(), now.getMonth() + 1, 1);
+    }
+
+    // Filter logs by mood, type, and date
+    const filtered = logs.filter(log => {
+      const emotion = type === 'after' ? log.afterEmotion : log.beforeEmotion;
+      const logDate = new Date(log.date);
+      return (
+        emotion === mood &&
+        logDate >= startDate &&
+        logDate < endDate
+      );
+    });
+
+    // Group by category and value
+    const groups = {
+      Activity: {},
+      Social: {},
+      Health: {},
+      Sleep: {},
+    };
+
+    filtered.forEach(log => {
+      if (log.category === 'activity' && log.activity) {
+        groups.Activity[log.activity] = (groups.Activity[log.activity] || 0) + 1;
+      }
+      if (log.category === 'social' && log.activity) {
+        groups.Social[log.activity] = (groups.Social[log.activity] || 0) + 1;
+      }
+      if (log.category === 'health' && log.activity) {
+        groups.Health[log.activity] = (groups.Health[log.activity] || 0) + 1;
+      }
+      if (log.category === 'sleep' && typeof log.hrs === 'number' && type === 'after') {
+        const sleepLabel = `${log.hrs} hours`;
+        groups.Sleep[sleepLabel] = (groups.Sleep[sleepLabel] || 0) + 1;
+      }
+    });
+
+    const formatBreakdown = (obj) => {
+      const total = Object.values(obj).reduce((a, b) => a + b, 0);
+      return Object.entries(obj).map(([name, count]) => ({
+        name,
+        count,
+        percent: total ? Math.round((count / total) * 100) : 0,
+      }));
+    };
+
+    return {
+      Activity: formatBreakdown(groups.Activity),
+      Social: formatBreakdown(groups.Social),
+      Health: formatBreakdown(groups.Health),
+      Sleep: formatBreakdown(groups.Sleep),
+    };
+  } catch (error) {
+    console.error('Error in getMoodCategoryGroupBreakdown:', error);
+    return { Activity: [], Social: [], Health: [], Sleep: [] };
+  }
+}
 };
