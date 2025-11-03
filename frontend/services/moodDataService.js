@@ -1,5 +1,7 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { authService } from './authService';
+const positiveMoods = ['happy', 'calm', 'excited', 'pleased', 'relaxed'];
+const negativeMoods = ['angry', 'bored', 'sad', 'disappointed', 'tense'];
 
 const API_BASE_URL = process.env.EXPO_PUBLIC_API_URL || 'http://localhost:5001';
 
@@ -496,6 +498,133 @@ export const moodDataService = {
         error: error.message,
         moodLogs: []
       };
+    }
+  },
+
+  
+    async getAfterEmotionCounts(period = 'week') {
+    try {
+      const result = await this.getUserMoodLogs();
+      if (!result.success) return {};
+
+      const logs = result.moodLogs || [];
+      const now = new Date();
+
+      // Get start date for week/month
+      let startDate;
+      if (period === 'week') {
+        // Start of week (Sunday)
+        startDate = new Date(now);
+        startDate.setDate(now.getDate() - now.getDay());
+        startDate.setHours(0, 0, 0, 0);
+      } else {
+        // Start of month
+        startDate = new Date(now.getFullYear(), now.getMonth(), 1);
+      }
+
+      // Filter logs by afterEmotion and date
+      const filtered = logs.filter(log => {
+        const logDate = new Date(log.selectedDate || log.date || log.createdAt);
+        return (
+          log.afterEmotion &&
+          logDate >= startDate
+        );
+      });
+
+      // Count moods
+      const counts = {};
+      filtered.forEach(log => {
+        const mood = log.afterEmotion;
+        counts[mood] = (counts[mood] || 0) + 1;
+      });
+
+      // Add summary logic
+      const entries = Object.entries(counts);
+      let topMood = '', leastMood = '', topType = '', leastType = '', uniqueCount = 0;
+      if (entries.length > 0) {
+        const sorted = entries.sort((a, b) => b[1] - a[1]);
+        topMood = sorted[0][0];
+        leastMood = sorted[sorted.length - 1][0];
+        const positiveMoods = ['happy', 'calm', 'excited', 'pleased', 'relaxed'];
+        topType = positiveMoods.includes(topMood) ? 'positive' : 'negative';
+        leastType = positiveMoods.includes(leastMood) ? 'positive' : 'negative';
+        uniqueCount = entries.length;
+      }
+
+      counts._summary = {
+        topMood,
+        topType,
+        leastMood,
+        leastType,
+        uniqueCount,
+      };
+
+      return counts;
+    } catch (error) {
+      console.error('Error in getAfterEmotionCounts:', error);
+      return {};
+    }
+  },
+
+  async getBeforeEmotionCounts(period = 'week') {
+    try {
+      const result = await this.getUserMoodLogs();
+      if (!result.success) return {};
+
+      const logs = result.moodLogs || [];
+      const now = new Date();
+
+      // Get start date for week/month
+      let startDate;
+      if (period === 'week') {
+        startDate = new Date(now);
+        startDate.setDate(now.getDate() - now.getDay());
+        startDate.setHours(0, 0, 0, 0);
+      } else {
+        startDate = new Date(now.getFullYear(), now.getMonth(), 1);
+      }
+
+      // Filter logs by beforeEmotion and date
+      const filtered = logs.filter(log => {
+        const logDate = new Date(log.selectedDate || log.date || log.createdAt);
+        return (
+          log.beforeEmotion &&
+          logDate >= startDate
+        );
+      });
+
+      // Count moods
+      const counts = {};
+      filtered.forEach(log => {
+        const mood = log.beforeEmotion;
+        counts[mood] = (counts[mood] || 0) + 1;
+      });
+
+      // Add summary logic
+      const entries = Object.entries(counts);
+      let topMood = '', leastMood = '', topType = '', leastType = '', uniqueCount = 0;
+      if (entries.length > 0) {
+        const sorted = entries.sort((a, b) => b[1] - a[1]);
+        topMood = sorted[0][0];
+        leastMood = sorted[sorted.length - 1][0];
+        const positiveMoods = ['happy', 'calm', 'excited', 'pleased', 'relaxed'];
+        topType = positiveMoods.includes(topMood) ? 'positive' : 'negative';
+        leastType = positiveMoods.includes(leastMood) ? 'positive' : 'negative';
+        uniqueCount = entries.length;
+      }
+
+      counts._summary = {
+        topMood,
+        topType,
+        leastMood,
+        leastType,
+        uniqueCount,
+      };
+
+      return counts;
+    } catch (error) {
+      console.error('Error in getBeforeEmotionCounts:', error);
+      return {};
     }
   }
 };

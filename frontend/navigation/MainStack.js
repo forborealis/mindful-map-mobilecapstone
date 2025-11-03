@@ -18,6 +18,8 @@ import TimeSegmentSelector from '../screens/User/MoodInput/TimeSegmentSelector';
 import Home from '../screens/User/Home';
 import MoodEntries from '../screens/User/MoodEntries';
 import SideBarNav from '../components/SideBarNav';
+import StatisticsDashboard from '../screens/User/Statistics/StatisticsDashboard';
+import MoodCount from '../screens/User/Statistics/MoodCount';
 
 const Stack = createStackNavigator();
 
@@ -102,6 +104,16 @@ export default function MainStack({ initialRoute }) {
       <Stack.Screen 
         name="AfterNegative" 
         component={AfterNegative}
+        options={{ headerShown: false }}
+      />
+    <Stack.Screen
+      name="StatisticsDashboard"
+      component={StatisticsDashboard}
+      options={{ headerShown: false }}
+    />
+      <Stack.Screen      
+        name="MoodCount" 
+        component={MoodCount}
         options={{ headerShown: false }}
       />
     </Stack.Navigator>

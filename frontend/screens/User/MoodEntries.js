@@ -395,7 +395,7 @@ const MoodEntries = ({ navigation }) => {
           borderColor: colors.primary,
           marginTop: 40
         }}>
-          <Text style={{ fontSize: 48, marginBottom: 12 }}>😌</Text>
+          
           <Text style={{
             fontFamily: fonts.semiBold,
             fontSize: 20,

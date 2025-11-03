@@ -314,7 +314,7 @@ const selectFromLibrary = async () => {
         console.log('✅ Google sign-up successful:', result.user.email);
 
         setTimeout(() => {
-          navigation.replace('Home');
+          navigation.replace('ChooseCategory');
         }, 1000);
         
       } else {
@@ -377,7 +377,7 @@ const selectFromLibrary = async () => {
         });
 
         setTimeout(() => {
-          navigation.replace('Home');
+          navigation.replace('ChooseCategory');
         }, 1000);
 
       } else {
