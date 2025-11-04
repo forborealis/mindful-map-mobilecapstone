@@ -11,4 +11,5 @@ export const colors = {
   accent: '#D8EFD3',
   background: '#F1F8E8',
   text: '#181C14',
+  white: '#FFFFFF',
 };

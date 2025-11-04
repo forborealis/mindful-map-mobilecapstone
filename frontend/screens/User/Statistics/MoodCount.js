@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, TouchableOpacity, Image, Dimensions, ScrollView } from 'react-native';
+import { View, Text, TouchableOpacity, Image, Dimensions } from 'react-native';
 import { PieChart } from 'react-native-chart-kit';
 import { useNavigation } from '@react-navigation/native';
 import { moodDataService } from '../../../services/moodDataService';
@@ -40,6 +40,13 @@ function capitalize(str) {
   return str.charAt(0).toUpperCase() + str.slice(1);
 }
 
+function getPeriodText(period) {
+  if (period === 'daily') return 'today';
+  if (period === 'week') return 'this week';
+  if (period === 'month') return 'this month';
+  return period;
+}
+
 export default function MoodCount() {
   const navigation = useNavigation();
   const [period, setPeriod] = useState('daily');
@@ -74,7 +81,6 @@ export default function MoodCount() {
     setShowSummary(false);
   }
 
-  // Sort moods from highest to lowest count
   const sortedMoodKeys = Object.keys(moodCounts)
     .filter(mood => mood !== '_summary')
     .sort((a, b) => moodCounts[b] - moodCounts[a]);
@@ -221,9 +227,8 @@ export default function MoodCount() {
   }
 
   return (
-    <ScrollView className="flex-1" style={{ backgroundColor: colors.background }}>
+    <View style={{ backgroundColor: colors.background }}>
       <View
-        className="self-center items-center mt-6 mb-10 rounded-3xl"
         style={{
           backgroundColor: '#fff',
           borderRadius: 32,
@@ -237,43 +242,51 @@ export default function MoodCount() {
           shadowOpacity: 0.09,
           shadowRadius: 14,
           shadowOffset: { width: 0, height: 3 },
+          alignSelf: 'center',
+          alignItems: 'center',
         }}
       >
         {/* Header */}
         <Text
-          className="text-center text-2xl mb-2"
           style={{
             color: colors.primary,
             fontFamily: fonts.semiBold,
             letterSpacing: 1,
+            fontSize: 24,
+            textAlign: 'center',
+            marginBottom: 8,
           }}
         >
           Mood Analysis
         </Text>
 
-        {/* Toggle Buttons for Before/After (on top) */}
-        <View className="flex-row justify-center mb-4">
-          <View className="flex-row bg-gray-100 p-1" style={{ borderRadius: 999 }}>
+        {/* Toggle Buttons for Before/After (styled like SleepAnalysis) */}
+        <View style={{ flexDirection: 'row', justifyContent: 'center', marginBottom: 18 }}>
+          <View style={{
+            flexDirection: 'row',
+            backgroundColor: '#f3f4f6',
+            padding: 2,
+            borderRadius: 999,
+          }}>
             {['before', 'after'].map(opt => (
               <TouchableOpacity
                 key={opt}
                 onPress={() => setType(opt)}
-                className="mx-1"
                 style={{
-                  backgroundColor: type === opt ? colors.secondary : 'transparent',
+                  backgroundColor: type === opt ? '#6FC3B2' : 'transparent',
                   borderRadius: 999,
                   paddingVertical: 8,
-                  paddingHorizontal: 22,
+                  paddingHorizontal: 24,
+                  marginHorizontal: 2,
                   elevation: type === opt ? 2 : 0,
                 }}
               >
-                <Text
-                  style={{
-                    color: colors.text,
-                    fontFamily: fonts.regular,
-                    fontSize: 15,
-                  }}
-                >
+                <Text style={{
+                  color: type === opt ? '#fff' : colors.primary,
+                  fontFamily: fonts.semiBold,
+                  fontSize: 16,
+                  textAlign: 'center',
+                }}>
                   {opt === 'before' ? 'Before' : 'After'}
                 </Text>
               </TouchableOpacity>
@@ -281,29 +294,33 @@ export default function MoodCount() {
           </View>
         </View>
 
-        {/* Toggle Buttons for Daily/Weekly/Monthly */}
-        <View className="flex-row justify-center mb-4">
-          <View className="flex-row bg-gray-100 p-1" style={{ borderRadius: 999 }}>
+        {/* Toggle Buttons for Daily/Weekly/Monthly (styled like SleepAnalysis) */}
+        <View style={{ flexDirection: 'row', justifyContent: 'center', marginBottom: 18 }}>
+          <View style={{
+            flexDirection: 'row',
+            backgroundColor: '#f3f4f6',
+            padding: 2,
+            borderRadius: 999,
+          }}>
             {['daily', 'week', 'month'].map(opt => (
               <TouchableOpacity
                 key={opt}
                 onPress={() => setPeriod(opt)}
-                className="mx-1"
                 style={{
-                  backgroundColor: period === opt ? colors.secondary : 'transparent',
+                  backgroundColor: period === opt ? '#6FC3B2' : 'transparent',
                   borderRadius: 999,
-                  elevation: period === opt ? 2 : 0,
                   paddingVertical: 8,
-                  paddingHorizontal: 22,
+                  paddingHorizontal: 24,
+                  marginHorizontal: 2,
+                  elevation: period === opt ? 2 : 0,
                 }}
               >
-                <Text
-                  style={{
-                    color: colors.text,
-                    fontFamily: fonts.regular,
-                    fontSize: 15,
-                  }}
-                >
+                <Text style={{
+                  color: period === opt ? '#fff' : colors.primary,
+                  fontFamily: fonts.semiBold,
+                  fontSize: 16,
+                  textAlign: 'center',
+                }}>
                   {opt === 'daily' ? 'Daily' : opt === 'week' ? 'Weekly' : 'Monthly'}
                 </Text>
               </TouchableOpacity>
@@ -312,15 +329,15 @@ export default function MoodCount() {
         </View>
 
         {/* Pie Chart with percentage labels */}
-        <View className="items-center justify-center w-full mt-2 mb-2">
+        <View style={{ alignItems: 'center', justifyContent: 'center', width: '100%', marginTop: 2, marginBottom: 2 }}>
           {loading ? (
-            <View className="items-center" style={{ width: chartWidth }}>
-              <View className="rounded-full bg-gray-200 mb-6" style={{ width: chartWidth, height: chartWidth }} />
-              <View className="rounded bg-gray-200 mb-2" style={{ width: 70, height: 28 }} />
-              <View className="rounded bg-gray-200" style={{ width: 90, height: 18 }} />
+            <View style={{ alignItems: 'center', width: chartWidth }}>
+              <View style={{ borderRadius: chartWidth / 2, backgroundColor: '#e5e7eb', marginBottom: 24, width: chartWidth, height: chartWidth }} />
+              <View style={{ borderRadius: 8, backgroundColor: '#e5e7eb', marginBottom: 8, width: 70, height: 28 }} />
+              <View style={{ borderRadius: 8, backgroundColor: '#e5e7eb', width: 90, height: 18 }} />
             </View>
           ) : chartData.length === 0 ? (
-            <Text className="mt-6 text-lg font-medium" style={{ color: colors.text, fontFamily: fonts.medium }}>
+            <Text style={{ marginTop: 24, fontSize: 16, fontFamily: fonts.medium, color: colors.text, textAlign: 'center' }}>
               No mood data found for this period.
             </Text>
           ) : (
@@ -341,7 +358,6 @@ export default function MoodCount() {
                 absolute
                 style={{ alignSelf: 'center' }}
               />
-              {/* Percentage labels on top of each slice */}
               {renderPieLabels()}
             </View>
           )}
@@ -349,99 +365,131 @@ export default function MoodCount() {
 
         {/* Top Mood, Total, Unique Container */}
         <View
-          className="flex-row justify-between items-center px-2 py-3 mt-2 mb-4"
           style={{
-            backgroundColor: colors.background,
+            flexDirection: 'row',
+            justifyContent: 'space-between',
+            alignItems: 'center',
+            paddingHorizontal: 8,
+            paddingVertical: 12,
+            marginTop: 8,
+            marginBottom: 16,
+            backgroundColor: colors.secondary,
             borderRadius: 16,
             width: mainContainerWidth * 0.93,
             alignSelf: 'center',
             elevation: 2,
           }}
         >
-          <View className="items-center flex-1">
-            <Text className="text-base font-bold mb-1" style={{ color: colors.primary, fontFamily: fonts.semiBold }}>
+          <View style={{ alignItems: 'center', flex: 1 }}>
+            <Text style={{ fontSize: 13, fontFamily: fonts.semiBold, color: colors.white, marginBottom: 2, textAlign: 'center' }}>
               {topMood || '—'}
             </Text>
-            <Text className="text-xs" style={{ color: colors.text, fontFamily: fonts.regular }}>
+            <Text style={{ fontSize: 12, color: colors.text, fontFamily: fonts.regular, textAlign: 'center' }}>
               Top Mood
             </Text>
           </View>
-          <View className="items-center flex-1">
-            <Text className="text-base font-bold mb-1" style={{ color: colors.primary, fontFamily: fonts.semiBold }}>
+          <View style={{ alignItems: 'center', flex: 1 }}>
+            <Text style={{ fontSize: 16, fontFamily: fonts.semiBold, color: colors.white, marginBottom: 2, textAlign: 'center' }}>
               {total}
             </Text>
-            <Text className="text-xs" style={{ color: colors.text, fontFamily: fonts.regular }}>
+            <Text style={{ fontSize: 12, color: colors.text, fontFamily: fonts.regular, textAlign: 'center' }}>
               Total Moods
             </Text>
           </View>
-          <View className="items-center flex-1">
-            <Text className="text-base font-bold mb-1" style={{ color: colors.primary, fontFamily: fonts.semiBold }}>
+          <View style={{ alignItems: 'center', flex: 1 }}>
+            <Text style={{ fontSize: 16, fontFamily: fonts.semiBold, color: colors.white, marginBottom: 2, textAlign: 'center' }}>
               {uniqueCount}
             </Text>
-            <Text className="text-xs" style={{ color: colors.text, fontFamily: fonts.regular }}>
-              Unique Emotions
+            <Text style={{ fontSize: 12, color: colors.text, fontFamily: fonts.regular, textAlign: 'center' }}>
+              Unique Moods
             </Text>
           </View>
         </View>
 
         {/* Mood Counts Grid */}
-        <View className="mt-2 px-2 pb-6 w-full">
+        <View style={{ marginTop: 8, paddingHorizontal: 8, paddingBottom: 24, width: '100%' }}>
           {moodRows}
         </View>
+        
+        {/* Info Text Above Mood Containers */}
+        <Text
+          style={{
+            fontFamily: fonts.medium,
+            fontSize: 12,
+            color: colors.text,
+            opacity: 0.6,
+            textAlign: 'center',
+            marginBottom: 8,
+            marginTop: 2,
+          }}
+        >
+          Tap a mood container to view more details about each mood.
+        </Text>
 
         {/* View Summary Button */}
         {summary && (
           <TouchableOpacity
             onPress={() => setShowSummary(!showSummary)}
-            className="self-center mb-2 px-6 py-2 rounded-full mt-2"
             style={{
+              alignSelf: 'center',
+              marginBottom: 8,
+              paddingHorizontal: 24,
+              paddingVertical: 10,
+              borderRadius: 999,
+              marginTop: 8,
               backgroundColor: colors.primary,
               elevation: 2,
             }}
           >
-            <Text className="text-white font-semibold text-base" style={{ fontFamily: fonts.semiBold, letterSpacing: 1 }}>
+            <Text style={{ color: '#fff', fontFamily: fonts.semiBold, fontSize: 16, letterSpacing: 1 }}>
               {showSummary ? 'Hide Summary' : 'View Summary'}
             </Text>
           </TouchableOpacity>
         )}
-
+        
         {/* Summary Section */}
         {summary && showSummary && (
-          <View className="mt-4 mb-2 px-4 py-4 rounded-xl w-11/12 self-center"
-            style={{
-              backgroundColor: '#f3f4f6',
-              elevation: 2,
-              shadowColor: '#000',
-              shadowOpacity: 0.07,
-              shadowRadius: 6,
-              shadowOffset: { width: 0, height: 1 },
-            }}>
-            <Text className="font-bold text-lg mb-3" style={{ color: colors.primary, fontFamily: fonts.bold, letterSpacing: 0.5 }}>
+          <View style={{
+            marginTop: 16,
+            marginBottom: 8,
+            paddingHorizontal: 16,
+            paddingVertical: 16,
+            borderRadius: 18,
+            width: '92%',
+            alignSelf: 'center',
+            backgroundColor: '#f3f4f6',
+            elevation: 2,
+            shadowColor: '#000',
+            shadowOpacity: 0.07,
+            shadowRadius: 6,
+            shadowOffset: { width: 0, height: 1 },
+          }}>
+            <Text style={{ fontFamily: fonts.bold, fontSize: 18, marginBottom: 12, color: colors.primary, letterSpacing: 0.5 }}>
               Summary
             </Text>
-            <View className="pl-2">
-              <View className="flex-row items-start mb-2">
-                <Text className="text-xl font-bold mr-2" style={{ color: colors.primary, fontFamily: fonts.bold }}>•</Text>
-                <Text className="text-base font-medium flex-1" style={{ color: colors.text, fontFamily: fonts.medium }}>
-                  The top emotion for this {period} is <Text style={{ color: colors.primary, fontFamily: fonts.bold }}>{summary.topType}</Text>, <Text style={{ color: colors.primary, fontFamily: fonts.bold }}>{capitalize(summary.topMood)}</Text>.
+            <View style={{ paddingLeft: 8 }}>
+              <View style={{ flexDirection: 'row', alignItems: 'flex-start', marginBottom: 8 }}>
+                <Text style={{ fontSize: 18, fontFamily: fonts.bold, marginRight: 8, color: colors.primary }}>•</Text>
+                <Text style={{ fontSize: 15, fontFamily: fonts.medium, flex: 1, color: colors.text }}>
+                  The most frequent mood {period === 'daily' ? 'today' : `for ${getPeriodText(period)}`} is <Text style={{ color: colors.primary, fontFamily: fonts.bold }}>{summary.topType}</Text> (<Text style={{ color: colors.primary, fontFamily: fonts.bold }}>{capitalize(summary.topMood)}</Text>).
                 </Text>
               </View>
-              <View className="flex-row items-start mb-2">
-                <Text className="text-xl font-bold mr-2" style={{ color: colors.primary, fontFamily: fonts.bold }}>•</Text>
-                <Text className="text-base font-medium flex-1" style={{ color: colors.text, fontFamily: fonts.medium }}>
-                  You have a total of <Text style={{ color: colors.primary, fontFamily: fonts.bold }}>{summary.uniqueCount}</Text> different moods this {period}.
+              <View style={{ flexDirection: 'row', alignItems: 'flex-start', marginBottom: 8 }}>
+                <Text style={{ fontSize: 18, fontFamily: fonts.bold, marginRight: 8, color: colors.primary }}>•</Text>
+                <Text style={{ fontSize: 15, fontFamily: fonts.medium, flex: 1, color: colors.text }}>
+                  You experienced <Text style={{ color: colors.primary, fontFamily: fonts.bold }}>{summary.uniqueCount}</Text> different moods {period === 'daily' ? 'today' : `${getPeriodText(period)}`}.
                 </Text>
               </View>
-              <View className="flex-row items-start">
-                <Text className="text-xl font-bold mr-2" style={{ color: colors.primary, fontFamily: fonts.bold }}>•</Text>
-                <Text className="text-base font-medium flex-1" style={{ color: colors.text, fontFamily: fonts.medium }}>
-                  The least amount of mood you experienced this {period} is <Text style={{ color: colors.primary, fontFamily: fonts.bold }}>{summary.leastType}</Text>, <Text style={{ color: colors.primary, fontFamily: fonts.bold }}>{capitalize(summary.leastMood)}</Text>.
+              <View style={{ flexDirection: 'row', alignItems: 'flex-start' }}>
+                <Text style={{ fontSize: 18, fontFamily: fonts.bold, marginRight: 8, color: colors.primary }}>•</Text>
+                <Text style={{ fontSize: 15, fontFamily: fonts.medium, flex: 1, color: colors.text }}>
+                  The least frequent mood {period === 'daily' ? 'today' : `for ${getPeriodText(period)}`} is <Text style={{ color: colors.primary, fontFamily: fonts.bold }}>{summary.leastType}</Text> (<Text style={{ color: colors.primary, fontFamily: fonts.bold }}>{capitalize(summary.leastMood)}</Text>).
                 </Text>
               </View>
             </View>
           </View>
         )}
       </View>
-    </ScrollView>
+    </View>
   );
 }

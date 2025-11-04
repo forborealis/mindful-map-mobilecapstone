@@ -21,6 +21,7 @@ import SideBarNav from '../components/SideBarNav';
 import StatisticsDashboard from '../screens/User/Statistics/StatisticsDashboard';
 import MoodCount from '../screens/User/Statistics/MoodCount';
 import ActivitiesStatistics from '../screens/User/Statistics/ActivitiesStatistics';
+import SleepAnalysis from '../screens/User/Statistics/SleepAnalysis';
 
 const Stack = createStackNavigator();
 
@@ -120,6 +121,11 @@ export default function MainStack({ initialRoute }) {
       <Stack.Screen
         name="ActivitiesStatistics"
         component={ActivitiesStatistics}
+        options={{ headerShown: false }}
+      />
+      <Stack.Screen
+        name="SleepAnalysis"
+        component={SleepAnalysis}
         options={{ headerShown: false }}
       />
     </Stack.Navigator>

@@ -719,5 +719,63 @@ async getMoodCategoryGroupBreakdown(mood, type = 'after', period = 'daily') {
     console.error('Error in getMoodCategoryGroupBreakdown:', error);
     return { Activity: [], Social: [], Health: [], Sleep: [] };
   }
+},
+
+async getSleepHoursTrend(period = 'month') {
+  try {
+    const result = await this.getUserMoodLogs();
+    if (!result.success) return [];
+
+    const logs = result.moodLogs || [];
+    const now = new Date();
+
+    let startDate, endDate;
+    if (period === 'week') {
+      const dayOfWeek = now.getDay();
+      const mondayOffset = dayOfWeek === 0 ? -6 : 1 - dayOfWeek;
+      startDate = new Date(now.getFullYear(), now.getMonth(), now.getDate() + mondayOffset);
+      startDate.setHours(0, 0, 0, 0);
+      endDate = new Date(startDate);
+      endDate.setDate(startDate.getDate() + 7);
+    } else {
+      // month
+      startDate = new Date(now.getFullYear(), now.getMonth(), 1);
+      endDate = new Date(now.getFullYear(), now.getMonth() + 1, 1);
+    }
+
+    // Filter only sleep logs in range
+    const filtered = logs.filter(log => 
+      log.category === 'sleep' &&
+      log.hrs !== undefined &&
+      log.hrs !== null &&
+      new Date(log.date) >= startDate &&
+      new Date(log.date) < endDate
+    );
+
+    // Group by day
+    const daysMap = {};
+    filtered.forEach(log => {
+      const d = new Date(log.date);
+      const key = `${d.getFullYear()}-${d.getMonth()+1}-${d.getDate()}`;
+      daysMap[key] = log.hrs;
+    });
+
+    // Build sorted array for chart
+    const trend = [];
+    let d = new Date(startDate);
+    while (d < endDate) {
+      const key = `${d.getFullYear()}-${d.getMonth()+1}-${d.getDate()}`;
+      trend.push({
+        date: new Date(d),
+        hrs: daysMap[key] || 0
+      });
+      d.setDate(d.getDate() + 1);
+    }
+
+    return trend;
+  } catch (error) {
+    console.error('Error in getSleepHoursTrend:', error);
+    return [];
+  }
 }
-};
+};  
