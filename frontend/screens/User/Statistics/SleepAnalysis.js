@@ -17,6 +17,64 @@ function formatDate(date) {
   return `${monthNames[d.getMonth()]}. ${d.getDate()}`;
 }
 
+function getPeriodText(period) {
+  if (period === 'week') return 'this week';
+  if (period === 'month') return 'this month';
+  return period;
+}
+
+function getSleepGuide(avgSleep) {
+  if (avgSleep >= 8 && avgSleep <= 10) {
+    return {
+      label: 'Excellent',
+      color: '#DFF7EC',
+      borderColor: '#59AC77',
+      icon: '🌞',
+      hours: '8-10 hours',
+      desc: 'Perfect for school',
+      barColor: '#59AC77',
+      textColor: '#218838',
+      barPercent: 1,
+    };
+  } else if (avgSleep >= 7 && avgSleep < 8) {
+    return {
+      label: 'Good',
+      color: '#FFF9E3',
+      borderColor: '#FFD600',
+      icon: '😊',
+      hours: '7-8 hours',
+      desc: 'Still manageable',
+      barColor: '#FFD600',
+      textColor: '#B8860B',
+      barPercent: 0.7,
+    };
+  } else if (avgSleep >= 6 && avgSleep < 7) {
+    return {
+      label: 'Low',
+      color: '#FFEFE3',
+      borderColor: '#FF714B',
+      icon: '😴',
+      hours: '6-7 hours',
+      desc: 'May affect focus',
+      barColor: '#FF714B',
+      textColor: '#FF714B',
+      barPercent: 0.4,
+    };
+  } else {
+    return {
+      label: 'Critical',
+      color: '#FFE3E3',
+      borderColor: '#FF6347',
+      icon: '😵',
+      hours: '<6 hours',
+      desc: 'Impacts grades',
+      barColor: '#FF6347',
+      textColor: '#B22222',
+      barPercent: 0.2,
+    };
+  }
+}
+
 export default function SleepAnalysis() {
   const [period, setPeriod] = useState('month');
   const [trend, setTrend] = useState([]);
@@ -36,6 +94,69 @@ export default function SleepAnalysis() {
   const avgSleep = trend.length ? (trend.reduce((a, b) => a + b.hrs, 0) / trend.length).toFixed(1) : 0;
   const bestDay = trend.reduce((max, cur) => cur.hrs > max.hrs ? cur : max, { hrs: 0 });
   const leastDay = trend.reduce((min, cur) => cur.hrs < min.hrs ? cur : min, { hrs: 99 });
+
+  // Sleep Guide Data (for display, not the summary)
+  const guides = [
+    {
+      label: 'Excellent',
+      color: '#DFF7EC',
+      borderColor: '#59AC77',
+      icon: '🌞',
+      hours: '8-10 hours',
+      desc: 'Perfect for school',
+      barColor: '#59AC77',
+      textColor: '#218838',
+      barPercent: 1,
+    },
+    {
+      label: 'Good',
+      color: '#FFF9E3',
+      borderColor: '#FFD600',
+      icon: '😊',
+      hours: '7-8 hours',
+      desc: 'Still manageable',
+      barColor: '#FFD600',
+      textColor: '#B8860B',
+      barPercent: 0.7,
+    },
+    {
+      label: 'Low',
+      color: '#FFEFE3',
+      borderColor: '#FF714B',
+      icon: '😴',
+      hours: '6-7 hours',
+      desc: 'May affect focus',
+      barColor: '#FF714B',
+      textColor: '#FF714B',
+      barPercent: 0.4,
+    },
+    {
+      label: 'Critical',
+      color: '#FFE3E3',
+      borderColor: '#FF6347',
+      icon: '😵',
+      hours: '<6 hours',
+      desc: 'Impacts grades',
+      barColor: '#FF6347',
+      textColor: '#B22222',
+      barPercent: 0.2,
+    },
+  ];
+
+  // Get the guide for the user's average sleep
+  const userGuide = getSleepGuide(Number(avgSleep));
+
+  // Summary message logic (bulleted)
+  const summaryBullets = [
+    `• Your average sleep is ${avgSleep} hours ${getPeriodText(period)}.`,
+    avgSleep >= 8 && avgSleep <= 10
+      ? '• Great job! Keep up the healthy sleep habits.'
+      : avgSleep >= 7 && avgSleep < 8
+      ? '• You are doing well, but try to get a bit more rest for optimal performance.'
+      : avgSleep >= 6 && avgSleep < 7
+      ? '• Consider getting more sleep to help with focus and energy.'
+      : '• It\'s important to get more sleep to support your health and learning.',
+  ];
 
   return (
     <ScrollView style={{ backgroundColor: colors.background }}>
@@ -231,7 +352,7 @@ export default function SleepAnalysis() {
             shadowRadius: 6,
             shadowOffset: { width: 0, height: 1 },
             elevation: 2,
-            width: chartWidth * 0.85, // Make chart container same width as main container
+            width: chartWidth * 0.85,
             alignSelf: 'center',
           }}>
             <Text style={{
@@ -289,6 +410,111 @@ export default function SleepAnalysis() {
                 }}
               />
             )}
+          </View>
+
+          {/* Sleep Guide Title */}
+          <Text style={{
+            fontFamily: fonts.bold,
+            fontSize: 16,
+            color: colors.primary,
+            marginBottom: 8,
+            marginTop: 10,
+            textAlign: 'center',
+          }}>
+            Sleep Guide 
+          </Text>
+
+          {/* Sleep Guide Containers - 1 per row, color-coded text, bar percent */}
+          <View style={{ marginBottom: 16 }}>
+            {guides.map((guide, idx) => (
+              <View
+                key={guide.label}
+                style={{
+                  backgroundColor: guide.color,
+                  borderRadius: 16,
+                  borderWidth: 2,
+                  borderColor: guide.borderColor,
+                  paddingVertical: 8,
+                  paddingHorizontal: 14,
+                  alignItems: 'center',
+                  marginBottom: 12,
+                  width: '100%',
+                  elevation: 2,
+                  flexDirection: 'row',
+                  minHeight: 60,
+                }}
+              >
+                <Text style={{ fontSize: 28, marginRight: 14 }}>{guide.icon}</Text>
+                <View style={{ flex: 1 }}>
+                  <Text style={{
+                    fontFamily: fonts.bold,
+                    fontSize: 16,
+                    color: guide.textColor,
+                    marginBottom: 2,
+                  }}>{guide.label}</Text>
+                  <Text style={{
+                    fontFamily: fonts.medium,
+                    fontSize: 13,
+                    color: colors.text,
+                    marginBottom: 2,
+                  }}>{guide.hours}</Text>
+                  <Text style={{
+                    fontFamily: fonts.medium,
+                    fontSize: 12,
+                    color: colors.text,
+                    opacity: 0.7,
+                    marginBottom: 4,
+                  }}>{guide.desc}</Text>
+                  <View style={{
+                    height: 6,
+                    width: `${guide.barPercent * 100}%`,
+                    backgroundColor: guide.barColor,
+                    borderRadius: 4,
+                    marginTop: 2,
+                    alignSelf: 'flex-start',
+                  }} />
+                </View>
+              </View>
+            ))}
+          </View>
+
+          {/* Sleep Summary - Bulleted */}
+          <View style={{
+            backgroundColor: '#f3f4f6',
+            borderRadius: 16,
+            padding: 14,
+            marginTop: 4,
+            marginBottom: 8,
+            alignItems: 'flex-start',
+            width: '100%',
+            elevation: 2,
+          }}>
+            <Text style={{
+              fontFamily: fonts.bold,
+              fontSize: 17,
+              color: colors.primary,
+              marginBottom: 6,
+              textAlign: 'left',
+            }}>
+              Summary
+            </Text>
+            {summaryBullets.map((bullet, idx) => (
+              <Text
+                key={idx}
+                style={{
+                  fontFamily: fonts.medium,
+                  fontSize: 15,
+                  color: colors.text,
+                  textAlign: 'left',
+                  marginBottom: 2,
+                }}
+              >
+                <Text style={{ color: colors.primary }}>
+                  {bullet.charAt(0)}
+                </Text>
+                {bullet.slice(1)}
+              </Text>
+            ))}
           </View>
         </View>
       </View>
