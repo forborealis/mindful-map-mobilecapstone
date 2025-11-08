@@ -22,6 +22,8 @@ import StatisticsDashboard from '../screens/User/Statistics/StatisticsDashboard'
 import MoodCount from '../screens/User/Statistics/MoodCount';
 import ActivitiesStatistics from '../screens/User/Statistics/ActivitiesStatistics';
 import SleepAnalysis from '../screens/User/Statistics/SleepAnalysis';
+import Prediction from '../screens/User/Prediction/Prediction';
+import CategoryPrediction from '../screens/User/Prediction/CategoryPrediction';
 
 const Stack = createStackNavigator();
 
@@ -126,6 +128,16 @@ export default function MainStack({ initialRoute }) {
       <Stack.Screen
         name="SleepAnalysis"
         component={SleepAnalysis}
+        options={{ headerShown: false }}
+      />
+      <Stack.Screen
+        name="Prediction"
+        component={Prediction}
+        options={{ headerShown: false }}
+      />
+      <Stack.Screen
+        name="CategoryPrediction"
+        component={CategoryPrediction}
         options={{ headerShown: false }}
       />
     </Stack.Navigator>

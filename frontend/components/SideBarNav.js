@@ -5,6 +5,7 @@ import MoodEntries from '../screens/User/MoodEntries';
 import Home from '../screens/User/Home';
 import Calendar from '../screens/User/Calendar';
 import StatisticsDashboard from '../screens/User/Statistics/StatisticsDashboard';
+import Prediction from '../screens/User/Prediction/Prediction';
 import { authService } from '../services/authService';
 import Toast from 'react-native-toast-message';
 import { Ionicons } from '@expo/vector-icons';
@@ -147,6 +148,15 @@ export default function SideBarNav() {
         options={{
           drawerIcon: ({ color, size }) => (
             <Ionicons name="bar-chart" size={size} color={color} />
+          ),
+        }}
+      />
+      <Drawer.Screen
+        name="Predictions"
+        component={Prediction}
+        options={{
+          drawerIcon: ({ color, size }) => (
+            <Ionicons name="trending-up" size={size} color={color} />
           ),
         }}
       />
