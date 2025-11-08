@@ -88,6 +88,26 @@ const CategoryPrediction = ({ navigation, route }) => {
     return valence > 0.5 ? 'Positive' : 'Negative';
   };
 
+  const getEmotionEmoji = (emotion) => {
+    const emojiMap = {
+      // Negative emotions
+      'bored': '😑',
+      'sad': '😢',
+      'disappointed': '😞',
+      'angry': '😠',
+      'tense': '😰',
+      
+      // Positive emotions
+      'calm': '😌',
+      'relaxed': '😊',
+      'pleased': '🙂',
+      'happy': '😄',
+      'excited': '🤩'
+    };
+    
+    return emojiMap[emotion.toLowerCase()] || '😐';
+  };
+
   const getActivityDisplayName = (activityId) => {
     const activityMap = {
       // Activity category
@@ -160,10 +180,7 @@ const CategoryPrediction = ({ navigation, route }) => {
           <View style={styles.predictionContent}>
             {/* Main Prediction */}
             <View style={styles.mainPrediction}>
-              <View style={[
-                styles.emotionDot,
-                { backgroundColor: getEmotionColor(dayData.prediction) }
-              ]} />
+              <Text style={styles.emotionEmoji}>{getEmotionEmoji(dayData.prediction)}</Text>
               <Text style={styles.emotionText}>{dayData.prediction}</Text>
             </View>
 
@@ -198,7 +215,10 @@ const CategoryPrediction = ({ navigation, route }) => {
                     <View key={emotion} style={styles.emotionItem}>
                       <View style={[
                         styles.emotionColorDot,
-                        { backgroundColor: getEmotionColor(emotion) }
+                        { 
+                          backgroundColor: categoryInfo[category].color,
+                          opacity: emotion.toLowerCase() === dayData.prediction.toLowerCase() ? 1 : 0.6
+                        }
                       ]} />
                       <Text style={styles.emotionName}>{emotion}</Text>
                       <Text style={styles.emotionProbability}>
@@ -448,10 +468,8 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     marginBottom: 16,
   },
-  emotionDot: {
-    width: 16,
-    height: 16,
-    borderRadius: 8,
+  emotionEmoji: {
+    fontSize: 20,
     marginRight: 12,
   },
   emotionText: {
