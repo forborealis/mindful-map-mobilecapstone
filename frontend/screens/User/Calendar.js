@@ -48,6 +48,16 @@ export default function Calendar() {
     excited: { emoji: '🤩', label: 'Excited' }
   };
 
+  // Helper function to determine if an emotion is positive or negative
+  const getEmotionPolarity = (emotion) => {
+    const negativeEmotions = ['bored', 'sad', 'disappointed', 'angry', 'tense'];
+    const positiveEmotions = ['calm', 'relaxed', 'pleased', 'happy', 'excited'];
+    
+    if (negativeEmotions.includes(emotion)) return 'negative';
+    if (positiveEmotions.includes(emotion)) return 'positive';
+    return 'neutral'; // fallback
+  };
+
   const months = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
   const daysOfWeek = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
 
@@ -343,10 +353,12 @@ export default function Calendar() {
 
     // If there's only one emotion with max count and it appears more than once, it's clearly frequent
     if (emotionsWithMaxCount.length === 1 && maxCount > 1) {
+      const dominantEmotion = emotionsWithMaxCount[0];
       return {
         type: 'frequent',
-        emotion: emotionsWithMaxCount[0],
+        emotion: dominantEmotion,
         isFrequent: true,
+        polarity: getEmotionPolarity(dominantEmotion),
         count: logsForDate.length
       };
     }
@@ -368,6 +380,7 @@ export default function Calendar() {
         type: 'frequent',
         emotion: mostRecentEmotion,
         isFrequent: true,
+        polarity: getEmotionPolarity(mostRecentEmotion),
         count: logsForDate.length
       };
     }
@@ -382,6 +395,7 @@ export default function Calendar() {
         type: 'last',
         emotion: mostRecentAfterEmotion.emotion,
         isFrequent: false,
+        polarity: getEmotionPolarity(mostRecentAfterEmotion.emotion),
         count: logsForDate.length
       };
     }
@@ -392,6 +406,7 @@ export default function Calendar() {
       type: 'last',
       emotion: mostRecentEmotion.emotion,
       isFrequent: false,
+      polarity: getEmotionPolarity(mostRecentEmotion.emotion),
       count: logsForDate.length
     };
   };
@@ -661,14 +676,14 @@ export default function Calendar() {
             paddingHorizontal: 16
           }}>
             <View style={{ flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'space-around' }}>
-              <View style={{ alignItems: 'center', marginBottom: 8 }}>
+              <View style={{ alignItems: 'center', marginBottom: 8, width: '30%' }}>
                 <View style={{
                   width: 24,
                   height: 24,
                   borderRadius: 12,
                   backgroundColor: 'white',
                   borderWidth: 2,
-                  borderColor: '#4A90E2',
+                  borderColor: '#2196F3',
                   justifyContent: 'center',
                   alignItems: 'center',
                   marginBottom: 4
@@ -676,30 +691,30 @@ export default function Calendar() {
                   <Text style={{ fontSize: 12 }}>😊</Text>
                 </View>
                 <Text style={{ fontSize: 10, color: colors.text, fontFamily: fonts.medium, textAlign: 'center' }}>
-                  Most Frequent
+                  Positive{'\n'}Dominant
                 </Text>
               </View>
               
-              <View style={{ alignItems: 'center', marginBottom: 8 }}>
+              <View style={{ alignItems: 'center', marginBottom: 8, width: '30%' }}>
                 <View style={{
                   width: 24,
                   height: 24,
                   borderRadius: 12,
                   backgroundColor: 'white',
                   borderWidth: 2,
-                  borderColor: '#999',
+                  borderColor: '#FF6B6B',
                   justifyContent: 'center',
                   alignItems: 'center',
                   marginBottom: 4
                 }}>
-                  <Text style={{ fontSize: 12 }}>😊</Text>
+                  <Text style={{ fontSize: 12 }}>😞</Text>
                 </View>
                 <Text style={{ fontSize: 10, color: colors.text, fontFamily: fonts.medium, textAlign: 'center' }}>
-                  No Frequent Mood
+                  Negative{'\n'}Dominant
                 </Text>
               </View>
               
-              <View style={{ alignItems: 'center', marginBottom: 8 }}>
+              <View style={{ alignItems: 'center', marginBottom: 8, width: '30%' }}>
                 <View style={{
                   width: 24,
                   height: 24,
@@ -827,7 +842,8 @@ export default function Calendar() {
                           borderColor: isToday ? colors.primary :
                             moodData.type === 'plus' ? '#999' :
                             moodData.type === 'empty' ? '#E5E5E5' :
-                            moodData.isFrequent ? '#4A90E2' : '#999',
+                            (moodData.polarity === 'positive' ? '#2196F3' : 
+                             moodData.polarity === 'negative' ? '#FF6B6B' : '#999'),
                           borderStyle: moodData.type === 'plus' ? 'dashed' : 'solid',
                           shadowColor: moodData.type !== 'empty' && moodData.type !== 'plus' ? '#000' : 'transparent',
                           shadowOffset: { width: 0, height: 1 },
