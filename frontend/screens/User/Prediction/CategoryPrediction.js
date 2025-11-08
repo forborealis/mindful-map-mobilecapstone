@@ -196,7 +196,7 @@ const CategoryPrediction = ({ navigation, route }) => {
                 <Text style={styles.metricLabel}>Likely Cause:</Text>
                 <Text style={styles.metricValue}>
                   {category === 'sleep' 
-                    ? `${dayData.activity || 'Unknown'} hours`
+                    ? `${dayData.activity || 'Unknown'} hours of sleep`
                     : getActivityDisplayName(dayData.activity)
                   }
                 </Text>

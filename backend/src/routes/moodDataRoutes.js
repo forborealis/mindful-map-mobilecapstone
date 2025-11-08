@@ -13,7 +13,6 @@ router.get('/stats/user/:userId', MoodDataController.getUserMoodStats);
 router.post('/logs/save', verifyToken, MoodDataController.saveMood);
 router.get('/logs/today/last', verifyToken, MoodDataController.getTodaysLastMoodLog);
 router.get('/logs/today/sleep', verifyToken, MoodDataController.getTodaysSleepLog);
-router.put('/logs/sleep/update', verifyToken, MoodDataController.updateSleepHours);
 router.get('/logs/check', verifyToken, MoodDataController.checkMoodLogs);
 router.get('/logs/paginated', verifyToken, MoodDataController.getPaginatedMoodLogs);
 router.get('/logs/category/:category', verifyToken, MoodDataController.getMoodLogsByCategory);

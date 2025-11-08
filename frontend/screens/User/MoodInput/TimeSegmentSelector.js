@@ -1,4 +1,4 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { View, Text, TouchableOpacity, ScrollView, Alert, Modal, TextInput } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { fonts } from '../../../utils/fonts/fonts';
@@ -7,6 +7,16 @@ import { colors } from '../../../utils/colors/colors';
 const TimeSegmentSelector = ({ navigation, route }) => {
   const { category, activity, categoryTitle, nextScreen, selectedDate } = route.params || {};
   
+  // Check if this is sleep category - if so, skip time selection and go directly to Sleep screen
+  useEffect(() => {
+    if (category === 'sleep') {
+      navigation.replace('Sleep', {
+        category,
+        selectedDate
+      });
+    }
+  }, [category, navigation, selectedDate]);
+  
   const [rememberTime, setRememberTime] = useState(null); // null, true, false, 'current'
   const [selectedTime, setSelectedTime] = useState(null);
   const [customHour, setCustomHour] = useState('12');
@@ -14,6 +24,11 @@ const TimeSegmentSelector = ({ navigation, route }) => {
   const [customPeriod, setCustomPeriod] = useState('PM');
   const [showTimeModal, setShowTimeModal] = useState(false);
   const [timeType, setTimeType] = useState('segment'); // 'segment', 'specific', or 'current'
+  
+  // Temporary state for modal inputs (only saved when user clicks Select)
+  const [tempHour, setTempHour] = useState('12');
+  const [tempMinute, setTempMinute] = useState('00');
+  const [tempPeriod, setTempPeriod] = useState('PM');
   
   // Helper function to check if selected date is today
   const isToday = () => {
@@ -74,9 +89,7 @@ const TimeSegmentSelector = ({ navigation, route }) => {
     }
   };
   
-  const hourScrollRef = useRef(null);
-  const minuteScrollRef = useRef(null);
-  const periodScrollRef = useRef(null);
+
 
   const timeSegments = [
     { id: 'early-morning', label: 'Early Morning', time: '12:00 AM - 5:59 AM', icon: '🌌', midTime: '03:00' },
@@ -125,12 +138,41 @@ const TimeSegmentSelector = ({ navigation, route }) => {
   };
 
   const handleSpecificTimePress = () => {
+    // Initialize temp values with current values (or defaults)
+    if (selectedTime === 'specific') {
+      setTempHour(customHour);
+      setTempMinute(customMinute);
+      setTempPeriod(customPeriod);
+    } else if (isToday() && selectedTime === 'current') {
+      const currentTime = getCurrentTime();
+      setTempHour(currentTime.hour);
+      setTempMinute(currentTime.minute);
+      setTempPeriod(currentTime.period);
+    } else {
+      setTempHour('12');
+      setTempMinute('00');
+      setTempPeriod('PM');
+    }
     setShowTimeModal(true);
   };
 
   const handleTimeConfirm = () => {
+    // Validate time format first
+    const hour = parseInt(tempHour);
+    const minute = parseInt(tempMinute);
+    
+    if (isNaN(hour) || hour < 1 || hour > 12) {
+      Alert.alert('Invalid Hour', 'Please enter a valid hour (1-12).');
+      return;
+    }
+    
+    if (isNaN(minute) || minute < 0 || minute > 59) {
+      Alert.alert('Invalid Minute', 'Please enter a valid minute (0-59).');
+      return;
+    }
+    
     // Check if the selected time is in the future (for today only)
-    if (isToday() && isTimeInFuture(customHour, customMinute, customPeriod)) {
+    if (isToday() && isTimeInFuture(tempHour, tempMinute, tempPeriod)) {
       Alert.alert(
         'Invalid Time', 
         'Please choose a time that has already passed today.',
@@ -139,13 +181,38 @@ const TimeSegmentSelector = ({ navigation, route }) => {
       return;
     }
     
+    // Only save to main state when user confirms
+    setCustomHour(tempHour);
+    setCustomMinute(tempMinute);
+    setCustomPeriod(tempPeriod);
     setSelectedTime('specific');
     setTimeType('specific');
     setShowTimeModal(false);
   };
 
   const formatCustomTime = () => {
-    return `${customHour}:${customMinute} ${customPeriod}`;
+    const formattedMinute = customMinute.toString().padStart(2, '0');
+    return `${customHour}:${formattedMinute} ${customPeriod}`;
+  };
+
+  const isValidTime = () => {
+    const hour = parseInt(customHour);
+    const minute = parseInt(customMinute);
+    
+    if (isNaN(hour) || hour < 1 || hour > 12) return false;
+    if (isNaN(minute) || minute < 0 || minute > 59) return false;
+    
+    return true;
+  };
+
+  const isValidTempTime = () => {
+    const hour = parseInt(tempHour);
+    const minute = parseInt(tempMinute);
+    
+    if (isNaN(hour) || hour < 1 || hour > 12) return false;
+    if (isNaN(minute) || minute < 0 || minute > 59) return false;
+    
+    return true;
   };
 
   const convertTo24Hour = (hour12, minute, period) => {
@@ -163,190 +230,7 @@ const TimeSegmentSelector = ({ navigation, route }) => {
     return new Date(baseDate.getFullYear(), baseDate.getMonth(), baseDate.getDate(), hours, minutes, 0);
   };
 
-  // Generate arrays for scrollable pickers
-  const hours = ['12', '1', '2', '3', '4', '5', '6', '7', '8', '9', '10', '11'];
-  const minutes = Array.from({ length: 60 }, (_, i) => i.toString().padStart(2, '0'));
-  const periods = ['AM', 'PM'];
 
-  const ITEM_HEIGHT = 50;
-
-  const ScrollablePicker = ({ data, selectedValue, onSelect, scrollRef, label }) => {
-    const selectedIndex = data.indexOf(selectedValue);
-    const [isScrolling, setIsScrolling] = useState(false);
-    const scrollTimeoutRef = useRef(null);
-    
-    const handleScrollBegin = () => {
-      setIsScrolling(true);
-      if (scrollTimeoutRef.current) {
-        clearTimeout(scrollTimeoutRef.current);
-      }
-    };
-
-    const snapToNearestItem = (y) => {
-      const index = Math.round(y / ITEM_HEIGHT);
-      let clampedIndex = Math.max(0, Math.min(index, data.length - 1));
-      
-      // Find the nearest non-disabled item
-      if (isItemDisabled(data[clampedIndex])) {
-        // Try to find a non-disabled item before this index
-        let foundValidIndex = -1;
-        for (let i = clampedIndex - 1; i >= 0; i--) {
-          if (!isItemDisabled(data[i])) {
-            foundValidIndex = i;
-            break;
-          }
-        }
-        
-        // If no valid item found before, try after
-        if (foundValidIndex === -1) {
-          for (let i = clampedIndex + 1; i < data.length; i++) {
-            if (!isItemDisabled(data[i])) {
-              foundValidIndex = i;
-              break;
-            }
-          }
-        }
-        
-        if (foundValidIndex !== -1) {
-          clampedIndex = foundValidIndex;
-        }
-      }
-      
-      const targetY = clampedIndex * ITEM_HEIGHT;
-      
-      scrollRef.current?.scrollTo({
-        y: targetY,
-        animated: true
-      });
-      
-      onSelect(data[clampedIndex]);
-    };
-
-    const handleScrollEnd = (event) => {
-      const y = event.nativeEvent.contentOffset.y;
-      
-      // Clear any existing timeout
-      if (scrollTimeoutRef.current) {
-        clearTimeout(scrollTimeoutRef.current);
-      }
-      
-      // Set a small delay to allow momentum to finish
-      scrollTimeoutRef.current = setTimeout(() => {
-        setIsScrolling(false);
-        snapToNearestItem(y);
-      }, 100);
-    };
-
-    const scrollToIndex = (index) => {
-      if (scrollRef.current) {
-        scrollRef.current.scrollTo({
-          y: index * ITEM_HEIGHT,
-          animated: true
-        });
-      }
-    };
-
-    React.useEffect(() => {
-      if (selectedIndex >= 0) {
-        setTimeout(() => scrollToIndex(selectedIndex), 100);
-      }
-    }, [selectedIndex]);
-
-    React.useEffect(() => {
-      return () => {
-        if (scrollTimeoutRef.current) {
-          clearTimeout(scrollTimeoutRef.current);
-        }
-      };
-    }, []);
-
-    // Check if item should be disabled (future time)
-    const isItemDisabled = (item) => {
-      if (!isToday()) return false;
-      
-      let testHour = customHour;
-      let testMinute = customMinute;
-      let testPeriod = customPeriod;
-      
-      // Update the test value based on which picker this is for
-      if (label === 'Hour') testHour = item;
-      if (label === 'Minute') testMinute = item;
-      if (label === 'Period') testPeriod = item;
-      
-      return isTimeInFuture(testHour, testMinute, testPeriod);
-    };
-
-    return (
-      <View className="flex-1 items-center">
-        <Text 
-          className="text-sm mb-2 opacity-70"
-          style={{ 
-            color: colors.text,
-            fontFamily: fonts.medium
-          }}
-        >
-          {label}
-        </Text>
-        <View 
-          className="h-32 w-16 relative overflow-hidden rounded-xl"
-          style={{ backgroundColor: colors.secondary }}
-        >
-          {/* Selection highlight */}
-          <View 
-            className="absolute left-0 right-0 rounded-lg"
-            style={{
-              top: ITEM_HEIGHT,
-              height: ITEM_HEIGHT,
-              backgroundColor: colors.primary,
-              opacity: 0.3,
-              zIndex: 1
-            }}
-          />
-          
-          <ScrollView
-            ref={scrollRef}
-            showsVerticalScrollIndicator={false}
-            onScrollBeginDrag={handleScrollBegin}
-            onMomentumScrollEnd={handleScrollEnd}
-            decelerationRate="fast"
-            scrollEventThrottle={64}
-            bounces={false}
-            contentContainerStyle={{
-              paddingVertical: ITEM_HEIGHT
-            }}
-          >
-            {data.map((item, index) => {
-              const disabled = isItemDisabled(item);
-              return (
-                <TouchableOpacity
-                  key={index}
-                  onPress={() => {
-                    if (!disabled) {
-                      onSelect(item);
-                      scrollToIndex(index);
-                    }
-                  }}
-                  disabled={disabled}
-                  className="justify-center items-center"
-                  style={{ height: ITEM_HEIGHT }}
-                >
-                  <Text 
-                    className={`text-lg ${selectedValue === item ? 'opacity-100' : disabled ? 'opacity-25' : 'opacity-50'}`}
-                    style={{ 
-                      color: disabled ? '#999' : colors.text,
-                      fontFamily: selectedValue === item ? fonts.semiBold : fonts.regular
-                    }}
-                  >
-                    {item}
-                  </Text>
-                </TouchableOpacity>
-              );
-            })}
-          </ScrollView>
-        </View>
-      </View>
-    );
-  };
 
   const handleContinue = () => {
     // Check validation based on current state
@@ -406,15 +290,6 @@ const TimeSegmentSelector = ({ navigation, route }) => {
         selectedDate
       });
     } 
-    // If sleep category, go directly to Sleep screen
-    else if (category === 'sleep') {
-      navigation.navigate('Sleep', {
-        category,
-        selectedTime: timeValue,
-        timeSegment: timeType === 'segment' ? selectedTime : null,
-        selectedDate
-      });
-    }
     // Otherwise, go to the appropriate activity selection screen
     else if (nextScreen) {
       navigation.navigate(nextScreen, {
@@ -721,7 +596,7 @@ const TimeSegmentSelector = ({ navigation, route }) => {
                   {selectedTime === 'specific' 
                     ? formatCustomTime()
                     : (isToday() && selectedTime === 'current')
-                      ? 'Change to different time'
+                      ? 'Set specific time'
                       : 'Tap to set time'
                   }
                 </Text>
@@ -805,41 +680,176 @@ const TimeSegmentSelector = ({ navigation, route }) => {
                 Select Time
               </Text>
               
-              <View className="flex-row justify-between items-center mb-4 px-4">
-                <ScrollablePicker
-                  data={hours}
-                  selectedValue={customHour}
-                  onSelect={setCustomHour}
-                  scrollRef={hourScrollRef}
-                  label="Hour"
-                />
-                
-                <Text 
-                  className="text-2xl mx-4 mt-8"
-                  style={{ color: colors.text, fontFamily: fonts.semiBold }}
-                >
-                  :
-                </Text>
-                
-                <ScrollablePicker
-                  data={minutes}
-                  selectedValue={customMinute}
-                  onSelect={setCustomMinute}
-                  scrollRef={minuteScrollRef}
-                  label="Minute"
-                />
-                
-                <ScrollablePicker
-                  data={periods}
-                  selectedValue={customPeriod}
-                  onSelect={setCustomPeriod}
-                  scrollRef={periodScrollRef}
-                  label="Period"
-                />
+              {/* Time Input Section */}
+              <View className="mb-4">
+                <View className="flex-row items-center justify-center gap-4 mb-4">
+                  {/* Hour Input */}
+                  <View className="items-center">
+                    <Text 
+                      className="text-sm mb-2 opacity-70"
+                      style={{ 
+                        color: colors.text,
+                        fontFamily: fonts.medium
+                      }}
+                    >
+                      Hour
+                    </Text>
+                    <TextInput
+                      value={tempHour}
+                      onChangeText={(text) => {
+                        // Only allow numbers and limit to 2 digits
+                        const numericText = text.replace(/[^0-9]/g, '');
+                        if (numericText.length <= 2) {
+                          setTempHour(numericText);
+                        }
+                      }}
+                      keyboardType="numeric"
+                      maxLength={2}
+                      className="text-center text-lg rounded-xl py-3 px-4 border-2"
+                      style={{
+                        backgroundColor: colors.secondary,
+                        borderColor: '#B0E5E1',
+                        color: colors.text,
+                        fontFamily: fonts.semiBold,
+                        minWidth: 60
+                      }}
+                      placeholder="12"
+                      placeholderTextColor="#999"
+                    />
+                  </View>
+
+                  <Text 
+                    className="text-2xl mt-6"
+                    style={{ color: colors.text, fontFamily: fonts.semiBold }}
+                  >
+                    :
+                  </Text>
+
+                  {/* Minute Input */}
+                  <View className="items-center">
+                    <Text 
+                      className="text-sm mb-2 opacity-70"
+                      style={{ 
+                        color: colors.text,
+                        fontFamily: fonts.medium
+                      }}
+                    >
+                      Minute
+                    </Text>
+                    <TextInput
+                      value={tempMinute}
+                      onChangeText={(text) => {
+                        // Only allow numbers and limit to 2 digits
+                        const numericText = text.replace(/[^0-9]/g, '');
+                        if (numericText.length <= 2) {
+                          setTempMinute(numericText);
+                        }
+                      }}
+                      onBlur={() => {
+                        // Pad with zero on blur if needed
+                        if (tempMinute && tempMinute.length === 1) {
+                          setTempMinute(tempMinute.padStart(2, '0'));
+                        }
+                      }}
+                      keyboardType="numeric"
+                      maxLength={2}
+                      className="text-center text-lg rounded-xl py-3 px-4 border-2"
+                      style={{
+                        backgroundColor: colors.secondary,
+                        borderColor: '#B0E5E1',
+                        color: colors.text,
+                        fontFamily: fonts.semiBold,
+                        minWidth: 60
+                      }}
+                      placeholder="00"
+                      placeholderTextColor="#999"
+                    />
+                  </View>
+                </View>
+
+                {/* AM/PM Selection */}
+                <View className="items-center">
+                  <Text 
+                    className="text-sm mb-2 opacity-70"
+                    style={{ 
+                      color: colors.text,
+                      fontFamily: fonts.medium
+                    }}
+                  >
+                    Period
+                  </Text>
+                  <View className="flex-row gap-2">
+                    <TouchableOpacity
+                      onPress={() => setTempPeriod('AM')}
+                      className={`py-2 px-6 rounded-xl border-2 ${
+                        tempPeriod === 'AM' 
+                          ? 'border-green-500 bg-green-100' 
+                          : 'border-gray-300 bg-gray-100'
+                      }`}
+                      activeOpacity={0.8}
+                    >
+                      <Text 
+                        className={`text-lg ${
+                          tempPeriod === 'AM' ? 'text-green-700' : 'text-gray-700'
+                        }`}
+                        style={{ 
+                          fontFamily: tempPeriod === 'AM' ? fonts.semiBold : fonts.medium
+                        }}
+                      >
+                        AM
+                      </Text>
+                    </TouchableOpacity>
+                    
+                    <TouchableOpacity
+                      onPress={() => setTempPeriod('PM')}
+                      className={`py-2 px-6 rounded-xl border-2 ${
+                        tempPeriod === 'PM' 
+                          ? 'border-green-500 bg-green-100' 
+                          : 'border-gray-300 bg-gray-100'
+                      }`}
+                      activeOpacity={0.8}
+                    >
+                      <Text 
+                        className={`text-lg ${
+                          tempPeriod === 'PM' ? 'text-green-700' : 'text-gray-700'
+                        }`}
+                        style={{ 
+                          fontFamily: tempPeriod === 'PM' ? fonts.semiBold : fonts.medium
+                        }}
+                      >
+                        PM
+                      </Text>
+                    </TouchableOpacity>
+                  </View>
+                </View>
               </View>
 
-              {/* Future Time Warning */}
-              {isToday() && isTimeInFuture(customHour, customMinute, customPeriod) && (
+              {/* Validation Warnings */}
+              {!isValidTempTime() && (tempHour || tempMinute) && (
+                <View 
+                  className="mb-4 p-3 rounded-xl"
+                  style={{ 
+                    backgroundColor: 'rgba(239, 68, 68, 0.1)',
+                    borderWidth: 1,
+                    borderColor: '#EF4444'
+                  }}
+                >
+                  <View className="flex-row items-center">
+                    <Text className="text-lg mr-2">❌</Text>
+                    <Text 
+                      className="text-sm flex-1"
+                      style={{ 
+                        color: '#DC2626',
+                        fontFamily: fonts.medium
+                      }}
+                    >
+                      Please enter a valid time (Hour: 1-12, Minute: 0-59).
+                    </Text>
+                  </View>
+                </View>
+              )}
+
+              {isValidTempTime() && isToday() && isTimeInFuture(tempHour, tempMinute, tempPeriod) && (
                 <View 
                   className="mb-4 p-3 rounded-xl"
                   style={{ 
@@ -857,7 +867,7 @@ const TimeSegmentSelector = ({ navigation, route }) => {
                         fontFamily: fonts.medium
                       }}
                     >
-                      Please select a time that has already passed.
+                      Please select a time that has already passed today.
                     </Text>
                   </View>
                 </View>
@@ -885,8 +895,16 @@ const TimeSegmentSelector = ({ navigation, route }) => {
                 
                 <TouchableOpacity
                   onPress={handleTimeConfirm}
+                  disabled={!isValidTempTime() || (isToday() && isTimeInFuture(tempHour, tempMinute, tempPeriod))}
                   className="flex-1 rounded-xl py-3"
-                  style={{ backgroundColor: colors.primary }}
+                  style={{ 
+                    backgroundColor: (!isValidTempTime() || (isToday() && isTimeInFuture(tempHour, tempMinute, tempPeriod))) 
+                      ? colors.secondary 
+                      : colors.primary,
+                    opacity: (!isValidTempTime() || (isToday() && isTimeInFuture(tempHour, tempMinute, tempPeriod))) 
+                      ? 0.5 
+                      : 1
+                  }}
                   activeOpacity={0.8}
                 >
                   <Text 

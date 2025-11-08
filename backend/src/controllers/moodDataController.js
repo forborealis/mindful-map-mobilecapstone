@@ -428,62 +428,6 @@ const MoodDataController = {
     }
   },
 
-  async updateSleepHours(req, res) {
-    try {
-      if (!req.user) {
-        return res.status(401).json({ success: false, message: 'Unauthorized: No user found in request.' });
-      }
-
-      const { hrs, date } = req.body;
-
-      if (!hrs || typeof hrs !== 'number') {
-        return res.status(400).json({ success: false, message: 'Valid sleep hours is required.' });
-      }
-
-      // Determine the target date  
-      let targetDate = new Date();
-      if (date) {
-        const dateParts = date.split('-');
-        targetDate = new Date(parseInt(dateParts[0]), parseInt(dateParts[1]) - 1, parseInt(dateParts[2]), 12, 0, 0, 0);
-      } else {
-        targetDate = new Date(targetDate.getFullYear(), targetDate.getMonth(), targetDate.getDate(), 12, 0, 0, 0);
-      }
-
-      const startOfDay = new Date(targetDate);
-      startOfDay.setHours(0, 0, 0, 0);
-
-      const endOfDay = new Date(targetDate);
-      endOfDay.setHours(23, 59, 59, 999);
-
-      // Find existing sleep log for the specified date
-      const existingSleepLog = await MoodLog.findOne({
-        user: req.user._id,
-        category: 'sleep',
-        date: { $gte: startOfDay, $lte: endOfDay }
-      });
-
-      if (!existingSleepLog) {
-        return res.status(404).json({ 
-          success: false, 
-          message: 'No sleep log found for the specified date. Please create a new sleep log first.' 
-        });
-      }
-
-      // Update only the sleep hours, keep everything else intact
-      existingSleepLog.hrs = hrs;
-      await existingSleepLog.save();
-
-      res.status(200).json({ 
-        success: true, 
-        message: 'Sleep hours updated successfully.',
-        log: existingSleepLog
-      });
-    } catch (error) {
-      console.error('Error updating sleep hours:', error);
-      res.status(500).json({ success: false, message: 'Server error while updating sleep hours.' });
-    }
-  },
-
   async checkMoodLogs(req, res) {
     try {
       const userId = req.user._id;
