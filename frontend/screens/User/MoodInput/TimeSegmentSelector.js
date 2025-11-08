@@ -451,6 +451,16 @@ const TimeSegmentSelector = ({ navigation, route }) => {
       >
         <View className="mb-8">
           <Text 
+            className="text-center text-sm opacity-60 mb-4"
+            style={{ 
+              color: colors.text,
+              fontFamily: fonts.regular
+            }}
+          >
+            Category: {categoryTitle || category}
+            {activity && ` • Activity: ${activity}`}
+          </Text>
+          <Text 
             className="text-3xl text-center mb-3"
             style={{ 
               color: colors.text,
@@ -461,23 +471,13 @@ const TimeSegmentSelector = ({ navigation, route }) => {
             When did this happen?
           </Text>
           <Text 
-            className="text-center text-base opacity-80 mb-2"
+            className="text-center text-base opacity-80"
             style={{ 
               color: colors.text,
               fontFamily: fonts.regular
             }}
           >
             Help us accurately track when your mood/activity occurred
-          </Text>
-          <Text 
-            className="text-center text-sm opacity-60"
-            style={{ 
-              color: colors.text,
-              fontFamily: fonts.regular
-            }}
-          >
-            Category: {categoryTitle || category}
-            {activity && ` • Activity: ${activity}`}
           </Text>
         </View>
 
