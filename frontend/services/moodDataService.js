@@ -777,5 +777,117 @@ async getSleepHoursTrend(period = 'month') {
     console.error('Error in getSleepHoursTrend:', error);
     return [];
   }
-}
+},
+async getDailyStatistics(date) {
+  try {
+    const userId = await this.getStoredUserId();
+    if (!userId) {
+      throw new Error('User not found. Please login again.');
+    }
+
+    // Fetch all logs for the user (you can adjust limit if needed)
+    const result = await this.getUserMoodLogs({ limit: 1000 });
+    if (!result.success) {
+      throw new Error(result.error || 'Failed to fetch mood logs');
+    }
+
+    const logs = result.moodLogs || [];
+    const target = date.toISOString().split('T')[0];
+
+    // Filter logs for the selected date
+    const dailyLogs = logs.filter(log => {
+      const logDate = new Date(log.selectedDate || log.date || log.createdAt);
+      return logDate.toISOString().split('T')[0] === target;
+    });
+
+    // Calculate statistics
+    const totalEntries = dailyLogs.length;
+    const valenceCounts = { positive: 0, negative: 0 };
+    let intensitySum = 0;
+    let emotionCounts = {};
+    // Add earlyMorning
+    let timeSegmentMoods = { earlyMorning: null, morning: null, afternoon: null, evening: null };
+    // For counting per segment
+    let segmentEmotionMap = {
+      earlyMorning: {},
+      morning: {},
+      afternoon: {},
+      evening: {},
+    };
+    let segmentIntensityMap = {
+      earlyMorning: [],
+      morning: [],
+      afternoon: [],
+      evening: [],
+    };
+
+    dailyLogs.forEach(log => {
+      // Count valence
+      if (log.afterValence === 'positive') valenceCounts.positive++;
+      if (log.afterValence === 'negative') valenceCounts.negative++;
+      // Intensity
+      intensitySum += log.afterIntensity || 0;
+      // Emotions
+      if (log.afterEmotion) {
+        emotionCounts[log.afterEmotion] = (emotionCounts[log.afterEmotion] || 0) + 1;
+      }
+      // Time segment
+      const hour = new Date(log.selectedTime || log.date || log.createdAt).getHours();
+      let segment = null;
+      if (hour >= 0 && hour < 6) segment = 'earlyMorning';
+      else if (hour >= 6 && hour < 12) segment = 'morning';
+      else if (hour >= 12 && hour < 18) segment = 'afternoon';
+      else segment = 'evening';
+
+      // Count emotions per segment
+      if (log.afterEmotion) {
+        segmentEmotionMap[segment][log.afterEmotion] = (segmentEmotionMap[segment][log.afterEmotion] || 0) + 1;
+      }
+      // Collect intensities per segment
+      if (typeof log.afterIntensity === 'number') {
+        segmentIntensityMap[segment].push(log.afterIntensity);
+      }
+    });
+
+    // For each segment, find dominant emotion and stats
+    Object.keys(timeSegmentMoods).forEach(segment => {
+      const emotionCounts = segmentEmotionMap[segment];
+      const totalEntries = Object.values(emotionCounts).reduce((a, b) => a + b, 0);
+      if (totalEntries === 0) {
+        timeSegmentMoods[segment] = null;
+      } else {
+        // Find dominant emotion
+        const sorted = Object.entries(emotionCounts).sort((a, b) => b[1] - a[1]);
+        const [dominantEmotion, count] = sorted[0];
+        // Average intensity for this segment
+        const intensities = segmentIntensityMap[segment];
+        const avgIntensity = intensities.length > 0 ? intensities.reduce((a, b) => a + b, 0) / intensities.length : null;
+        timeSegmentMoods[segment] = {
+          emotion: dominantEmotion,
+          count,
+          totalEntries,
+          averageIntensity: avgIntensity,
+        };
+      }
+    });
+
+    // Find most prominent valence
+    let mostProminentValence = valenceCounts.positive >= valenceCounts.negative ? 'positive' : 'negative';
+
+    // Find average intensity
+    const averageIntensity = totalEntries > 0 ? intensitySum / totalEntries : 0;
+
+    return {
+      totalEntries,
+      valenceCounts,
+      averageIntensity,
+      emotionCounts,
+      mostProminentValence,
+      timeSegmentMoods,
+    };
+  } catch (error) {
+    console.error('Error in getDailyStatistics:', error);
+    throw error;
+  }
+},
 };  

@@ -368,7 +368,7 @@ export const authService = {
           unsubscribe();
           resolve(auth.currentUser);
         }
-      }, 3000); // Increased to 3 seconds for better reliability
+      }, 8000); // Increased to 3 seconds for better reliability
     });
   },
 
