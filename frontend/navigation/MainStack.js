@@ -21,6 +21,7 @@ import SideBarNav from '../components/SideBarNav';
 import StatisticsDashboard from '../screens/User/Statistics/StatisticsDashboard';
 import DetailedMoodAnalysis from '../screens/User/Statistics/DetailedMoodAnalysis';
 import DailyStatistics from '../screens/User/Statistics/Daily/DailyStatistics'; 
+import WeeklyStatistics from '../screens/User/Statistics/Weekly/WeeklyStatistics';
 import MoodCount from '../screens/User/Statistics/MoodCount';
 import ActivitiesStatistics from '../screens/User/Statistics/ActivitiesStatistics';
 import SleepAnalysis from '../screens/User/Statistics/SleepAnalysis';
@@ -125,6 +126,11 @@ export default function MainStack({ initialRoute }) {
       <Stack.Screen      
         name="DailyStatistics" 
         component={DailyStatistics}
+        options={{ headerShown: false }}
+      />
+      <Stack.Screen      
+        name="WeeklyStatistics" 
+        component={WeeklyStatistics}
         options={{ headerShown: false }}
       />
       <Stack.Screen      

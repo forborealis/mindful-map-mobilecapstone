@@ -13,7 +13,7 @@ export default function DetailedMoodAnalysis() {
 
   return (
     <View style={{
-      backgroundColor: '#F8F8FF',
+      backgroundColor: '#FFFFFF',
       borderRadius: 28,
       padding: 22,
       width: containerWidth,
@@ -27,46 +27,30 @@ export default function DetailedMoodAnalysis() {
       elevation: 4,
     }}>
       {/* Header */}
-      <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 10 }}>
-        <View style={{
-          backgroundColor: '#DFF7EC',
-          borderRadius: 12,
-          padding: 10,
-          marginRight: 12,
+      <View style={{ alignItems: 'center', marginBottom: 10 }}>
+        <Text style={{
+          fontFamily: fonts.bold,
+          fontSize: 22,
+          color: colors.primary,
+          textAlign: 'center',
         }}>
-          <MaterialIcons name="show-chart" size={28} color={colors.primary} />
-        </View>
-        <View>
-          <Text style={{
-            fontFamily: fonts.bold,
-            fontSize: 22,
-            color: colors.primary,
-          }}>
-            Detailed Mood Analysis
-          </Text>
-          <Text style={{
-            fontFamily: fonts.medium,
-            fontSize: 15,
-            color: colors.text,
-            opacity: 0.7,
-          }}>
-            Get comprehensive insights into your emotional patterns
-          </Text>
-        </View>
+          Detailed Mood Analysis
+        </Text>
       </View>
 
       {/* Description */}
       <Text style={{
         fontFamily: fonts.medium,
-        fontSize: 14,
+        fontSize: 15,
         color: colors.text,
         marginBottom: 18,
         opacity: 0.8,
+        textAlign: 'justify',
       }}>
-        Explore in-depth statistics about your daily and weekly mood patterns. Discover trends, compare time periods, and gain valuable insights into your emotional journey.
+        Get comprehensive insights into your emotional patterns. 
       </Text>
 
-      {/* Navigation Card */}
+      {/* Navigation Cards */}
       <TouchableOpacity
         onPress={() => navigation.navigate('DailyStatistics')}
         style={{
@@ -78,8 +62,9 @@ export default function DetailedMoodAnalysis() {
           paddingHorizontal: 18,
           flexDirection: 'row',
           alignItems: 'center',
-          marginBottom: 8,
+          marginBottom: 12,
           elevation: 2,
+          justifyContent: 'center',
         }}
       >
         <MaterialIcons name="menu" size={24} color={colors.primary} style={{ marginRight: 14 }} />
@@ -90,7 +75,7 @@ export default function DetailedMoodAnalysis() {
             color: colors.primary,
             marginBottom: 2,
           }}>
-            Daily Statistics
+            Daily Mood Analysis
           </Text>
           <Text style={{
             fontFamily: fonts.medium,
@@ -99,6 +84,42 @@ export default function DetailedMoodAnalysis() {
             opacity: 0.7,
           }}>
             Day-by-day mood insights
+          </Text>
+        </View>
+      </TouchableOpacity>
+
+      <TouchableOpacity
+        onPress={() => navigation.navigate('WeeklyStatistics')}
+        style={{
+          backgroundColor: '#fff',
+          borderRadius: 16,
+          borderWidth: 2,
+          borderColor: '#E6F7F2',
+          paddingVertical: 18,
+          paddingHorizontal: 18,
+          flexDirection: 'row',
+          alignItems: 'center',
+          elevation: 2,
+          justifyContent: 'center',
+        }}
+      >
+        <MaterialIcons name="bar-chart" size={24} color={colors.primary} style={{ marginRight: 14 }} />
+        <View>
+          <Text style={{
+            fontFamily: fonts.bold,
+            fontSize: 16,
+            color: colors.primary,
+            marginBottom: 2,
+          }}>
+            Weekly Mood Analysis
+          </Text>
+          <Text style={{
+            fontFamily: fonts.medium,
+            fontSize: 13,
+            color: colors.text,
+            opacity: 0.7,
+          }}>
+            Weekly mood insights & patterns
           </Text>
         </View>
       </TouchableOpacity>

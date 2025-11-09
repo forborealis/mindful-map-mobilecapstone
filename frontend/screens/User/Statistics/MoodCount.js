@@ -250,7 +250,7 @@ export default function MoodCount() {
         <Text
           style={{
             color: colors.primary,
-            fontFamily: fonts.semiBold,
+            fontFamily: fonts.bold,
             letterSpacing: 1,
             fontSize: 24,
             textAlign: 'center',

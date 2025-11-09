@@ -289,19 +289,29 @@ export default function DailyStatistics({ navigation }) {
 
   return (
     <View style={{ flex: 1, backgroundColor: colors.primary }}>
-      {/* Back Arrow */}
-      <TouchableOpacity
-        onPress={() => navigation.goBack()}
-        style={{
-          position: 'absolute',
-          top: 38,
-          left: 18,
-        }}
-      >
-        <Ionicons name="arrow-back" size={26} color="#222" />
-      </TouchableOpacity>
 
-      <ScrollView style={{ flex: 1 }}>
+      <ScrollView 
+      style={{ flex: 1 }}
+        contentContainerStyle={{ paddingTop: 0 }} 
+        keyboardShouldPersistTaps="handled"
+      >
+        <View
+                style={{
+                  position: 'absolute',
+                  top: 38,
+                  left: 18,
+                  zIndex: 100,
+                  elevation: 10,
+                }}
+                pointerEvents="box-none"
+              >
+                <TouchableOpacity
+                  onPress={() => navigation.goBack()}
+                  hitSlop={{ top: 16, bottom: 16, left: 16, right: 16 }}
+                >
+                  <Ionicons name="arrow-back" size={26} color="#222" />
+                </TouchableOpacity>
+              </View>
         {/* Date Navigation */}
         <View
           style={{
