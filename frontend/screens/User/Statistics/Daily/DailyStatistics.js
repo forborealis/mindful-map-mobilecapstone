@@ -170,6 +170,26 @@ export default function DailyStatistics({ navigation }) {
         });
       }
     }
+      if (
+    statistics?.emotionCounts &&
+    previousDayStats?.emotionCounts &&
+    Object.keys(statistics.emotionCounts).length > 0 &&
+    Object.keys(previousDayStats.emotionCounts).length > 0
+  ) {
+    const currentTopEmotion = Object.keys(statistics.emotionCounts).reduce((a, b) =>
+      statistics.emotionCounts[a] > statistics.emotionCounts[b] ? a : b
+    );
+    const previousTopEmotion = Object.keys(previousDayStats.emotionCounts).reduce((a, b) =>
+      previousDayStats.emotionCounts[a] > previousDayStats.emotionCounts[b] ? a : b
+    );
+
+    if (currentTopEmotion !== previousTopEmotion) {
+      insights.push({
+        icon: <MaterialIcons name="trending-flat" size={20} color="#5247ca" />,
+        text: `Your primary emotion today is ${formatText(currentTopEmotion)}. Yesterday it was ${formatText(previousTopEmotion)}.`,
+      });
+    }
+  }
     return insights.slice(0, 3);
   };
 

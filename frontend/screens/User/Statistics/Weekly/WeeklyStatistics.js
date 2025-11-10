@@ -121,72 +121,100 @@ export default function WeeklyStatistics({ navigation }) {
       }));
   };
 
-  // Comparison insights (same as daily, but for week)
-  const getComparisonInsights = () => {
-    if (!statistics || !previousWeekStats || statistics.totalEntries === 0) return [];
-    const insights = [];
-    const entriesDiff = statistics.totalEntries - previousWeekStats.totalEntries;
-    if (entriesDiff > 0) {
+ // ...inside WeeklyStatistics.js...
+
+const getComparisonInsights = () => {
+  if (
+    !statistics ||
+    !previousWeekStats ||
+    statistics.totalEntries === 0 ||
+    previousWeekStats.totalEntries === 0
+  ) {
+    return [];
+  }
+
+  const insights = [];
+
+  // Total entries comparison
+  const entriesDiff = statistics.totalEntries - previousWeekStats.totalEntries;
+  if (entriesDiff > 0) {
+    insights.push({
+      type: 'positive',
+      icon: <MaterialIcons name="trending-up" size={20} color="#4CAF50" />,
+      text: `You logged ${entriesDiff} more mood${entriesDiff > 1 ? 's' : ''} this week than last week! Excellent consistency! 🌟`,
+      color: '#4CAF50',
+    });
+  } else if (entriesDiff < 0) {
+    insights.push({
+      type: 'neutral',
+      icon: <MaterialIcons name="trending-down" size={20} color="#FF9800" />,
+      text: `You logged ${Math.abs(entriesDiff)} fewer mood${Math.abs(entriesDiff) > 1 ? 's' : ''} than last week. Every bit of tracking counts! 📝`,
+      color: '#FF9800',
+    });
+  }
+
+  // Positive mood comparison
+  const currentPositive = statistics.valenceCounts?.positive || 0;
+  const previousPositive = previousWeekStats.valenceCounts?.positive || 0;
+  const positiveDiff = currentPositive - previousPositive;
+  if (positiveDiff > 0) {
+    insights.push({
+      type: 'positive',
+      icon: <MaterialIcons name="sentiment-satisfied" size={20} color="#4CAF50" />,
+      text: `${positiveDiff} more positive moment${positiveDiff > 1 ? 's' : ''} this week! You're building positive momentum! 🚀`,
+      color: '#4CAF50',
+    });
+  } else if (positiveDiff < 0) {
+    insights.push({
+      type: 'understanding',
+      icon: <MaterialIcons name="sentiment-dissatisfied" size={20} color="#2196F3" />,
+      text: `Fewer positive moods than last week. That's perfectly normal - every week is different! 💙`,
+      color: '#2196F3',
+    });
+  }
+
+  // Weekly activity comparison (per day)
+  const currentAvgPerDay = (statistics.totalEntries / 7).toFixed(1);
+  const previousAvgPerDay = (previousWeekStats.totalEntries / 7).toFixed(1);
+  const avgDiff = currentAvgPerDay - previousAvgPerDay;
+  if (Math.abs(avgDiff) > 0.5) {
+    if (avgDiff > 0) {
       insights.push({
-        icon: <MaterialIcons name="trending-up" size={20} color="#4CAF50" />,
-        text: `You logged ${entriesDiff} more mood${entriesDiff > 1 ? 's' : ''} than last week! Great self-awareness! 🌟`,
+        type: 'insight',
+        icon: <MaterialIcons name="timeline" size={20} color="#9C27B0" />,
+        text: `You've been more active this week with ${currentAvgPerDay} entries per day (vs ${previousAvgPerDay} last week)! 📈`,
+        color: '#9C27B0',
       });
-    } else if (entriesDiff < 0) {
+    } else {
       insights.push({
-        icon: <MaterialIcons name="trending-down" size={20} color="#FF9800" />,
-        text: `You logged ${Math.abs(entriesDiff)} fewer mood${Math.abs(entriesDiff) > 1 ? 's' : ''} than last week. Every bit of tracking counts! 📝`,
+        type: 'neutral',
+        icon: <MaterialIcons name="timeline" size={20} color="#FF9800" />,
+        text: `Slightly less active this week with ${currentAvgPerDay} entries per day. Quality over quantity! 🎯`,
+        color: '#FF9800',
       });
     }
-    const currentPositive = statistics.valenceCounts?.positive || 0;
-    const previousPositive = previousWeekStats.valenceCounts?.positive || 0;
-    const positiveDiff = currentPositive - previousPositive;
-    if (positiveDiff > 0) {
+  }
+
+  // Most active day comparison
+  if (statistics.dailyBreakdown && previousWeekStats.dailyBreakdown) {
+    const currentMostActiveDay = Object.keys(statistics.dailyBreakdown).reduce((a, b) =>
+      statistics.dailyBreakdown[a].count > statistics.dailyBreakdown[b].count ? a : b
+    );
+    const previousMostActiveDay = Object.keys(previousWeekStats.dailyBreakdown).reduce((a, b) =>
+      previousWeekStats.dailyBreakdown[a].count > previousWeekStats.dailyBreakdown[b].count ? a : b
+    );
+    if (currentMostActiveDay !== previousMostActiveDay) {
       insights.push({
-        icon: <MaterialIcons name="sentiment-satisfied" size={20} color="#4CAF50" />,
-        text: `${positiveDiff} more positive mood${positiveDiff > 1 ? 's' : ''} than last week! You're on an upward trend! 🚀`,
-      });
-    } else if (positiveDiff < 0) {
-      insights.push({
-        icon: <MaterialIcons name="sentiment-dissatisfied" size={20} color="#2196F3" />,
-        text: `Fewer positive moods than last week. That's perfectly normal - every week is different! 💙`,
+        type: 'insight',
+        icon: <MaterialIcons name="calendar-today" size={20} color="#FF5722" />,
+        text: `Your most active day shifted from ${previousMostActiveDay} to ${currentMostActiveDay}. Interesting pattern change! 📅`,
+        color: '#FF5722',
       });
     }
-    if (
-      statistics.mostProminentValence &&
-      previousWeekStats.mostProminentValence &&
-      statistics.mostProminentValence !== previousWeekStats.mostProminentValence
-    ) {
-      if (statistics.mostProminentValence === 'positive') {
-        insights.push({
-          icon: <MaterialIcons name="sentiment-satisfied" size={20} color="#4CAF50" />,
-          text: `Your mood shifted from negative to positive this week! What a beautiful turnaround! 🌈`,
-        });
-      } else {
-        insights.push({
-          icon: <MaterialIcons name="lightbulb-outline" size={20} color="#2196F3" />,
-          text: `This week felt more challenging than last week. Remember, difficult weeks make us stronger! 💪`,
-        });
-      }
-    }
-    // Per day average
-    const currentAvgPerDay = (statistics.totalEntries / 7).toFixed(1);
-    const previousAvgPerDay = (previousWeekStats.totalEntries / 7).toFixed(1);
-    const avgDiff = currentAvgPerDay - previousAvgPerDay;
-    if (Math.abs(avgDiff) > 0.5) {
-      if (avgDiff > 0) {
-        insights.push({
-          icon: <MaterialIcons name="trending-up" size={20} color="#9C27B0" />,
-          text: `You've been more active this week with ${currentAvgPerDay} entries per day (vs ${previousAvgPerDay} last week)! 📈`,
-        });
-      } else {
-        insights.push({
-          icon: <MaterialIcons name="trending-down" size={20} color="#FF9800" />,
-          text: `Slightly less active this week with ${currentAvgPerDay} entries per day. Quality over quantity! 🎯`,
-        });
-      }
-    }
-    return insights.slice(0, 3);
-  };
+  }
+
+  return insights.slice(0, 3);
+};
 
   // Helper: determine dominant emotion & counts for a time segment (same as daily)
   const getSegmentDominant = (segment) => {
@@ -968,7 +996,7 @@ export default function WeeklyStatistics({ navigation }) {
                                 textAlign: 'center',
                               }}
                             >
-                              Intensity: {moodData.averageIntensity != null ? `${Number(moodData.averageIntensity).toFixed(2)}/5` : '—'}
+                              Intensity: {moodData.averageIntensity != null ? `${Number(moodData.averageIntensity).toFixed(1)}/5` : '—'}
                             </Text>
                           </>
                         ) : (

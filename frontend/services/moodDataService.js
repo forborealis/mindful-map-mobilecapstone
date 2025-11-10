@@ -778,49 +778,52 @@
       return [];
     }
   },
-    async getDailyStatistics(date) {
-      try {
-        const userId = await this.getStoredUserId();
-        if (!userId) {
-          throw new Error('User not found. Please login again.');
-        }
+async getDailyStatistics(date) {
+  try {
+    const userId = await this.getStoredUserId();
+    if (!userId) {
+      throw new Error('User not found. Please login again.');
+    }
 
-        const result = await this.getUserMoodLogs({ limit: 1000 });
-        if (!result.success) {
-          throw new Error(result.error || 'Failed to fetch mood logs');
-        }
+    const result = await this.getUserMoodLogs({ limit: 1000 });
+    if (!result.success) {
+      throw new Error(result.error || 'Failed to fetch mood logs');
+    }
 
-        const logs = result.moodLogs || [];
-        const target = date.toISOString().split('T')[0];
+    const logs = result.moodLogs || [];
+    const target = date.toISOString().split('T')[0];
 
-        const dailyLogs = logs.filter(log => {
-          const logDate = new Date(log.selectedDate || log.date || log.createdAt);
-          return logDate.toISOString().split('T')[0] === target;
-        });
+    const dailyLogs = logs.filter(log => {
+      const logDate = new Date(log.selectedDate || log.date || log.createdAt);
+      return logDate.toISOString().split('T')[0] === target;
+    });
 
-        // Calculate statistics
-        const totalEntries = dailyLogs.length;
-        const valenceCounts = { positive: 0, negative: 0 };
-        let intensitySum = 0;
-        let emotionCounts = {};
-        let afterEmotionCounts = {};
-        let beforeEmotionCounts = {};
-        let timeSegmentMoods = { earlyMorning: null, morning: null, afternoon: null, evening: null };
-        let segmentEmotionMap = {
-          earlyMorning: {},
-          morning: {},
-          afternoon: {},
-          evening: {},
-        };
-        let segmentIntensityMap = {
-          earlyMorning: [],
-          morning: [],
-          afternoon: [],
-          evening: [],
-        };
+    // Calculate statistics
+    const totalEntries = dailyLogs.length;
+    const valenceCounts = { positive: 0, negative: 0 };
+    let intensitySum = 0;
+    let emotionCounts = {};
+    let afterEmotionCounts = {};
+    let beforeEmotionCounts = {};
+    let timeSegmentMoods = { earlyMorning: null, morning: null, afternoon: null, evening: null };
+    let segmentEmotionMap = {
+      earlyMorning: {},
+      morning: {},
+      afternoon: {},
+      evening: {},
+    };
 
-        dailyLogs.forEach(log => {
-          if (log.beforeValence === 'positive') valenceCounts.positive++;
+    // For time segment dominant emotion intensity calculation
+    let segmentEmotionIntensityMap = {
+      earlyMorning: {},
+      morning: {},
+      afternoon: {},
+      evening: {},
+    };
+
+    dailyLogs.forEach(log => {
+      // Before
+      if (log.beforeValence === 'positive') valenceCounts.positive++;
       if (log.beforeValence === 'negative') valenceCounts.negative++;
       if (typeof log.beforeIntensity === 'number') intensitySum += log.beforeIntensity;
       if (log.beforeEmotion) {
@@ -838,13 +841,17 @@
 
         if (log.beforeEmotion) {
           segmentEmotionMap[segment][log.beforeEmotion] = (segmentEmotionMap[segment][log.beforeEmotion] || 0) + 1;
-        }
-        if (typeof log.beforeIntensity === 'number') {
-          segmentIntensityMap[segment].push(log.beforeIntensity);
+          if (typeof log.beforeIntensity === 'number') {
+            if (!segmentEmotionIntensityMap[segment][log.beforeEmotion]) {
+              segmentEmotionIntensityMap[segment][log.beforeEmotion] = [];
+            }
+            segmentEmotionIntensityMap[segment][log.beforeEmotion].push(log.beforeIntensity);
+          }
         }
       }
 
-           if (log.afterValence === 'positive') valenceCounts.positive++;
+      // After
+      if (log.afterValence === 'positive') valenceCounts.positive++;
       if (log.afterValence === 'negative') valenceCounts.negative++;
       if (typeof log.afterIntensity === 'number') intensitySum += log.afterIntensity;
       if (log.afterEmotion) {
@@ -862,215 +869,210 @@
 
         if (log.afterEmotion) {
           segmentEmotionMap[segment][log.afterEmotion] = (segmentEmotionMap[segment][log.afterEmotion] || 0) + 1;
-        }
-        if (typeof log.afterIntensity === 'number') {
-          segmentIntensityMap[segment].push(log.afterIntensity);
-        }
-      }
-    });
-
-
-        Object.keys(timeSegmentMoods).forEach(segment => {
-          const emotionCounts = segmentEmotionMap[segment];
-          const totalEntries = Object.values(emotionCounts).reduce((a, b) => a + b, 0);
-          if (totalEntries === 0) {
-            timeSegmentMoods[segment] = null;
-          } else {
-            const sorted = Object.entries(emotionCounts).sort((a, b) => b[1] - a[1]);
-            const [dominantEmotion, count] = sorted[0];
-            const intensities = segmentIntensityMap[segment];
-            const avgIntensity = intensities.length > 0 ? intensities.reduce((a, b) => a + b, 0) / intensities.length : null;
-            timeSegmentMoods[segment] = {
-              emotion: dominantEmotion,
-              count,
-              totalEntries,
-              averageIntensity: avgIntensity,
-            };
+          if (typeof log.afterIntensity === 'number') {
+            if (!segmentEmotionIntensityMap[segment][log.afterEmotion]) {
+              segmentEmotionIntensityMap[segment][log.afterEmotion] = [];
+            }
+            segmentEmotionIntensityMap[segment][log.afterEmotion].push(log.afterIntensity);
           }
-        });
-
-        // Find most prominent valence
-        let mostProminentValence = valenceCounts.positive >= valenceCounts.negative ? 'positive' : 'negative';
-
-        // Find average intensity
-        const averageIntensity = totalEntries > 0 ? intensitySum / totalEntries : 0;
-
-        return {
-          totalEntries,
-          valenceCounts,
-          averageIntensity,
-          emotionCounts,
-          afterEmotionCounts,
-          beforeEmotionCounts,
-          mostProminentValence,
-          timeSegmentMoods,
-        };
-      } catch (error) {
-        console.error('Error in getDailyStatistics:', error);
-        throw error;
-      }
-    },
-    
-      async getWeeklyStatistics(date) {
-    try {
-      const userId = await this.getStoredUserId();
-      if (!userId) {
-        throw new Error('User not found. Please login again.');
-      }
-
-      const now = date ? new Date(date) : new Date();
-      const dayOfWeek = now.getDay();
-      const mondayOffset = dayOfWeek === 0 ? -6 : 1 - dayOfWeek;
-      const weekStart = new Date(now.getFullYear(), now.getMonth(), now.getDate() + mondayOffset);
-      weekStart.setHours(0, 0, 0, 0);
-      const weekEnd = new Date(weekStart);
-      weekEnd.setDate(weekStart.getDate() + 7);
-
-      const result = await this.getUserMoodLogs({ limit: 1000 });
-      if (!result.success) {
-        throw new Error(result.error || 'Failed to fetch mood logs');
-      }
-
-      const logs = result.moodLogs || [];
-
-      const weeklyLogs = logs.filter(log => {
-        const logDate = new Date(log.selectedDate || log.date || log.createdAt);
-        return logDate >= weekStart && logDate < weekEnd;
-      });
-
-      const totalEntries = weeklyLogs.length;
-      const valenceCounts = { positive: 0, negative: 0 };
-      let intensitySum = 0;
-      let emotionCounts = {};
-      let timeSegmentMoods = { earlyMorning: null, morning: null, afternoon: null, evening: null };
-      let segmentEmotionMap = {
-        earlyMorning: {},
-        morning: {},
-        afternoon: {},
-        evening: {},
-      };
-      let segmentIntensityMap = {
-        earlyMorning: [],
-        morning: [],
-        afternoon: [],
-        evening: [],
-      };
-
-      
-      const daysOfWeek = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
-      let dailyBreakdown = {};
-      daysOfWeek.forEach(day => {
-        dailyBreakdown[day] = { count: 0, dominantEmotion: null, emotionCounts: {} };
-      });
-
-      weeklyLogs.forEach(log => {
-        if (log.beforeValence === 'positive') valenceCounts.positive++;
-      if (log.beforeValence === 'negative') valenceCounts.negative++;
-      if (typeof log.beforeIntensity === 'number') intensitySum += log.beforeIntensity;
-      if (log.beforeEmotion) {
-        emotionCounts[log.beforeEmotion] = (emotionCounts[log.beforeEmotion] || 0) + 1;
-      }
-      // Time segment for before
-      if (log.selectedTime || log.date || log.createdAt) {
-        const hour = new Date(log.selectedTime || log.date || log.createdAt).getHours();
-        let segment = null;
-        if (hour >= 0 && hour < 6) segment = 'earlyMorning';
-        else if (hour >= 6 && hour < 12) segment = 'morning';
-        else if (hour >= 12 && hour < 18) segment = 'afternoon';
-        else segment = 'evening';
-
-        if (log.beforeEmotion) {
-          segmentEmotionMap[segment][log.beforeEmotion] = (segmentEmotionMap[segment][log.beforeEmotion] || 0) + 1;
         }
-        if (typeof log.beforeIntensity === 'number') {
-          segmentIntensityMap[segment].push(log.beforeIntensity);
-        }
-      }
-       const logDateBefore = new Date(log.selectedDate || log.date || log.createdAt);
-      const dayIdxBefore = (logDateBefore.getDay() + 6) % 7; // Monday=0, Sunday=6
-      const dayNameBefore = daysOfWeek[dayIdxBefore];
-      dailyBreakdown[dayNameBefore].count += 1;
-      if (log.beforeEmotion) {
-        dailyBreakdown[dayNameBefore].emotionCounts[log.beforeEmotion] = (dailyBreakdown[dayNameBefore].emotionCounts[log.beforeEmotion] || 0) + 1;
-      }
-         if (log.afterValence === 'positive') valenceCounts.positive++;
-      if (log.afterValence === 'negative') valenceCounts.negative++;
-      if (typeof log.afterIntensity === 'number') intensitySum += log.afterIntensity;
-      if (log.afterEmotion) {
-        emotionCounts[log.afterEmotion] = (emotionCounts[log.afterEmotion] || 0) + 1;
-      }
-      // Time segment for after
-      if (log.selectedTime || log.date || log.createdAt) {
-        const hour = new Date(log.selectedTime || log.date || log.createdAt).getHours();
-        let segment = null;
-        if (hour >= 0 && hour < 6) segment = 'earlyMorning';
-        else if (hour >= 6 && hour < 12) segment = 'morning';
-        else if (hour >= 12 && hour < 18) segment = 'afternoon';
-        else segment = 'evening';
-
-        if (log.afterEmotion) {
-          segmentEmotionMap[segment][log.afterEmotion] = (segmentEmotionMap[segment][log.afterEmotion] || 0) + 1;
-        }
-        if (typeof log.afterIntensity === 'number') {
-          segmentIntensityMap[segment].push(log.afterIntensity);
-        }
-      }
-      const logDateAfter = new Date(log.selectedDate || log.date || log.createdAt);
-      const dayIdxAfter = (logDateAfter.getDay() + 6) % 7;
-      const dayNameAfter = daysOfWeek[dayIdxAfter];
-      dailyBreakdown[dayNameAfter].count += 1;
-      if (log.afterEmotion) {
-        dailyBreakdown[dayNameAfter].emotionCounts[log.afterEmotion] = (dailyBreakdown[dayNameAfter].emotionCounts[log.afterEmotion] || 0) + 1;
       }
     });
 
-      Object.keys(timeSegmentMoods).forEach(segment => {
-        const emotionCounts = segmentEmotionMap[segment];
-        const totalEntries = Object.values(emotionCounts).reduce((a, b) => a + b, 0);
-        if (totalEntries === 0) {
-          timeSegmentMoods[segment] = null;
-        } else {
-          const sorted = Object.entries(emotionCounts).sort((a, b) => b[1] - a[1]);
-          const [dominantEmotion, count] = sorted[0];
-          const intensities = segmentIntensityMap[segment];
-          const avgIntensity = intensities.length > 0 ? intensities.reduce((a, b) => a + b, 0) / intensities.length : null;
-          timeSegmentMoods[segment] = {
-            emotion: dominantEmotion,
-            count,
-            totalEntries,
-            averageIntensity: avgIntensity,
-          };
-        }
-      });
+    // Calculate time segment moods (dominant emotion and its avg intensity)
+    Object.keys(timeSegmentMoods).forEach(segment => {
+      const emotionCounts = segmentEmotionMap[segment];
+      const totalEntries = Object.values(emotionCounts).reduce((a, b) => a + b, 0);
+      if (totalEntries === 0) {
+        timeSegmentMoods[segment] = null;
+      } else {
+        const sorted = Object.entries(emotionCounts).sort((a, b) => b[1] - a[1]);
+        const [dominantEmotion, count] = sorted[0];
+        const intensities = segmentEmotionIntensityMap[segment][dominantEmotion] || [];
+        const avgIntensity = intensities.length > 0 ? intensities.reduce((a, b) => a + b, 0) / intensities.length : null;
+        timeSegmentMoods[segment] = {
+          emotion: dominantEmotion,
+          count,
+          totalEntries,
+          averageIntensity: avgIntensity,
+        };
+      }
+    });
 
-      Object.keys(dailyBreakdown).forEach(day => {
-        const { emotionCounts: dayEmotions, count } = dailyBreakdown[day];
-        if (count > 0 && dayEmotions) {
-          const sorted = Object.entries(dayEmotions).sort((a, b) => b[1] - a[1]);
-          dailyBreakdown[day].dominantEmotion = sorted[0][0];
-        } else {
-          dailyBreakdown[day].dominantEmotion = null;
-        }
-        delete dailyBreakdown[day].emotionCounts;
-      });
+    // Find most prominent valence
+    let mostProminentValence = valenceCounts.positive >= valenceCounts.negative ? 'positive' : 'negative';
 
-      let mostProminentValence = valenceCounts.positive >= valenceCounts.negative ? 'positive' : 'negative';
-      const averageIntensity = totalEntries > 0 ? intensitySum / totalEntries : 0;
+    // Find average intensity (all before+after)
+    let intensityCount = 0;
+    dailyLogs.forEach(log => {
+      if (typeof log.beforeIntensity === 'number') intensityCount++;
+      if (typeof log.afterIntensity === 'number') intensityCount++;
+    });
+    const averageIntensity = intensityCount > 0 ? intensitySum / intensityCount : 0;
 
-      return {
-        totalEntries,
-        valenceCounts,
-        averageIntensity,
-        emotionCounts,
-        mostProminentValence,
-        timeSegmentMoods,
-        weekStart,
-        weekEnd,
-        dailyBreakdown,
-      };
-    } catch (error) {
-      console.error('Error in getWeeklyStatistics:', error);
-      throw error;
+    return {
+      totalEntries,
+      valenceCounts,
+      averageIntensity,
+      emotionCounts,
+      afterEmotionCounts,
+      beforeEmotionCounts,
+      mostProminentValence,
+      timeSegmentMoods,
+    };
+  } catch (error) {
+    console.error('Error in getDailyStatistics:', error);
+    throw error;
+  }
+},
+    
+async getWeeklyStatistics(date) {
+  try {
+    const userId = await this.getStoredUserId();
+    if (!userId) {
+      throw new Error('User not found. Please login again.');
     }
-  },
+
+    const now = date ? new Date(date) : new Date();
+    const dayOfWeek = now.getDay();
+    const mondayOffset = dayOfWeek === 0 ? -6 : 1 - dayOfWeek;
+    const weekStart = new Date(now.getFullYear(), now.getMonth(), now.getDate() + mondayOffset);
+    weekStart.setHours(0, 0, 0, 0);
+    const weekEnd = new Date(weekStart);
+    weekEnd.setDate(weekStart.getDate() + 7);
+
+    const result = await this.getUserMoodLogs({ limit: 1000 });
+    if (!result.success) {
+      throw new Error(result.error || 'Failed to fetch mood logs');
+    }
+
+    const logs = result.moodLogs || [];
+
+    const weeklyLogs = logs.filter(log => {
+      const logDate = new Date(log.selectedDate || log.date || log.createdAt);
+      return logDate >= weekStart && logDate < weekEnd;
+    });
+
+    // Combine before and after into one array
+    const allEmotions = [
+      ...weeklyLogs.map(log => ({
+        emotion: log.beforeEmotion,
+        valence: log.beforeValence,
+        intensity: log.beforeIntensity,
+        time: new Date(log.selectedDate || log.date || log.createdAt)
+      })),
+      ...weeklyLogs.map(log => ({
+        emotion: log.afterEmotion,
+        valence: log.afterValence,
+        intensity: log.afterIntensity,
+        time: new Date(log.selectedDate || log.date || log.createdAt)
+      }))
+    ].filter(e => e.emotion); // Remove empty
+
+    // Valence counts
+    const valenceCounts = { positive: 0, negative: 0 };
+    allEmotions.forEach(e => {
+      if (e.valence === 'positive') valenceCounts.positive++;
+      if (e.valence === 'negative') valenceCounts.negative++;
+    });
+
+    // Most prominent valence
+    const mostProminentValence = valenceCounts.positive >= valenceCounts.negative ? 'positive' : 'negative';
+
+    // Emotion counts
+    const emotionCounts = {};
+    allEmotions.forEach(e => {
+      if (!e.emotion) return;
+      emotionCounts[e.emotion] = (emotionCounts[e.emotion] || 0) + 1;
+    });
+
+    // Average intensity
+    const averageIntensity = allEmotions.length > 0
+      ? Math.round((allEmotions.reduce((sum, e) => sum + (e.intensity || 0), 0) / allEmotions.length) * 10) / 10
+      : 0;
+
+    // Time segments
+    const timeSegments = {
+      earlyMorning: [],
+      morning: [],
+      afternoon: [],
+      evening: []
+    };
+    allEmotions.forEach(e => {
+      const hour = e.time.getHours();
+      if (hour >= 0 && hour < 6) timeSegments.earlyMorning.push(e);
+      else if (hour >= 6 && hour < 12) timeSegments.morning.push(e);
+      else if (hour >= 12 && hour < 18) timeSegments.afternoon.push(e);
+      else timeSegments.evening.push(e);
+    });
+
+    const timeSegmentMoods = {};
+    Object.keys(timeSegments).forEach(segment => {
+      const emotions = timeSegments[segment];
+      if (emotions.length === 0) {
+        timeSegmentMoods[segment] = null;
+      } else {
+        // Count emotions in this segment
+        const segmentEmotionCounts = {};
+        emotions.forEach(e => {
+          if (!e.emotion) return;
+          segmentEmotionCounts[e.emotion] = (segmentEmotionCounts[e.emotion] || 0) + 1;
+        });
+        // Most frequent emotion
+        const mostFrequentEmotion = Object.keys(segmentEmotionCounts).reduce((a, b) =>
+          segmentEmotionCounts[a] > segmentEmotionCounts[b] ? a : b
+        );
+        // Average intensity for this emotion in this segment
+        const emotionInstances = emotions.filter(e => e.emotion === mostFrequentEmotion);
+        const avgIntensity = emotionInstances.length > 0
+          ? Math.round((emotionInstances.reduce((sum, e) => sum + (e.intensity || 0), 0) / emotionInstances.length) * 10) / 10
+          : 0;
+        timeSegmentMoods[segment] = {
+          emotion: mostFrequentEmotion,
+          count: segmentEmotionCounts[mostFrequentEmotion],
+          averageIntensity: avgIntensity,
+          totalEntries: emotions.length
+        };
+      }
+    });
+
+    // Daily breakdown (Monday to Sunday)
+    const daysOfWeek = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
+    let dailyBreakdown = {};
+    daysOfWeek.forEach(day => {
+      dailyBreakdown[day] = { count: 0, emotions: {}, dominantEmotion: null };
+    });
+    allEmotions.forEach(e => {
+      const dayOfWeek = e.time.toLocaleDateString('en-US', { weekday: 'long' });
+      if (dailyBreakdown[dayOfWeek]) {
+        dailyBreakdown[dayOfWeek].count++;
+        dailyBreakdown[dayOfWeek].emotions[e.emotion] = (dailyBreakdown[dayOfWeek].emotions[e.emotion] || 0) + 1;
+      }
+    });
+    Object.keys(dailyBreakdown).forEach(day => {
+      const dayData = dailyBreakdown[day];
+      if (dayData.count > 0 && Object.keys(dayData.emotions).length > 0) {
+        dayData.dominantEmotion = Object.keys(dayData.emotions).reduce((a, b) =>
+          dayData.emotions[a] > dayData.emotions[b] ? a : b
+        );
+      }
+      delete dayData.emotions;
+    });
+
+    return {
+      totalEntries: weeklyLogs.length,
+      valenceCounts,
+      averageIntensity,
+      emotionCounts,
+      mostProminentValence,
+      timeSegmentMoods,
+      weekStart,
+      weekEnd,
+      dailyBreakdown,
+    };
+  } catch (error) {
+    console.error('Error in getWeeklyStatistics:', error);
+    throw error;
+  }
+},
     };  
