@@ -15,9 +15,14 @@ const pieColors = [
 ];
 
 const activityImages = {
+  commute: require('../../../assets/images/mood/commute.png'),
+  exam: require('../../../assets/images/mood/exam.png'),
+  homework: require('../../../assets/images/mood/homework.png'),
+  project: require('../../../assets/images/mood/project.png'),
   study: require('../../../assets/images/mood/study.png'),
   read: require('../../../assets/images/mood/read.png'),
   extracurricular: require('../../../assets/images/mood/extraCurricularActivities.png'),
+  'household-chores': require('../../../assets/images/mood/householdChores.png'),
   relax: require('../../../assets/images/mood/relax.png'),
   'watch-movie': require('../../../assets/images/mood/watchMovie.png'),
   'listen-music': require('../../../assets/images/mood/listenToMusic.png'),
@@ -35,6 +40,7 @@ const activityImages = {
   jog: require('../../../assets/images/mood/jog.png'),
   walk: require('../../../assets/images/mood/walk.png'),
   exercise: require('../../../assets/images/mood/exercise.png'),
+  sports: require('../../../assets/images/mood/sports.png'),
   meditate: require('../../../assets/images/mood/meditate.png'),
   'eat-healthy': require('../../../assets/images/mood/eatHealthy.png'),
   'no-physical': require('../../../assets/images/mood/noPhysicalActivity.png'),

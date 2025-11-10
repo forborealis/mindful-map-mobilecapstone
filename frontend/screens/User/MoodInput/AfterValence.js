@@ -73,7 +73,7 @@ const AfterValence = ({ navigation, route }) => {
             lineHeight: 34
           }}
         >
-          How do you feel after the activity?
+          How do you feel after doing the activity?
         </Text>
         <View className="mb-10">
           {options.map((option) => (

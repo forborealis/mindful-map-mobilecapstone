@@ -22,6 +22,7 @@ const Health = ({ navigation, route }) => {
     { id: 'jog', title: 'Jog', image: require('../../../assets/images/mood/jog.png') },
     { id: 'walk', title: 'Walk', image: require('../../../assets/images/mood/walk.png') },
     { id: 'exercise', title: 'Exercise', image: require('../../../assets/images/mood/exercise.png') },
+    { id: 'sports', title: 'Sports', image: require('../../../assets/images/mood/sports.png') },
     { id: 'meditate', title: 'Meditate', image: require('../../../assets/images/mood/meditate.png') },
     { id: 'eat-healthy', title: 'Eat Healthy', image: require('../../../assets/images/mood/eatHealthy.png') },
     { id: 'no-physical', title: 'No Physical Activity', image: require('../../../assets/images/mood/noPhysicalActivity.png') },

@@ -19,9 +19,14 @@ const OverallActivities = ({ navigation, route }) => {
   const { category, selectedTime, timeSegment, selectedDate } = route.params || {};
 
   const activities = [
+    { id: 'commute', title: 'Commute', image: require('../../../assets/images/mood/commute.png') },
+    { id: 'exam', title: 'Exam', image: require('../../../assets/images/mood/exam.png') },
+    { id: 'homework', title: 'Homework', image: require('../../../assets/images/mood/homework.png') },
     { id: 'study', title: 'Study', image: require('../../../assets/images/mood/study.png') },
+    { id: 'project', title: 'Project', image: require('../../../assets/images/mood/project.png') },
     { id: 'read', title: 'Read', image: require('../../../assets/images/mood/read.png') },
     { id: 'extracurricular', title: 'Extracurricular Activities', image: require('../../../assets/images/mood/extraCurricularActivities.png') },
+    { id: 'household-chores', title: 'Household Chores', image: require('../../../assets/images/mood/householdChores.png') },
     { id: 'relax', title: 'Relax', image: require('../../../assets/images/mood/relax.png') },
     { id: 'watch-movie', title: 'Watch Movie', image: require('../../../assets/images/mood/watchMovie.png') },
     { id: 'listen-music', title: 'Listen to Music', image: require('../../../assets/images/mood/listenToMusic.png') },

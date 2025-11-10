@@ -38,9 +38,14 @@ const emotionImages = {
 const sleepImage = require('../../assets/images/mood/others/sleep.png');
 
 const activityImages = {
+  commute: require('../../assets/images/mood/comute.png'),
+  exam: require('../../assets/images/mood/exam.png'),
+  homework: require('../../assets/images/mood/homework.png'),
+  project: require('../../assets/images/mood/project.png'),
   study: require('../../assets/images/mood/study.png'),
   read: require('../../assets/images/mood/read.png'),
   extracurricular: require('../../assets/images/mood/extraCurricularActivities.png'),
+  'household-chores': require('../../assets/images/mood/householdChores.png'),
   relax: require('../../assets/images/mood/relax.png'),
   'watch-movie': require('../../assets/images/mood/watchMovie.png'),
   'listen-music': require('../../assets/images/mood/listenToMusic.png'),

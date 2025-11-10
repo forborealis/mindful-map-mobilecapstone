@@ -63,7 +63,7 @@ const BeforeValence = ({ navigation, route }) => {
             lineHeight: 34
           }}
         >
-          How do you feel before the activity?
+          How do you feel before doing the activity?
         </Text>
         <View className="mb-10">
           {options.map((option) => (
