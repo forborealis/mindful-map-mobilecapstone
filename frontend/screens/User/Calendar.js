@@ -664,7 +664,7 @@ export default function Calendar() {
               opacity: 0.8
             }}>
               Track your daily emotions and activities. {'\n'}
-              <Text style={{ fontFamily: fonts.semiBold }}>Click any circle in the current week</Text> to log a mood.
+              <Text style={{ fontFamily: fonts.semiBold }}>Click any circle in the current week</Text> to log multiple moods.
             </Text>
           </View>
 
@@ -676,14 +676,12 @@ export default function Calendar() {
             paddingHorizontal: 16
           }}>
             <View style={{ flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'space-around' }}>
-              <View style={{ alignItems: 'center', marginBottom: 8, width: '30%' }}>
+              <View style={{ alignItems: 'center', marginBottom: 8, width: '45%' }}>
                 <View style={{
                   width: 24,
                   height: 24,
                   borderRadius: 12,
                   backgroundColor: 'white',
-                  borderWidth: 2,
-                  borderColor: '#2196F3',
                   justifyContent: 'center',
                   alignItems: 'center',
                   marginBottom: 4
@@ -691,64 +689,27 @@ export default function Calendar() {
                   <Text style={{ fontSize: 12 }}>😊</Text>
                 </View>
                 <Text style={{ fontSize: 10, color: colors.text, fontFamily: fonts.medium, textAlign: 'center' }}>
-                  Positive{'\n'}Dominant
+                  Dominant Mood
                 </Text>
               </View>
               
-              <View style={{ alignItems: 'center', marginBottom: 8, width: '30%' }}>
+              <View style={{ alignItems: 'center', marginBottom: 8, width: '45%' }}>
                 <View style={{
                   width: 24,
                   height: 24,
                   borderRadius: 12,
-                  backgroundColor: 'white',
-                  borderWidth: 2,
-                  borderColor: '#FF6B6B',
+                  backgroundColor: '#4CAF50',
                   justifyContent: 'center',
                   alignItems: 'center',
                   marginBottom: 4
                 }}>
-                  <Text style={{ fontSize: 12 }}>😞</Text>
-                </View>
-                <Text style={{ fontSize: 10, color: colors.text, fontFamily: fonts.medium, textAlign: 'center' }}>
-                  Negative{'\n'}Dominant
-                </Text>
-              </View>
-              
-              <View style={{ alignItems: 'center', marginBottom: 8, width: '30%' }}>
-                <View style={{
-                  width: 24,
-                  height: 24,
-                  borderRadius: 12,
-                  backgroundColor: 'white',
-                  borderWidth: 2,
-                  borderColor: colors.primary,
-                  justifyContent: 'center',
-                  alignItems: 'center',
-                  marginBottom: 4,
-                  position: 'relative'
-                }}>
-                  <Text style={{ fontSize: 12 }}>😊</Text>
-                  <View style={{
-                    position: 'absolute',
-                    top: -4,
-                    right: -4,
-                    backgroundColor: colors.primary,
-                    borderRadius: 6,
-                    width: 12,
-                    height: 12,
-                    justifyContent: 'center',
-                    alignItems: 'center',
-                    borderWidth: 1,
-                    borderColor: 'white'
+                  <Text style={{ 
+                    color: 'white', 
+                    fontSize: 10, 
+                    fontFamily: fonts.bold 
                   }}>
-                    <Text style={{ 
-                      color: 'white', 
-                      fontSize: 8, 
-                      fontFamily: fonts.bold 
-                    }}>
-                      3
-                    </Text>
-                  </View>
+                    2
+                  </Text>
                 </View>
                 <Text style={{ fontSize: 10, color: colors.text, fontFamily: fonts.medium, textAlign: 'center' }}>
                   Total Logs
@@ -842,8 +803,7 @@ export default function Calendar() {
                           borderColor: isToday ? colors.primary :
                             moodData.type === 'plus' ? '#999' :
                             moodData.type === 'empty' ? '#E5E5E5' :
-                            (moodData.polarity === 'positive' ? '#2196F3' : 
-                             moodData.polarity === 'negative' ? '#FF6B6B' : '#999'),
+                            'transparent',
                           borderStyle: moodData.type === 'plus' ? 'dashed' : 'solid',
                           shadowColor: moodData.type !== 'empty' && moodData.type !== 'plus' ? '#000' : 'transparent',
                           shadowOffset: { width: 0, height: 1 },
@@ -869,7 +829,7 @@ export default function Calendar() {
                             position: 'absolute',
                             top: -6,
                             right: -6,
-                            backgroundColor: colors.primary,
+                            backgroundColor: '#4CAF50',
                             borderRadius: 8,
                             width: 16,
                             height: 16,
