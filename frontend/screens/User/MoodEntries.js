@@ -38,7 +38,7 @@ const emotionImages = {
 const sleepImage = require('../../assets/images/mood/others/sleep.png');
 
 const activityImages = {
-  commute: require('../../assets/images/mood/comute.png'),
+  commute: require('../../assets/images/mood/commute.png'),
   exam: require('../../assets/images/mood/exam.png'),
   homework: require('../../assets/images/mood/homework.png'),
   project: require('../../assets/images/mood/project.png'),

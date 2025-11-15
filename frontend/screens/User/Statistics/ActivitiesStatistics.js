@@ -14,6 +14,20 @@ const pieColors = [
   '#A9A9A9', '#092b9cff', '#4e4d4dff', '#cc062dff', '#fdf8fdff'
 ];
 
+const sectionGradients = {
+  Activity: ['#c7f2ffff', '#d2f3fa', '#f7fafc'],
+  Social: ['#ffe0a3ff', '#ffe1a8', '#f7fafc'],
+  Health: ['#c0f6d5ff', '#b2f2bb', '#f7fafc'],
+  Sleep: ['#e0e7ff', '#b2b8f2', '#f7fafc'],
+};
+
+const categoryColors = {
+  Activity: '#0ea5e9',
+  Social: '#f9952b',
+  Health: '#22c55e',
+  Sleep: '#6366f1',
+};
+
 const activityImages = {
   commute: require('../../../assets/images/mood/commute.png'),
   exam: require('../../../assets/images/mood/exam.png'),
@@ -44,8 +58,7 @@ const activityImages = {
   meditate: require('../../../assets/images/mood/meditate.png'),
   'eat-healthy': require('../../../assets/images/mood/eatHealthy.png'),
   'no-physical': require('../../../assets/images/mood/noPhysicalActivity.png'),
-  'eat-unhealthy': require('../../../assets/images/mood/eatUnhealthy.png'),
-  'drink-alcohol': require('../../../assets/images/mood/drinkAlcohol.png')
+  'eat-unhealthy': require('../../../assets/images/mood/eatUnhealthy.png')
 };
 
 function beautifyName(name) {
@@ -54,7 +67,24 @@ function beautifyName(name) {
   return str.charAt(0).toUpperCase() + str.slice(1);
 }
 
+function getSummaryPhrase(title, data) {
+  if (!data || data.length === 0) return `No data for this category.`;
+  const top = data[0];
+  if (!top) return `No data for this category.`;
+  if (title === 'Sleep') {
+    return `Most students logged "${beautifyName(top.name)}" hours of sleep most often (${top.count} times, ${top.percent}%). Getting enough sleep is important for your mood and focus!`;
+  }
+  if (top.percent >= 50) {
+    return `The activity "${beautifyName(top.name)}" made up more than half of your logs for this category (${top.count} times, ${top.percent}%).`;
+  }
+  if (top.percent >= 30) {
+    return `"${beautifyName(top.name)}" was the most common in this category (${top.count} times, ${top.percent}%).`;
+  }
+  return `You did "${beautifyName(top.name)}" most often in this category (${top.count} times, ${top.percent}%).`;
+}
+
 function PieSection({ title, data, category }) {
+  const [showSummary, setShowSummary] = useState(false);
   const total = data.reduce((a, b) => a + b.count, 0);
   const chartData = data.map((item, idx) => ({
     name: beautifyName(item.name),
@@ -64,8 +94,13 @@ function PieSection({ title, data, category }) {
     legendFontSize: 15,
     percent: item.percent,
     key: item.name,
+    count: item.count,
   }));
 
+  // Gradient background for each section
+  const gradientColors = sectionGradients[title] || ['#fff'];
+
+  // --- Restore counts on pie slices ---
   function renderPieLabels() {
     if (!chartData.length || !total) return null;
     let angle = -Math.PI / 2;
@@ -91,17 +126,23 @@ function PieSection({ title, data, category }) {
             textAlign: 'center',
           }}
         >
-          {slice.percent > 0 ? `${slice.percent}%` : ''}
+          {slice.count > 0 ? `${slice.count}` : ''}
         </Text>
       );
     });
   }
+  // --- End restore ---
+
+  // Sort chartData for the list: greatest to least, then alphabetically
+  const sortedChartData = [...chartData].sort((a, b) => {
+    if (b.count !== a.count) return b.count - a.count;
+    return a.name.localeCompare(b.name);
+  });
 
   return (
     <View style={{
       marginBottom: 36,
       alignItems: 'center',
-      backgroundColor: '#fff',
       borderRadius: 28,
       paddingVertical: 22,
       paddingHorizontal: 14,
@@ -113,19 +154,76 @@ function PieSection({ title, data, category }) {
       elevation: 6,
       borderWidth: 1,
       borderColor: '#e5e7eb',
+      backgroundColor: gradientColors[0],
     }}>
-      <Text style={{
-        fontFamily: fonts.bold,
-        fontSize: 24,
-        color: colors.primary,
-        marginBottom: 14,
-        letterSpacing: 1,
-        textShadowColor: '#e5e7eb',
-        textShadowOffset: { width: 1, height: 1 },
-        textShadowRadius: 2,
+      {/* Section header and summary toggle */}
+      <View style={{
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'space-between',
+        width: '100%',
+        marginBottom: 10,
       }}>
-        {title}
-      </Text>
+        <Text style={{
+          fontFamily: fonts.bold,
+          fontSize: 24,
+          color: categoryColors[title] || colors.primary,
+          letterSpacing: 1,
+          textShadowColor: '#e5e7eb',
+          textShadowOffset: { width: 1, height: 1 },
+          textShadowRadius: 2,
+        }}>
+          {title}
+        </Text>
+        <TouchableOpacity
+          onPress={() => setShowSummary(v => !v)}
+          style={{
+            paddingHorizontal: 18,
+            paddingVertical: 6,
+            borderRadius: 999,
+            borderWidth: 2,
+            marginLeft: 8,
+            backgroundColor: '#fff',
+            borderColor: categoryColors[title] || colors.primary,
+          }}
+        >
+          <Text style={{
+            fontFamily: fonts.bold,
+            fontSize: 15,
+            color: categoryColors[title] || colors.primary,
+            letterSpacing: 0.5,
+          }}>
+            {showSummary ? 'Hide Summary' : 'Show Summary'}
+          </Text>
+        </TouchableOpacity>
+      </View>
+      {showSummary && (
+        <View style={{
+          backgroundColor: '#fff',
+          borderRadius: 16,
+          borderWidth: 1,
+          borderColor: '#e0e7ef',
+          paddingHorizontal: 16,
+          paddingVertical: 12,
+          marginBottom: 10,
+          marginTop: 4,
+          alignSelf: 'center',
+          width: '98%',
+          shadowColor: '#000',
+          shadowOpacity: 0.04,
+          shadowRadius: 4,
+          shadowOffset: { width: 0, height: 1 },
+          elevation: 2,
+        }}>
+          <Text style={{
+            fontFamily: fonts.medium,
+            fontSize: 15,
+            color: '#272829',
+            textAlign: 'center',
+          }}>{getSummaryPhrase(title, data)}</Text>
+        </View>
+      )}
+      {/* Chart (unchanged) */}
       {chartData.length > 0 ? (
         <View style={{
           width: chartWidth,
@@ -162,18 +260,45 @@ function PieSection({ title, data, category }) {
           No data for this category.
         </Text>
       )}
+      {/* Total pill under the chart */}
       <View style={{
-        marginTop: 18,
+        alignSelf: 'center',
+        marginTop: 4,
+        marginBottom: 8,
+        backgroundColor: '#fff',
+        borderRadius: 999,
+        paddingHorizontal: 22,
+        paddingVertical: 6,
+        borderWidth: 1,
+        borderColor: '#e0e7ef',
+        shadowColor: '#000',
+        shadowOpacity: 0.08,
+        shadowRadius: 2,
+        shadowOffset: { width: 0, height: 1 },
+        elevation: 2,
+      }}>
+        <Text style={{
+          fontFamily: fonts.bold,
+          fontSize: 19,
+          color: '#222',
+          textAlign: 'center',
+        }}>
+          {total} <Text style={{ fontWeight: 'bold' }}>total</Text>
+        </Text>
+      </View>
+      {/* List below chart */}
+      <View style={{
+        marginTop: 10,
         width: chartWidth,
         alignSelf: 'center',
       }}>
-        {chartData.map(item => (
+        {sortedChartData.map(item => (
           <View key={item.key} style={{
             flexDirection: 'row',
             alignItems: 'center',
             justifyContent: 'space-between',
             marginBottom: 12,
-            backgroundColor: '#f7fafc',
+            backgroundColor: '#ffffffff',
             borderRadius: 16,
             paddingVertical: 10,
             paddingHorizontal: 14,
@@ -183,7 +308,7 @@ function PieSection({ title, data, category }) {
             shadowOffset: { width: 0, height: 1 },
             elevation: 2,
             borderWidth: 1,
-            borderColor: '#e5e7eb',
+            borderColor: '#ffffffff',
           }}>
             <View style={{ flexDirection: 'row', alignItems: 'center', flex: 1 }}>
               {category !== 'Sleep' && activityImages[item.key] && (
@@ -192,9 +317,7 @@ function PieSection({ title, data, category }) {
                   style={{
                     width: 36,
                     height: 36,
-                    marginRight: 12,
-                    borderRadius: 10,
-                    backgroundColor: '#fff',
+                    marginRight: 12
                   }}
                   resizeMode="contain"
                 />
@@ -214,7 +337,7 @@ function PieSection({ title, data, category }) {
             <Text style={{
               fontFamily: fonts.bold,
               fontSize: 17,
-              color: colors.text,
+              color: colors.primary,
               marginLeft: 14,
             }}>
               {item.count} <Text style={{ color: colors.primary }}>({item.percent}%)</Text>
@@ -236,6 +359,22 @@ export default function ActivitiesStatistics({ route }) {
     Sleep: [],
   });
 
+  // For header subtitle
+  function getTypeLabel(type) {
+    if (type === 'after') return 'After Emotion';
+    if (type === 'before') return 'Before Emotion';
+    return '';
+  }
+
+function getPeriodLabel(period) {
+  if (!period) return '';
+  const p = period.toLowerCase();
+  if (p === 'daily' || p === 'day') return 'Daily';
+  if (p === 'weekly' || p === 'week') return 'Weekly';
+  if (p === 'monthly' || p === 'month') return 'Monthly';
+  return period.charAt(0).toUpperCase() + period.slice(1);
+}
+
   useEffect(() => {
     async function fetchBreakdown() {
       const result = await moodDataService.getMoodCategoryGroupBreakdown(mood, type, period);
@@ -247,51 +386,96 @@ export default function ActivitiesStatistics({ route }) {
   return (
     <ScrollView style={{
       flex: 1,
-      backgroundColor: colors.background,
+      backgroundColor: '#fcfcfcff',
       paddingTop: 0,
     }}>
+      {/* Web-style header */}
+      <View style={{
+        width: '100%',
+        alignItems: 'flex-start',
+        paddingTop: 28,
+        paddingBottom: 18,
+        paddingHorizontal: 18,
+        backgroundColor: '#f6fdff',
+        borderBottomWidth: 0,
+        marginBottom: 10,
+      }}>
+        <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 2 }}>
+  <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 2 }}>
+    <View
+      style={{
+        borderRadius: 999,
+        paddingHorizontal: 20,
+        paddingVertical: 8,
+        marginRight: 16,
+        backgroundColor: colors.primary, // or any color you want
+        shadowColor: '#000',
+        shadowOpacity: 0.10,
+        shadowRadius: 6,
+        shadowOffset: { width: 0, height: 2 },
+        elevation: 3,
+      }}
+    >
+      <TouchableOpacity
+        onPress={() => navigation.goBack()}
+        style={{ flexDirection: 'row', alignItems: 'center' }}
+        activeOpacity={0.7}
+      >
+        <Text
+          style={{
+            fontSize: 18,
+            color: '#fff',
+            fontFamily: fonts.semiBold,
+            marginRight: 6,
+          }}
+        >
+          ←
+        </Text>
+        <Text
+          style={{
+            fontSize: 18,
+            color: '#fff',
+            fontFamily: fonts.semiBold,
+          }}
+        >
+          Back
+        </Text>
+      </TouchableOpacity>
+  </View>
+  <Text style={{
+    fontFamily: fonts.bold,
+    fontSize: 25,
+    color: colors.primary,
+    textAlign: 'left',
+    marginBottom: 0,
+    marginRight: 12,
+    letterSpacing: 1.5,
+    textShadowColor: '#e5e7eb',
+    textShadowOffset: { width: 1, height: 1 },
+    textShadowRadius: 2,
+  }}>
+    {mood.charAt(0).toUpperCase() + mood.slice(1)}
+  </Text>
+</View>
+        </View>
+        <Text style={{
+          fontFamily: fonts.medium,
+          fontSize: 18,
+          color: '#6b7280',
+          marginLeft: 4,
+          marginTop: 2,
+        }}>
+          {getTypeLabel(type)} · {getPeriodLabel(period)}
+        </Text>
+      </View>
       <View style={{
         alignItems: 'center',
-        marginTop: 28,
         paddingBottom: 36,
       }}>
-        <TouchableOpacity
-          onPress={() => navigation.goBack()}
-          style={{
-            position: 'absolute',
-            left: 18,
-            top: 10,
-            zIndex: 10
-          }}
-          activeOpacity={0.7}
-        >
-          <Text
-            style={{
-              fontSize: 28,
-              color: colors.text,
-              fontFamily: fonts.semiBold,
-              textAlign: 'center',
-            }}
-          >
-            ←
-          </Text>
-        </TouchableOpacity>
-        <Text style={{
-          fontFamily: fonts.bold,
-          fontSize: 28,
-          color: colors.primary,
-          marginBottom: 22,
-          letterSpacing: 1.5,
-          textShadowColor: '#e5e7eb',
-          textShadowOffset: { width: 1, height: 1 },
-          textShadowRadius: 2,
-        }}>
-          {mood.charAt(0).toUpperCase() + mood.slice(1)} Breakdown
-        </Text>
         <PieSection title="Activity" data={breakdowns.Activity} category="Activity" />
         <PieSection title="Social" data={breakdowns.Social} category="Social" />
         <PieSection title="Health" data={breakdowns.Health} category="Health" />
-        {type === 'after' && <PieSection title="Sleep Hours" data={breakdowns.Sleep} category="Sleep" />}
+        {type === 'after' && <PieSection title="Sleep" data={breakdowns.Sleep} category="Sleep" />}
         {type === 'before' && (
           <View style={{
             backgroundColor: '#fff',

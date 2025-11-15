@@ -3,6 +3,7 @@ import { createStackNavigator } from '@react-navigation/stack';
 import LoginScreen from '../screens/Login';
 import SignupScreen from '../screens/Signup';
 import LandingScreen from '../screens/Landing';
+import DailyQuote from '../screens/User/DailyQuote';
 import ChooseCategory from '../screens/User/MoodInput/ChooseCategory';
 import OverallActivities from '../screens/User/MoodInput/OverallActivities';
 import Social from '../screens/User/MoodInput/Social';
@@ -53,6 +54,11 @@ export default function MainStack({ initialRoute }) {
         component={SignupScreen}
         options={{ headerShown: false }}
       />
+      {/* <Stack.Screen
+        name="DailyQuote" 
+        component={DailyQuote}
+        options={{ headerShown: false }}
+      /> */}
       <Stack.Screen 
         name="ChooseCategory" 
         component={ChooseCategory}

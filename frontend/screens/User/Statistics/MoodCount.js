@@ -426,69 +426,6 @@ export default function MoodCount() {
           Tap a mood container to view more details about each mood.
         </Text>
 
-        {/* View Summary Button */}
-        {summary && (
-          <TouchableOpacity
-            onPress={() => setShowSummary(!showSummary)}
-            style={{
-              alignSelf: 'center',
-              marginBottom: 8,
-              paddingHorizontal: 24,
-              paddingVertical: 10,
-              borderRadius: 999,
-              marginTop: 8,
-              backgroundColor: colors.primary,
-              elevation: 2,
-            }}
-          >
-            <Text style={{ color: '#fff', fontFamily: fonts.semiBold, fontSize: 16, letterSpacing: 1 }}>
-              {showSummary ? 'Hide Summary' : 'View Summary'}
-            </Text>
-          </TouchableOpacity>
-        )}
-        
-        {/* Summary Section */}
-        {summary && showSummary && (
-          <View style={{
-            marginTop: 16,
-            marginBottom: 8,
-            paddingHorizontal: 16,
-            paddingVertical: 16,
-            borderRadius: 18,
-            width: '92%',
-            alignSelf: 'center',
-            backgroundColor: '#f3f4f6',
-            elevation: 2,
-            shadowColor: '#000',
-            shadowOpacity: 0.07,
-            shadowRadius: 6,
-            shadowOffset: { width: 0, height: 1 },
-          }}>
-            <Text style={{ fontFamily: fonts.bold, fontSize: 18, marginBottom: 12, color: colors.primary, letterSpacing: 0.5 }}>
-              Summary
-            </Text>
-            <View style={{ paddingLeft: 8 }}>
-              <View style={{ flexDirection: 'row', alignItems: 'flex-start', marginBottom: 8 }}>
-                <Text style={{ fontSize: 18, fontFamily: fonts.bold, marginRight: 8, color: colors.primary }}>•</Text>
-                <Text style={{ fontSize: 15, fontFamily: fonts.medium, flex: 1, color: colors.text }}>
-                  The most frequent mood {period === 'daily' ? 'today' : `for ${getPeriodText(period)}`} is <Text style={{ color: colors.primary, fontFamily: fonts.bold }}>{summary.topType}</Text> (<Text style={{ color: colors.primary, fontFamily: fonts.bold }}>{capitalize(summary.topMood)}</Text>).
-                </Text>
-              </View>
-              <View style={{ flexDirection: 'row', alignItems: 'flex-start', marginBottom: 8 }}>
-                <Text style={{ fontSize: 18, fontFamily: fonts.bold, marginRight: 8, color: colors.primary }}>•</Text>
-                <Text style={{ fontSize: 15, fontFamily: fonts.medium, flex: 1, color: colors.text }}>
-                  You experienced <Text style={{ color: colors.primary, fontFamily: fonts.bold }}>{summary.uniqueCount}</Text> different moods {period === 'daily' ? 'today' : `${getPeriodText(period)}`}.
-                </Text>
-              </View>
-              <View style={{ flexDirection: 'row', alignItems: 'flex-start' }}>
-                <Text style={{ fontSize: 18, fontFamily: fonts.bold, marginRight: 8, color: colors.primary }}>•</Text>
-                <Text style={{ fontSize: 15, fontFamily: fonts.medium, flex: 1, color: colors.text }}>
-                  The least frequent mood {period === 'daily' ? 'today' : `for ${getPeriodText(period)}`} is <Text style={{ color: colors.primary, fontFamily: fonts.bold }}>{summary.leastType}</Text> (<Text style={{ color: colors.primary, fontFamily: fonts.bold }}>{capitalize(summary.leastMood)}</Text>).
-                </Text>
-              </View>
-            </View>
-          </View>
-        )}
       </View>
     </View>
   );

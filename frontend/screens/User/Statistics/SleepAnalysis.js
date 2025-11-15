@@ -147,16 +147,7 @@ export default function SleepAnalysis() {
   const userGuide = getSleepGuide(Number(avgSleep));
 
   // Summary message logic (bulleted)
-  const summaryBullets = [
-    `• Your average sleep is ${avgSleep} hours ${getPeriodText(period)}.`,
-    avgSleep >= 8 && avgSleep <= 10
-      ? '• Great job! Keep up the healthy sleep habits.'
-      : avgSleep >= 7 && avgSleep < 8
-      ? '• You are doing well, but try to get a bit more rest for optimal performance.'
-      : avgSleep >= 6 && avgSleep < 7
-      ? '• Consider getting more sleep to help with focus and energy.'
-      : '• It\'s important to get more sleep to support your health and learning.',
-  ];
+
 
   return (
     <ScrollView style={{ backgroundColor: colors.background }}>
@@ -478,44 +469,7 @@ export default function SleepAnalysis() {
             ))}
           </View>
 
-          {/* Sleep Summary - Bulleted */}
-          <View style={{
-            backgroundColor: '#f3f4f6',
-            borderRadius: 16,
-            padding: 14,
-            marginTop: 4,
-            marginBottom: 8,
-            alignItems: 'flex-start',
-            width: '100%',
-            elevation: 2,
-          }}>
-            <Text style={{
-              fontFamily: fonts.bold,
-              fontSize: 17,
-              color: colors.primary,
-              marginBottom: 6,
-              textAlign: 'left',
-            }}>
-              Summary
-            </Text>
-            {summaryBullets.map((bullet, idx) => (
-              <Text
-                key={idx}
-                style={{
-                  fontFamily: fonts.medium,
-                  fontSize: 15,
-                  color: colors.text,
-                  textAlign: 'left',
-                  marginBottom: 2,
-                }}
-              >
-                <Text style={{ color: colors.primary }}>
-                  {bullet.charAt(0)}
-                </Text>
-                {bullet.slice(1)}
-              </Text>
-            ))}
-          </View>
+    
         </View>
       </View>
     </ScrollView>
