@@ -185,7 +185,7 @@ static async register(req, res) {
           lastName,
           email,
           gender: gender || 'Rather not say',
-          section: section || 'Grade 11 - A',
+          section: section || 'N/A',
           avatar: avatarUrl,              
           avatarPublicId: avatarPublicId, 
           role: 'user',
@@ -202,7 +202,7 @@ static async register(req, res) {
         lastName,
         middleInitial: middleInitial || '',
         gender: gender || 'Rather not say',
-        section: section || 'Grade 11 - A',
+        section: section || 'N/A',
         firebaseUid: firebaseUser.uid,
         password: hashedPassword,
         avatar: avatarUrl,              
@@ -347,7 +347,7 @@ static async googleAuth(req, res) {
         avatar: avatar || '',
         role: 'user',
         gender: 'Rather not say',
-        section: 'Grade 11 - A',
+        section: 'N/A',
         password: 'google-auth', 
       });
       

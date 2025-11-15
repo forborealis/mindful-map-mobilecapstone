@@ -27,7 +27,8 @@ import 'expo-dev-client';
 const SignupSchema = Yup.object().shape({
   firstName: Yup.string()
     .min(2, 'First name must be at least 2 characters')
-    .matches(/^[A-Za-z\s\-']+$/, 'First name can only contain letters, spaces, hyphens, and apostrophes')
+    .matches(/^[A-Za-z]([A-Za-z\s\-]*[A-Za-z])?$/, 'First name can only contain letters, spaces, and hyphens ')
+    .matches(/^(?!.*--)/, 'First name cannot contain consecutive hyphens')
     .required('First name is required'),
   middleInitial: Yup.string()
     .max(1, 'Middle initial must be 1 character')
@@ -35,10 +36,11 @@ const SignupSchema = Yup.object().shape({
     .optional(),
   lastName: Yup.string()  
     .min(2, 'Last name must be at least 2 characters')
-    .matches(/^[A-Za-z\s\-']+$/, 'Last name can only contain letters, spaces, hyphens, and apostrophes')
+    .matches(/^[A-Za-z]([A-Za-z\s\-]*[A-Za-z])?$/, 'can only contain letters, spaces, and hyphens')
+    .matches(/^(?!.*--)/, 'Last name cannot contain consecutive hyphens')
     .required('Last name is required'),
   gender: Yup.string()
-    .required('Please select your gender'),
+    .optional(),
   section: Yup.string()
     .required('Please select your section'),
   email: Yup.string()
@@ -60,7 +62,7 @@ export default function Signup() {
   const navigation = useNavigation();
 
   const genderOptions = ['Male', 'Female', 'Rather not say'];
-  const sectionOptions = ['Grade 11 - A', 'Grade 11 - B', 'Grade 11 - C', 'Grade 11 - D'];
+  const sectionOptions = ['St. John Paul II (STEM 1)', 'St. Paul VI (STEM 2)', 'St. John XXIII (STEM 3)', 'St. Pius X (HUMSS) (STEM 3)', 'St. Tarcisius (ABM)', 'St. Jose Sanchez Del Rio (ICT)'];
 
   // Request camera permissions
   const requestCameraPermission = async () => {
@@ -429,7 +431,7 @@ const selectFromLibrary = async () => {
         firstName: '',
         middleInitial: '',
         lastName: '',
-        gender: '',
+        gender: 'Rather not say',
         section: '',
         email: '',
         password: '',
