@@ -26,6 +26,9 @@ import WeeklyStatistics from '../screens/User/Statistics/Weekly/WeeklyStatistics
 import MoodCount from '../screens/User/Statistics/MoodCount';
 import ActivitiesStatistics from '../screens/User/Statistics/ActivitiesStatistics';
 import SleepAnalysis from '../screens/User/Statistics/SleepAnalysis';
+import Anova from '../screens/User/Statistics/Anova';
+import DailyAnova from '../screens/User/Statistics/Daily/DailyAnova';
+import WeeklyAnova from '../screens/User/Statistics/Weekly/WeeklyAnova';
 import Prediction from '../screens/User/Prediction/Prediction';
 import CategoryPrediction from '../screens/User/Prediction/CategoryPrediction';
 
@@ -152,6 +155,21 @@ export default function MainStack({ initialRoute }) {
       <Stack.Screen
         name="SleepAnalysis"
         component={SleepAnalysis}
+        options={{ headerShown: false }}
+      />
+      <Stack.Screen
+        name="Anova"
+        component={Anova}
+        options={{ headerShown: false }}
+      />
+      <Stack.Screen
+        name="DailyAnova"
+        component={DailyAnova}
+        options={{ headerShown: false }}
+      />
+      <Stack.Screen
+        name="WeeklyAnova"
+        component={WeeklyAnova}
         options={{ headerShown: false }}
       />
       <Stack.Screen

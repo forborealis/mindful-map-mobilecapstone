@@ -20,6 +20,7 @@ const authRoutes = require('./routes/authRoutes');
 const moodRoutes = require('./routes/moodDataRoutes');
 const predictionRoutes = require('./routes/predictionRoutes');
 app.use('/api/mood-data', moodRoutes);
+app.use('/api/statistics', moodRoutes);
 app.use('/api/auth', authRoutes);
 app.use('/api', predictionRoutes);
 

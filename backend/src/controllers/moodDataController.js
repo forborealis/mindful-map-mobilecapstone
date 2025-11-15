@@ -1,5 +1,6 @@
 const MoodLog = require('../models/MoodLog');
 const User = require('../models/User');
+const MoodScore = require('../models/MoodScore');
 const moment = require('moment');
 
 const MoodDataController = {
@@ -527,7 +528,223 @@ const MoodDataController = {
       console.error('Error fetching mood logs by category:', error);
       res.status(500).json({ success: false, message: 'Server error while fetching mood logs by category.' });
     }
+  },
+
+  async calculateDailyAnova(req, res) {
+  try {
+    const userId = req.user._id;
+    const { date } = req.query;
+    const targetDate = date ? new Date(date) : new Date();
+    targetDate.setHours(0, 0, 0, 0);
+
+    const logs = await MoodLog.find({
+      user: userId,
+      date: { $gte: targetDate, $lt: new Date(targetDate.getTime() + 24 * 60 * 60 * 1000) }
+    });
+
+    const aggregate = {};
+    let sleepQuality = null;
+    let sleepHours = null;
+    let sleepMoodScore = null;
+
+    logs.forEach(log => {
+      if (log.category === 'sleep') {
+        sleepHours = log.hrs;
+        if (sleepHours <= 4) sleepQuality = 'Poor';
+        else if (sleepHours >= 6 && sleepHours <= 8) sleepQuality = 'Sufficient';
+        else if (sleepHours > 8) sleepQuality = 'Good';
+          if (sleepHours >= 7 && sleepHours <= 9) {
+          sleepMoodScore = Math.round(((sleepHours - 4) / 5) * 80);
+        } else if (sleepHours < 7) {
+          sleepMoodScore = Math.round(((sleepHours - 7) / 7) * 100);
+        } else if (sleepHours > 9) {
+          sleepMoodScore = Math.round(((9 - sleepHours) / 2) * 30);
+        }
+      } else {
+        if (
+          log.beforeIntensity !== undefined && log.beforeIntensity !== null &&
+          log.afterIntensity !== undefined && log.afterIntensity !== null
+        ) {
+          const key = `${log.category}_${log.activity}`;
+          if (!aggregate[key]) {
+            aggregate[key] = {
+              category: log.category,
+              activity: log.activity,
+              totalBefore: 0,
+              totalAfter: 0,
+              count: 0
+            };
+          }
+          aggregate[key].totalBefore += log.beforeIntensity;
+          aggregate[key].totalAfter += log.afterIntensity;
+          aggregate[key].count += 1;
+        }
+      }
+    });
+     if (sleepHours !== null && sleepMoodScore !== null) {
+      await MoodScore.findOneAndUpdate(
+        { user: userId, date: targetDate, category: 'sleep', activity: 'sleep' },
+        { moodScore: sleepMoodScore, sleepHours },
+        { upsert: true, new: true }
+      );
+    }
+
+    const scores = [];
+    for (const key in aggregate) {
+      const { category, activity, totalBefore, totalAfter, count } = aggregate[key];
+      const diff = totalAfter - totalBefore;
+      const maxScore = count * 5;
+      const moodScore = Math.round(((diff / maxScore) * 100));
+
+      await MoodScore.findOneAndUpdate(
+        { user: userId, date: targetDate, category, activity },
+        { moodScore },
+        { upsert: true, new: true }
+      );
+
+      scores.push({ category, activity, moodScore });
+    }
+     const results = {};
+    scores.forEach(score => {
+      if (!results[score.category]) results[score.category] = { positive: [], negative: [] };
+      if (score.moodScore > 0) results[score.category].positive.push(score);
+      else if (score.moodScore < 0) results[score.category].negative.push(score);
+    });
+
+    Object.keys(results).forEach(cat => {
+      results[cat].positive = results[cat].positive
+        .sort((a, b) => b.moodScore - a.moodScore)
+        .slice(0, 3);
+      results[cat].negative = results[cat].negative
+        .sort((a, b) => a.moodScore - b.moodScore)
+        .slice(0, 3);
+    });
+
+    res.json({
+      results,
+      sleepQuality,
+      sleepHours,
+      sleepMoodScore,
+      date: targetDate.toISOString().split('T')[0]
+    });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
   }
+},
+
+async calculateWeeklyAnova(req, res) {
+  try {
+    const userId = req.user._id;
+    const { start, end } = req.query;
+    let startOfWeek, endOfWeek;
+
+    if (start && end) {
+      startOfWeek = new Date(start);
+      endOfWeek = new Date(end);
+      startOfWeek.setHours(0,0,0,0);
+      endOfWeek.setHours(23,59,59,999);
+    } else {
+      const today = new Date();
+      const day = today.getDay();
+      const diff = today.getDate() - day + (day === 0 ? -6 : 1); // Monday
+      startOfWeek = new Date(today.setDate(diff));
+      startOfWeek.setHours(0,0,0,0);
+      endOfWeek = new Date(startOfWeek);
+      endOfWeek.setDate(startOfWeek.getDate() + 6);
+      endOfWeek.setHours(23,59,59,999);
+    }
+
+    // Fetch this week's mood logs
+    const logs = await MoodLog.find({
+      user: userId,
+      date: { $gte: startOfWeek, $lte: endOfWeek }
+    });
+
+    // Aggregate by category & activity
+    const aggregate = {};
+    let sleepQuality = null;
+    let totalSleepHours = 0;
+    let sleepDays = 0;
+    let avgSleepHours = null;
+    let sleepMoodScore = null;
+
+    logs.forEach(log => {
+      if (log.category === 'sleep') {
+        totalSleepHours += log.hrs;
+        sleepDays++;
+      } else {
+        if (
+          log.beforeIntensity !== undefined && log.beforeIntensity !== null &&
+          log.afterIntensity !== undefined && log.afterIntensity !== null
+        ) {
+          const key = `${log.category}_${log.activity}`;
+          if (!aggregate[key]) {
+            aggregate[key] = {
+              category: log.category,
+              activity: log.activity,
+              totalBefore: 0,
+              totalAfter: 0,
+              count: 0
+            };
+          }
+          aggregate[key].totalBefore += log.beforeIntensity;
+          aggregate[key].totalAfter += log.afterIntensity;
+          aggregate[key].count += 1;
+        }
+      }
+    });
+
+    // Calculate average sleep and quality
+    if (sleepDays > 0) {
+      avgSleepHours = Math.round((totalSleepHours / sleepDays) * 10) / 10;
+      if (avgSleepHours <= 5) sleepQuality = 'Poor';
+      else if (avgSleepHours >= 6 && avgSleepHours <= 8) sleepQuality = 'Sufficient';
+      else if (avgSleepHours > 8) sleepQuality = 'Good';
+
+      // Calculate weekly sleep mood score
+      if (avgSleepHours >= 7 && avgSleepHours <= 9) {
+        sleepMoodScore = Math.round(((avgSleepHours - 4) / 5) * 80);
+      } else if (avgSleepHours < 7) {
+        sleepMoodScore = Math.round(((avgSleepHours - 7) / 7) * 100);
+      } else if (avgSleepHours > 9) {
+        sleepMoodScore = Math.round(((9 - avgSleepHours) / 2) * 30);
+      }
+    }
+
+    // Calculate moodScore for activities
+    const scores = [];
+    for (const key in aggregate) {
+      const { category, activity, totalBefore, totalAfter, count } = aggregate[key];
+      const diff = totalAfter - totalBefore;
+      const maxScore = count * 5;
+      const moodScore = Math.round(((diff / maxScore) * 100));
+      scores.push({ category, activity, moodScore });
+    }
+
+    // Separate top positive and negative per category
+    const results = {};
+    scores.forEach(score => {
+      if (!results[score.category]) results[score.category] = { positive: [], negative: [] };
+      if (score.moodScore > 0) results[score.category].positive.push(score);
+      else if (score.moodScore < 0) results[score.category].negative.push(score);
+    });
+
+    // Sort and slice top 3 for each
+    Object.keys(results).forEach(cat => {
+      results[cat].positive = results[cat].positive
+        .sort((a, b) => b.moodScore - a.moodScore)
+        .slice(0, 3);
+      results[cat].negative = results[cat].negative
+        .sort((a, b) => a.moodScore - b.moodScore)
+        .slice(0, 3);
+    });
+
+    res.json({ results, sleepQuality, avgSleepHours, sleepMoodScore });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+},
+
 };
 
 module.exports = MoodDataController;

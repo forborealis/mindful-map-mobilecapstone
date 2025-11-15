@@ -22,11 +22,12 @@ const SkeletonBox = ({ width, height, style }) => (
   <View
     style={[
       {
-        backgroundColor: colors.background,
-        borderRadius: 12,
+        backgroundColor: '#e5e7eb',
+        borderRadius: 14,
         width,
         height,
-        marginBottom: 12,
+        marginBottom: 16,
+        opacity: 0.5,
       },
       style,
     ]}

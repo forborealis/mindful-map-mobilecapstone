@@ -17,4 +17,6 @@ router.get('/logs/check', verifyToken, MoodDataController.checkMoodLogs);
 router.get('/logs/paginated', verifyToken, MoodDataController.getPaginatedMoodLogs);
 router.get('/logs/category/:category', verifyToken, MoodDataController.getMoodLogsByCategory);
 
+router.get('/daily-anova', verifyToken, MoodDataController.calculateDailyAnova);
+router.get('/weekly-anova', verifyToken, MoodDataController.calculateWeeklyAnova);
 module.exports = router;

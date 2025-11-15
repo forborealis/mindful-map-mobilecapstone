@@ -3,11 +3,15 @@ import { ScrollView, View } from 'react-native';
 import DetailedMoodAnalysis from './DetailedMoodAnalysis';
 import MoodCount from './MoodCount';
 import SleepAnalysis from './SleepAnalysis';
+import Anova from './Anova';
 import { colors } from '../../../utils/colors/colors';
 
 export default function StatisticsDashboard() {
   return (
     <ScrollView style={{ backgroundColor: colors.background }}>
+      <View style={{ marginBottom: 24 }}>
+        <Anova />
+      </View>
       <View style={{ marginBottom: 24 }}>
         <DetailedMoodAnalysis />
       </View>

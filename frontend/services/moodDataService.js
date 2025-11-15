@@ -1075,4 +1075,41 @@ async getWeeklyStatistics(date) {
     throw error;
   }
 },
+
+async getDailyAnova(date) {
+  try {
+    const headers = await this.getAuthHeaders();
+    const url = `${API_BASE_URL}/api/statistics/daily-anova?date=${date}`;
+    const response = await fetch(url, {
+      method: 'GET',
+      headers,
+    });
+    if (!response.ok) {
+      const errorText = await response.text();
+      throw new Error(errorText || `Failed to fetch daily anova: ${response.status}`);
+    }
+    return await response.json();
+  } catch (error) {
+    console.error('Error fetching daily anova:', error);
+    throw error;
+  }
+},
+async getWeeklyAnova(start, end) {
+  try {
+    const headers = await this.getAuthHeaders();
+    const url = `${API_BASE_URL}/api/statistics/weekly-anova?start=${start}&end=${end}`;
+    const response = await fetch(url, {
+      method: 'GET',
+      headers,
+    });
+    if (!response.ok) {
+      const errorText = await response.text();
+      throw new Error(errorText || `Failed to fetch weekly anova: ${response.status}`);
+    }
+    return await response.json();
+  } catch (error) {
+    console.error('Error fetching weekly anova:', error);
+    throw error;
+  }
+},
     };  
