@@ -5,23 +5,12 @@ import { useNavigation } from '@react-navigation/native';
 import { moodDataService } from '../../../services/moodDataService';
 import { colors } from '../../../utils/colors/colors';
 import { fonts } from '../../../utils/fonts/fonts';
-
+import emotionImages from '../../../utils/images/emotions';
 const screenWidth = Dimensions.get('window').width;
 const chartWidth = screenWidth * 0.8;
 const mainContainerWidth = screenWidth * 0.92;
 
-const moodImages = {
-  angry: require('../../../assets/images/mood/emotions/angry.png'),
-  bored: require('../../../assets/images/mood/emotions/bored.png'),
-  sad: require('../../../assets/images/mood/emotions/sad.png'),
-  disappointed: require('../../../assets/images/mood/emotions/disappointed.png'),
-  tense: require('../../../assets/images/mood/emotions/tense.png'),
-  happy: require('../../../assets/images/mood/emotions/happy.png'),
-  calm: require('../../../assets/images/mood/emotions/calm.png'),
-  excited: require('../../../assets/images/mood/emotions/excited.png'),
-  pleased: require('../../../assets/images/mood/emotions/pleased.png'),
-  relaxed: require('../../../assets/images/mood/emotions/relaxed.png'),
-};
+
 
 const moodColorMap = {
   calm: '#8FABD4',
@@ -151,7 +140,7 @@ export default function MoodCount() {
         {item.name}
       </Text>
       <Image
-        source={moodImages[item.name.toLowerCase()]}
+        source={emotionImages[item.name.toLowerCase()]}
         style={{
           width: 30,
           height: 30,

@@ -4,7 +4,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { fonts } from '../../../utils/fonts/fonts';
 import { colors } from '../../../utils/colors/colors';
 import healthImages from '../../../utils/images/activities';
-
+import { Ionicons } from '@expo/vector-icons';
 const chunkArray = (arr, size) => {
   const result = [];
   for (let i = 0; i < arr.length; i += size) {
@@ -56,21 +56,23 @@ const Health = ({ navigation, route }) => {
         showsVerticalScrollIndicator={false}
         contentContainerStyle={{ paddingTop: 40, paddingBottom: 40 }}
       >
-        <TouchableOpacity
-          onPress={() => navigation.goBack()}
-          className="absolute left-0 top-0 z-10"
-          activeOpacity={0.7}
+        <View
+          style={{
+            position: 'absolute',
+            top: 20,
+            left: 2,
+            zIndex: 100,
+            elevation: 10,
+          }}
+          pointerEvents="box-none"
         >
-          <Text
-            style={{
-              fontSize: 28,
-              color: colors.text,
-              fontFamily: fonts.semiBold
-            }}
+          <TouchableOpacity
+            onPress={() => navigation.goBack()}
+            hitSlop={{ top: 16, bottom: 16, left: 16, right: 16 }}
           >
-            ←
-          </Text>
-        </TouchableOpacity>
+            <Ionicons name="arrow-back" size={28} color="#222" />
+          </TouchableOpacity>
+        </View>
         <View className="mb-8">
           <Text
             className="text-3xl text-center mb-2"

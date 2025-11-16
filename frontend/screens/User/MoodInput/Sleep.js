@@ -5,6 +5,7 @@ import { fonts } from '../../../utils/fonts/fonts';
 import { colors } from '../../../utils/colors/colors';
 import { moodDataService } from '../../../services/moodDataService';
 import ContinueTrackingModal from './ContinueTrackingModal';
+import { Ionicons } from '@expo/vector-icons';
 
 const tips = [
   { image: require('../../../assets/images/mood/others/sleep1.png'), text: 'Stick to a consistent sleep schedule.' },
@@ -142,21 +143,23 @@ const Sleep = ({ navigation, route }) => {
         className="flex-1"
         behavior={Platform.OS === 'ios' ? 'padding' : undefined}
       >
-        <TouchableOpacity
-          onPress={() => navigation.goBack()}
-          className="absolute left-6 top-2 z-10"
-          activeOpacity={0.7}
+        <View
+          style={{
+            position: 'absolute',
+            top: 20,
+            left: 2,
+            zIndex: 100,
+            elevation: 10,
+          }}
+          pointerEvents="box-none"
         >
-          <Text
-            style={{
-              fontSize: 28,
-              color: colors.text,
-              fontFamily: fonts.semiBold
-            }}
+          <TouchableOpacity
+            onPress={() => navigation.goBack()}
+            hitSlop={{ top: 16, bottom: 16, left: 16, right: 16 }}
           >
-            ←
-          </Text>
-        </TouchableOpacity>
+            <Ionicons name="arrow-back" size={28} color="#222" />
+          </TouchableOpacity>
+        </View>
         <View className="flex-1 justify-center px-8">
           <Text
             className="text-3xl text-center mb-3"
