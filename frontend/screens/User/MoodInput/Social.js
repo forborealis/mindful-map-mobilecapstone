@@ -3,6 +3,8 @@ import { View, Text, TouchableOpacity, ScrollView, Image } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { fonts } from '../../../utils/fonts/fonts';
 import { colors } from '../../../utils/colors/colors';
+import socialImages from '../../../utils/images/activities';
+import activityImages from '../../../utils/images/activities';
 
 const chunkArray = (arr, size) => {
   const result = [];
@@ -15,17 +17,17 @@ const chunkArray = (arr, size) => {
 const Social = ({ navigation, route }) => {
   const [selectedInteraction, setSelectedInteraction] = useState(null);
   
-  // Get time data from TimeSegmentSelector
+
   const { category, selectedTime, timeSegment, selectedDate } = route.params || {};
 
   const interactions = [
-    { id: 'alone', title: 'Alone', image: require('../../../assets/images/mood/alone.png') },
-    { id: 'friends', title: 'Friend/s', image: require('../../../assets/images/mood/friend.png') },
-    { id: 'family', title: 'Family', image: require('../../../assets/images/mood/family.png') },
-    { id: 'classmates', title: 'Classmate/s', image: require('../../../assets/images/mood/classmate.png') },
-    { id: 'relationship', title: 'Relationship', image: require('../../../assets/images/mood/relationship.png') },
-    { id: 'online', title: 'Online Interaction', image: require('../../../assets/images/mood/onlineInteraction.png') },
-    { id: 'pet', title: 'Pet', image: require('../../../assets/images/mood/pet.png') }
+    { id: 'alone', title: 'Alone' },
+    { id: 'friends', title: 'Friend/s' },
+    { id: 'family', title: 'Family' },
+    { id: 'classmates', title: 'Classmate/s' },
+    { id: 'relationship', title: 'Relationship' },
+    { id: 'online', title: 'Online Interaction' },
+    { id: 'pet', title: 'Pet' }
   ];
 
   const rows = chunkArray(interactions, 3);
@@ -117,7 +119,7 @@ const Social = ({ navigation, route }) => {
                       }}
                     >
                       <Image
-                        source={interaction.image}
+                        source={activityImages[interaction.id]}
                         className="w-16 h-16 mb-1"
                         resizeMode="contain"
                       />

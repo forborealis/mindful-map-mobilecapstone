@@ -3,6 +3,7 @@ import { View, Text, TouchableOpacity, ScrollView, Image } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { fonts } from '../../../utils/fonts/fonts';
 import { colors } from '../../../utils/colors/colors';
+import activityImages from '../../../utils/images/activities';
 
 const chunkArray = (arr, size) => {
   const result = [];
@@ -15,25 +16,24 @@ const chunkArray = (arr, size) => {
 const OverallActivities = ({ navigation, route }) => {
   const [selectedActivity, setSelectedActivity] = useState(null);
   
-  // Get time data from TimeSegmentSelector
   const { category, selectedTime, timeSegment, selectedDate } = route.params || {};
 
   const activities = [
-    { id: 'commute', title: 'Commute', image: require('../../../assets/images/mood/commute.png') },
-    { id: 'exam', title: 'Exam', image: require('../../../assets/images/mood/exam.png') },
-    { id: 'homework', title: 'Homework', image: require('../../../assets/images/mood/homework.png') },
-    { id: 'study', title: 'Study', image: require('../../../assets/images/mood/study.png') },
-    { id: 'project', title: 'Project', image: require('../../../assets/images/mood/project.png') },
-    { id: 'read', title: 'Read', image: require('../../../assets/images/mood/read.png') },
-    { id: 'extracurricular', title: 'Extracurricular Activities', image: require('../../../assets/images/mood/extraCurricularActivities.png') },
-    { id: 'household-chores', title: 'Household Chores', image: require('../../../assets/images/mood/householdChores.png') },
-    { id: 'relax', title: 'Relax', image: require('../../../assets/images/mood/relax.png') },
-    { id: 'watch-movie', title: 'Watch Movie', image: require('../../../assets/images/mood/watchMovie.png') },
-    { id: 'listen-music', title: 'Listen to Music', image: require('../../../assets/images/mood/listenToMusic.png') },
-    { id: 'gaming', title: 'Gaming', image: require('../../../assets/images/mood/gaming.png') },
-    { id: 'browse-internet', title: 'Browse the Internet', image: require('../../../assets/images/mood/browseInternet.png') },
-    { id: 'shopping', title: 'Shopping', image: require('../../../assets/images/mood/shopping.png') },
-    { id: 'travel', title: 'Travel', image: require('../../../assets/images/mood/travel.png') }
+    { id: 'commute', title: 'Commute', image: activityImages.commute },
+    { id: 'exam', title: 'Exam', image: activityImages.exam },
+    { id: 'homework', title: 'Homework', image: activityImages.homework },
+    { id: 'study', title: 'Study', image: activityImages.study },
+    { id: 'project', title: 'Project', image: activityImages.project },
+    { id: 'read', title: 'Read', image: activityImages.read },
+    { id: 'extracurricular', title: 'Extracurricular Activities', image: activityImages.extracurricular },
+    { id: 'household-chores', title: 'Household Chores', image: activityImages.householdChores },
+    { id: 'relax', title: 'Relax', image: activityImages.relax },
+    { id: 'watch-movie', title: 'Watch Movie', image: activityImages.watchMovie },
+    { id: 'listen-music', title: 'Listen to Music', image: activityImages.listenToMusic },
+    { id: 'gaming', title: 'Gaming', image: activityImages.gaming },
+    { id: 'browse-internet', title: 'Browse the Internet', image: activityImages.browseInternet },
+    { id: 'shopping', title: 'Shopping', image: activityImages.shopping },
+    { id: 'travel', title: 'Travel', image: activityImages.travel }
   ];
 
   const rows = chunkArray(activities, 3);
@@ -126,7 +126,7 @@ const OverallActivities = ({ navigation, route }) => {
                       }}
                     >
                       <Image
-                        source={activity.image}
+                        source={activityImages[activity.id]}
                         className="w-16 h-16 mb-0"
                         resizeMode="contain"
                       />

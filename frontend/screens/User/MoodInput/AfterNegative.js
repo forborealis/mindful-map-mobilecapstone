@@ -5,13 +5,15 @@ import { fonts } from '../../../utils/fonts/fonts';
 import { colors } from '../../../utils/colors/colors';
 import { moodDataService } from '../../../services/moodDataService';
 import ContinueTrackingModal from './ContinueTrackingModal';
+import { Ionicons } from '@expo/vector-icons';
+import emotionImages from '../../../utils/images/emotions';
 
 const emotions = [
-  { id: 'bored', title: 'Bored', image: require('../../../assets/images/mood/emotions/bored.png') },
-  { id: 'sad', title: 'Sad', image: require('../../../assets/images/mood/emotions/sad.png') },
-  { id: 'disappointed', title: 'Disappointed', image: require('../../../assets/images/mood/emotions/disappointed.png') },
-  { id: 'angry', title: 'Angry', image: require('../../../assets/images/mood/emotions/angry.png') },
-  { id: 'tense', title: 'Tense', image: require('../../../assets/images/mood/emotions/tense.png') }
+  { id: 'bored', title: 'Bored' },
+  { id: 'sad', title: 'Sad' },
+  { id: 'disappointed', title: 'Disappointed' },
+  { id: 'angry', title: 'Angry' },
+  { id: 'tense', title: 'Tense' }
 ];
 
 const intensityValues = [1, 2, 3, 4, 5];
@@ -102,21 +104,23 @@ const AfterNegative = ({ navigation, route }) => {
         showsVerticalScrollIndicator={false}
         contentContainerStyle={{ paddingTop: 40, paddingBottom: 24 }}
       >
-       <TouchableOpacity
-          onPress={() => navigation.goBack()}
-          className="absolute left-0 top-0 z-10"
-          activeOpacity={0.7}
+        <View
+          style={{
+            position: 'absolute',
+            top: 38,
+            left: 18,
+            zIndex: 100,
+            elevation: 10,
+          }}
+          pointerEvents="box-none"
         >
-          <Text
-            style={{
-              fontSize: 28,
-              color: colors.text,
-              fontFamily: fonts.semiBold
-            }}
+          <TouchableOpacity
+            onPress={() => navigation.goBack()}
+            hitSlop={{ top: 16, bottom: 16, left: 16, right: 16 }}
           >
-            ←
-          </Text>
-        </TouchableOpacity>
+            <Ionicons name="arrow-back" size={28} color="#222" />
+          </TouchableOpacity>
+        </View>
         <Text
           className="text-2xl text-center mb-6"
           style={{
@@ -147,7 +151,7 @@ const AfterNegative = ({ navigation, route }) => {
                     activeOpacity={0.8}
                   >
                     <Image
-                      source={emotion.image}
+                      source={emotionImages[emotion.id]}
                       className="w-20 h-20 mb-2"
                       resizeMode="contain"
                       style={{

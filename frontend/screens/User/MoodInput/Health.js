@@ -3,6 +3,7 @@ import { View, Text, TouchableOpacity, ScrollView, Image } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { fonts } from '../../../utils/fonts/fonts';
 import { colors } from '../../../utils/colors/colors';
+import healthImages from '../../../utils/images/activities';
 
 const chunkArray = (arr, size) => {
   const result = [];
@@ -14,20 +15,19 @@ const chunkArray = (arr, size) => {
 
 const Health = ({ navigation, route }) => {
   const [selectedHealth, setSelectedHealth] = useState(null);
-  
-  // Get time data from TimeSegmentSelector
+
   const { category, selectedTime, timeSegment, selectedDate } = route.params || {};
 
   const healthActivities = [
-    { id: 'jog', title: 'Jog', image: require('../../../assets/images/mood/jog.png') },
-    { id: 'walk', title: 'Walk', image: require('../../../assets/images/mood/walk.png') },
-    { id: 'exercise', title: 'Exercise', image: require('../../../assets/images/mood/exercise.png') },
-    { id: 'sports', title: 'Sports', image: require('../../../assets/images/mood/sports.png') },
-    { id: 'meditate', title: 'Meditate', image: require('../../../assets/images/mood/meditate.png') },
-    { id: 'eat-healthy', title: 'Eat Healthy', image: require('../../../assets/images/mood/eatHealthy.png') },
-    { id: 'no-physical', title: 'No Physical Activity', image: require('../../../assets/images/mood/noPhysicalActivity.png') },
-    { id: 'eat-unhealthy', title: 'Eat Unhealthy', image: require('../../../assets/images/mood/eatUnhealthy.png') },
-    { id: 'drink-alcohol', title: 'Drink Alcohol', image: require('../../../assets/images/mood/drinkAlcohol.png') }
+    { id: 'jog', title: 'Jog' },
+    { id: 'walk', title: 'Walk' },
+    { id: 'exercise', title: 'Exercise' },
+    { id: 'sports', title: 'Sports' },
+    { id: 'meditate', title: 'Meditate' },
+    { id: 'eat-healthy', title: 'Eat Healthy' },
+    { id: 'no-physical', title: 'No Physical Activity' },
+    { id: 'eat-unhealthy', title: 'Eat Unhealthy' },
+    { id: 'drink-alcohol', title: 'Drink Alcohol' }
   ];
 
   const rows = chunkArray(healthActivities, 3);
@@ -119,7 +119,7 @@ const Health = ({ navigation, route }) => {
                       }}
                     >
                       <Image
-                        source={health.image}
+                        source={healthImages[health.id]}
                         className="w-16 h-16 mb-1"
                         resizeMode="contain"
                       />

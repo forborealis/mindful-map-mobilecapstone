@@ -1,6 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { View, Text, TouchableOpacity, ScrollView, Alert, Modal, TextInput } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import {Ionicons} from '@expo/vector-icons';
 import { fonts } from '../../../utils/fonts/fonts';
 import { colors } from '../../../utils/colors/colors';
 
@@ -303,21 +304,23 @@ const TimeSegmentSelector = ({ navigation, route }) => {
 
   return (
     <SafeAreaView className="flex-1" style={{ backgroundColor: colors.background }}>
-      <TouchableOpacity
-        onPress={() => navigation.goBack()}
-        className="absolute left-6 top-2 z-10"
-        activeOpacity={0.7}
-      >
-        <Text
+        <View
           style={{
-            fontSize: 28,
-            color: colors.text,
-            fontFamily: fonts.semiBold
+            position: 'absolute',
+            top: 38,
+            left: 18,
+            zIndex: 100,
+            elevation: 10,
           }}
+          pointerEvents="box-none"
         >
-          ←
-        </Text>
-      </TouchableOpacity>
+          <TouchableOpacity
+            onPress={() => navigation.goBack()}
+            hitSlop={{ top: 16, bottom: 16, left: 16, right: 16 }}
+          >
+            <Ionicons name="arrow-back" size={28} color="#222" />
+          </TouchableOpacity>
+        </View>
 
       <ScrollView 
         className="flex-1 px-6"

@@ -3,7 +3,7 @@ import { View, Text, TouchableOpacity } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { fonts } from '../../../utils/fonts/fonts';
 import { colors } from '../../../utils/colors/colors';
-
+import { Ionicons } from '@expo/vector-icons';
 const options = [
   { id: 'positive', label: 'Positive', emoji: '👍' },
   { id: 'negative', label: 'Negative', emoji: '👎' }
@@ -50,21 +50,23 @@ const AfterValence = ({ navigation, route }) => {
   return (
     <SafeAreaView className="flex-1" style={{ backgroundColor: colors.background }}>
       <View className="flex-1 justify-center px-8">
-        <TouchableOpacity
-          onPress={() => navigation.goBack()}
-          className="absolute left-6 top-2 z-10"
-          activeOpacity={0.7}
+        <View
+          style={{
+            position: 'absolute',
+            top: 38,
+            left: 18,
+            zIndex: 100,
+            elevation: 10,
+          }}
+          pointerEvents="box-none"
         >
-          <Text
-            style={{
-              fontSize: 28,
-              color: colors.text,
-              fontFamily: fonts.semiBold
-            }}
+          <TouchableOpacity
+            onPress={() => navigation.goBack()}
+            hitSlop={{ top: 16, bottom: 16, left: 16, right: 16 }}
           >
-            ←
-          </Text>
-        </TouchableOpacity>
+            <Ionicons name="arrow-back" size={28} color="#222" />
+          </TouchableOpacity>
+        </View>
         <Text
           className="text-3xl text-center mb-16"
           style={{
