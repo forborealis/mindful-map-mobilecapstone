@@ -1,19 +1,22 @@
-import React, { useState, useCallback } from 'react';
+import React, { useState, useCallback, useRef } from 'react';
 import {
   View,
   Text,
-  ScrollView,
   TouchableOpacity,
   RefreshControl,
   TextInput,
   Modal,
-  Image
+  Image,
+  ActivityIndicator,
+  FlatList,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useFocusEffect } from '@react-navigation/native';
 import { moodDataService } from '../../services/moodDataService';
 import { colors } from '../../utils/colors/colors';
 import { fonts } from '../../utils/fonts/fonts';
+import emotionImages from '../../utils/images/emotions';
+import activityImages from '../../utils/images/activities';
 
 const CATEGORY_LABELS = {
   activity: 'Activities',
@@ -22,53 +25,7 @@ const CATEGORY_LABELS = {
   sleep: 'Sleep'
 };
 
-const emotionImages = {
-  calm: require('../../assets/images/mood/emotions/calm.png'),
-  relaxed: require('../../assets/images/mood/emotions/relaxed.png'),
-  pleased: require('../../assets/images/mood/emotions/pleased.png'),
-  happy: require('../../assets/images/mood/emotions/happy.png'),
-  excited: require('../../assets/images/mood/emotions/excited.png'),
-  bored: require('../../assets/images/mood/emotions/bored.png'),
-  sad: require('../../assets/images/mood/emotions/sad.png'),
-  disappointed: require('../../assets/images/mood/emotions/disappointed.png'),
-  angry: require('../../assets/images/mood/emotions/angry.png'),
-  tense: require('../../assets/images/mood/emotions/tense.png')
-};
-
 const sleepImage = require('../../assets/images/mood/others/sleep.png');
-
-const activityImages = {
-  commute: require('../../assets/images/mood/commute.png'),
-  exam: require('../../assets/images/mood/exam.png'),
-  homework: require('../../assets/images/mood/homework.png'),
-  project: require('../../assets/images/mood/project.png'),
-  study: require('../../assets/images/mood/study.png'),
-  read: require('../../assets/images/mood/read.png'),
-  extracurricular: require('../../assets/images/mood/extraCurricularActivities.png'),
-  'household-chores': require('../../assets/images/mood/householdChores.png'),
-  relax: require('../../assets/images/mood/relax.png'),
-  'watch-movie': require('../../assets/images/mood/watchMovie.png'),
-  'listen-music': require('../../assets/images/mood/listenToMusic.png'),
-  gaming: require('../../assets/images/mood/gaming.png'),
-  'browse-internet': require('../../assets/images/mood/browseInternet.png'),
-  shopping: require('../../assets/images/mood/shopping.png'),
-  travel: require('../../assets/images/mood/travel.png'),
-  alone: require('../../assets/images/mood/alone.png'),
-  friends: require('../../assets/images/mood/friend.png'),
-  family: require('../../assets/images/mood/family.png'),
-  classmates: require('../../assets/images/mood/classmate.png'),
-  relationship: require('../../assets/images/mood/relationship.png'),
-  online: require('../../assets/images/mood/onlineInteraction.png'),
-  pet: require('../../assets/images/mood/pet.png'),
-  jog: require('../../assets/images/mood/jog.png'),
-  walk: require('../../assets/images/mood/walk.png'),
-  exercise: require('../../assets/images/mood/exercise.png'),
-  meditate: require('../../assets/images/mood/meditate.png'),
-  'eat-healthy': require('../../assets/images/mood/eatHealthy.png'),
-  'no-physical': require('../../assets/images/mood/noPhysicalActivity.png'),
-  'eat-unhealthy': require('../../assets/images/mood/eatUnhealthy.png'),
-  'drink-alcohol': require('../../assets/images/mood/drinkAlcohol.png')
-};
 
 const SkeletonBox = ({ width, height, style }) => (
   <View
@@ -85,36 +42,65 @@ const SkeletonBox = ({ width, height, style }) => (
   />
 );
 
+const PAGE_SIZE = 10;
+
 const MoodEntries = ({ navigation }) => {
   const [moodLogs, setMoodLogs] = useState([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
-  const [activeTab, setActiveTab] = useState('all');
   const [sortOrder, setSortOrder] = useState('newest');
   const [showSortModal, setShowSortModal] = useState(false);
+  const [page, setPage] = useState(1);
+  const [hasMore, setHasMore] = useState(true);
+  const [loadingMore, setLoadingMore] = useState(false);
+
+  const isFetching = useRef(false);
 
   useFocusEffect(
     useCallback(() => {
-      fetchMoodLogs();
+      resetAndFetch();
     }, [sortOrder])
   );
 
-  const fetchMoodLogs = async () => {
+  const resetAndFetch = async () => {
     setLoading(true);
+    setPage(1);
+    setHasMore(true);
+    isFetching.current = true;
     try {
-      const result = await moodDataService.getUserMoodLogs({ limit: 100, page: 1 });
+      const result = await moodDataService.getUserMoodLogs({ limit: PAGE_SIZE, page: 1 });
       if (result.success) {
         setMoodLogs(result.moodLogs || []);
+        setHasMore((result.moodLogs || []).length === PAGE_SIZE);
       }
     } catch (e) {}
     setLoading(false);
     setRefreshing(false);
+    isFetching.current = false;
+  };
+
+  const fetchMore = async () => {
+    if (loadingMore || !hasMore || isFetching.current) return;
+    setLoadingMore(true);
+    isFetching.current = true;
+    try {
+      const nextPage = page + 1;
+      const result = await moodDataService.getUserMoodLogs({ limit: PAGE_SIZE, page: nextPage });
+      if (result.success) {
+        const newLogs = result.moodLogs || [];
+        setMoodLogs(prev => [...prev, ...newLogs]);
+        setPage(nextPage);
+        setHasMore(newLogs.length === PAGE_SIZE);
+      }
+    } catch (e) {}
+    setLoadingMore(false);
+    isFetching.current = false;
   };
 
   const onRefresh = useCallback(() => {
     setRefreshing(true);
-    fetchMoodLogs();
+    resetAndFetch();
   }, []);
 
   const formatText = (text) => {
@@ -130,31 +116,57 @@ const MoodEntries = ({ navigation }) => {
     });
   };
 
-  const filteredLogs = moodLogs
-    .filter(log => {
-      if (searchTerm) {
-        const term = searchTerm.toLowerCase();
-        return (
-          log.category?.toLowerCase().includes(term) ||
-          log.activity?.toLowerCase().includes(term) ||
-          log.date?.toLowerCase().includes(term) ||
-          log.beforeEmotion?.toLowerCase().includes(term) ||
-          log.afterEmotion?.toLowerCase().includes(term)
-        );
-      }
-      return true;
-    })
-    .sort((a, b) => {
-      const dateA = new Date(a.date);
-      const dateB = new Date(b.date);
-      return sortOrder === 'newest' ? dateB - dateA : dateA - dateB;
-    });
+  const filteredLogs = moodLogs.filter(log => {
+    if (searchTerm) {
+      const term = searchTerm.toLowerCase();
+      return (
+        log.category?.toLowerCase().includes(term) ||
+        log.activity?.toLowerCase().includes(term) ||
+        log.date?.toLowerCase().includes(term) ||
+        log.beforeEmotion?.toLowerCase().includes(term) ||
+        log.afterEmotion?.toLowerCase().includes(term)
+      );
+    }
+    return true;
+  }).sort((a, b) => {
+    const dateA = new Date(a.date);
+    const dateB = new Date(b.date);
+    return sortOrder === 'newest' ? dateB - dateA : dateA - dateB;
+  });
 
-  const groupedLogs = {};
-  filteredLogs.forEach(log => {
-    const dateKey = new Date(log.date).toDateString();
-    if (!groupedLogs[dateKey]) groupedLogs[dateKey] = [];
-    groupedLogs[dateKey].push(log);
+  const groupLogsByDate = (logs) => {
+    const grouped = {};
+    logs.forEach(log => {
+      const dateKey = new Date(log.date).toDateString();
+      if (!grouped[dateKey]) grouped[dateKey] = [];
+      grouped[dateKey].push(log);
+    });
+    return grouped;
+  };
+
+  const flatListData = [];
+  const grouped = groupLogsByDate(filteredLogs);
+  Object.entries(grouped).forEach(([dateKey, logs]) => {
+    const date = new Date(dateKey);
+    const formattedDate = date.toLocaleDateString('en-US', {
+      weekday: 'long',
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric'
+    });
+    flatListData.push({
+      type: 'header',
+      dateKey,
+      formattedDate,
+      count: logs.length
+    });
+    logs.forEach(log => {
+      flatListData.push({
+        type: 'entry',
+        log,
+        dateKey
+      });
+    });
   });
 
   const getActivityIcon = (activity, category) => {
@@ -388,56 +400,14 @@ const MoodEntries = ({ navigation }) => {
     </View>
   );
 
-  const renderGroupedLogs = () => {
-    if (Object.keys(groupedLogs).length === 0) {
+  const renderItem = ({ item }) => {
+    if (item.type === 'header') {
       return (
-        <View style={{
-          backgroundColor: colors.secondary,
-          borderRadius: 18,
-          padding: 32,
-          alignItems: 'center',
-          borderWidth: 1,
-          borderColor: colors.primary,
-          marginTop: 40
-        }}>
-          
-          <Text style={{
-            fontFamily: fonts.semiBold,
-            fontSize: 20,
-            color: colors.text,
-            marginBottom: 8
-          }}>
-            No entries found
-          </Text>
-          <Text style={{
-            fontFamily: fonts.regular,
-            fontSize: 15,
-            color: colors.text,
-            textAlign: 'center',
-            lineHeight: 22
-          }}>
-            {searchTerm
-              ? "Try adjusting your search to find more entries."
-              : "Start your mood tracking journey! Add your first mood entry."}
-          </Text>
-        </View>
-      );
-    }
-    return Object.entries(groupedLogs).map(([dateKey, logs]) => {
-      const date = new Date(dateKey);
-      const formattedDate = date.toLocaleDateString('en-US', {
-        weekday: 'long',
-        year: 'numeric',
-        month: 'long',
-        day: 'numeric'
-      });
-      return (
-        <View key={dateKey} style={{ marginBottom: 28 }}>
+        <View style={{ marginBottom: 12, marginTop: 18 }}>
           <View style={{
             backgroundColor: colors.background,
             padding: 14,
             borderRadius: 16,
-            marginBottom: 12,
             borderWidth: 1,
             borderColor: colors.primary,
             flexDirection: 'row',
@@ -456,7 +426,7 @@ const MoodEntries = ({ navigation }) => {
               color: colors.text,
               flex: 1
             }}>
-              {formattedDate}
+              {item.formattedDate}
             </Text>
             <View style={{
               backgroundColor: colors.accent,
@@ -469,14 +439,17 @@ const MoodEntries = ({ navigation }) => {
                 fontSize: 13,
                 color: colors.primary
               }}>
-                {logs.length} {logs.length === 1 ? 'entry' : 'entries'}
+                {item.count} {item.count === 1 ? 'entry' : 'entries'}
               </Text>
             </View>
           </View>
-          {logs.map(renderMoodEntry)}
         </View>
       );
-    });
+    }
+    if (item.type === 'entry') {
+      return renderMoodEntry(item.log);
+    }
+    return null;
   };
 
   return (
@@ -557,11 +530,11 @@ const MoodEntries = ({ navigation }) => {
           />
         </View>
       </View>
-
-      <ScrollView
-        style={{ flex: 1 }}
+      <FlatList
+        data={flatListData}
+        keyExtractor={(item, idx) => item.type === 'header' ? `header-${item.dateKey}` : `${item.log._id}-${idx}`}
+        renderItem={renderItem}
         contentContainerStyle={{ padding: 18, paddingBottom: 40 }}
-        showsVerticalScrollIndicator={false}
         refreshControl={
           <RefreshControl
             refreshing={refreshing}
@@ -570,39 +543,80 @@ const MoodEntries = ({ navigation }) => {
             tintColor={colors.primary}
           />
         }
-      >
-        {loading ? (
-          <View>
-            {[...Array(3)].map((_, idx) => (
-              <View key={idx} style={{
-                backgroundColor: colors.accent,
-                borderRadius: 18,
-                borderWidth: 1,
-                borderColor: colors.primary,
-                marginBottom: 18,
-                padding: 16
+        ListEmptyComponent={
+          loading ? (
+            <View>
+              {[...Array(3)].map((_, idx) => (
+                <View key={idx} style={{
+                  backgroundColor: colors.accent,
+                  borderRadius: 18,
+                  borderWidth: 1,
+                  borderColor: colors.primary,
+                  marginBottom: 18,
+                  padding: 16
+                }}>
+                  <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 10 }}>
+                    <SkeletonBox width={40} height={40} style={{ marginRight: 10, borderRadius: 20 }} />
+                    <View style={{ flex: 1 }}>
+                      <SkeletonBox width="60%" height={18} />
+                      <SkeletonBox width="40%" height={14} />
+                      <SkeletonBox width="30%" height={12} />
+                    </View>
+                  </View>
+                  <View style={{ flexDirection: 'row', gap: 10 }}>
+                    <View style={{ flex: 1 }}>
+                      <SkeletonBox width="100%" height={80} style={{ borderRadius: 14 }} />
+                    </View>
+                    <View style={{ flex: 1 }}>
+                      <SkeletonBox width="100%" height={80} style={{ borderRadius: 14 }} />
+                    </View>
+                  </View>
+                </View>
+              ))}
+            </View>
+          ) : (
+            <View style={{
+              backgroundColor: colors.secondary,
+              borderRadius: 18,
+              padding: 32,
+              alignItems: 'center',
+              borderWidth: 1,
+              borderColor: colors.primary,
+              marginTop: 40
+            }}>
+              <Text style={{
+                fontFamily: fonts.semiBold,
+                fontSize: 20,
+                color: colors.text,
+                marginBottom: 8
               }}>
-                <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 10 }}>
-                  <SkeletonBox width={40} height={40} style={{ marginRight: 10, borderRadius: 20 }} />
-                  <View style={{ flex: 1 }}>
-                    <SkeletonBox width="60%" height={18} />
-                    <SkeletonBox width="40%" height={14} />
-                    <SkeletonBox width="30%" height={12} />
-                  </View>
-                </View>
-                <View style={{ flexDirection: 'row', gap: 10 }}>
-                  <View style={{ flex: 1 }}>
-                    <SkeletonBox width="100%" height={80} style={{ borderRadius: 14 }} />
-                  </View>
-                  <View style={{ flex: 1 }}>
-                    <SkeletonBox width="100%" height={80} style={{ borderRadius: 14 }} />
-                  </View>
-                </View>
-              </View>
-            ))}
-          </View>
-        ) : renderGroupedLogs()}
-      </ScrollView>
+                No entries found
+              </Text>
+              <Text style={{
+                fontFamily: fonts.regular,
+                fontSize: 15,
+                color: colors.text,
+                textAlign: 'center',
+                lineHeight: 22
+              }}>
+                {searchTerm
+                  ? "Try adjusting your search to find more entries."
+                  : "Start your mood tracking journey! Add your first mood entry."}
+              </Text>
+            </View>
+          )
+        }
+        onEndReached={fetchMore}
+        onEndReachedThreshold={0.3}
+        ListFooterComponent={
+          loadingMore ? (
+            <View style={{ padding: 18 }}>
+              <ActivityIndicator color={colors.primary} size="small" />
+            </View>
+          ) : null
+        }
+      />
+      {/* Sort Modal */}
       <Modal
         visible={showSortModal}
         transparent={true}

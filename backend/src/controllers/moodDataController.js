@@ -39,7 +39,7 @@ const MoodDataController = {
       }
 
       const page = parseInt(req.query.page) || 1;
-      const limit = parseInt(req.query.limit) || 100;
+      const limit = parseInt(req.query.limit) || 10;
       const skip = (page - 1) * limit;
 
       const moodLogs = await MoodLog.find({ user: user._id })
