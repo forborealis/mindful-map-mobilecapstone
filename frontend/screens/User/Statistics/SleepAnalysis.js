@@ -1,12 +1,16 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, TouchableOpacity, Dimensions, ScrollView } from 'react-native';
+import { View, Text, TouchableOpacity, Dimensions, ScrollView, Image } from 'react-native';
 import { LineChart } from 'react-native-chart-kit';
 import { moodDataService } from '../../../services/moodDataService';
 import { colors } from '../../../utils/colors/colors';
 import { fonts } from '../../../utils/fonts/fonts';
+import excellentImg from '../../../assets/images/mood/sleep/excellent.png';
+import goodImg from '../../../assets/images/mood/sleep/good.png';
+import lowImg from '../../../assets/images/mood/sleep/low.png';
+import criticalImg from '../../../assets/images/mood/sleep/critical.png';
 
 const screenWidth = Dimensions.get('window').width;
-const chartWidth = screenWidth * 0.92;
+const chartWidth = screenWidth * 1;
 
 function formatDate(date) {
   const d = new Date(date);
@@ -90,18 +94,21 @@ export default function SleepAnalysis() {
     fetchTrend();
   }, [period]);
 
-  // Stats
+
   const avgSleep = trend.length ? (trend.reduce((a, b) => a + b.hrs, 0) / trend.length).toFixed(1) : 0;
   const bestDay = trend.reduce((max, cur) => cur.hrs > max.hrs ? cur : max, { hrs: 0 });
   const leastDay = trend.reduce((min, cur) => cur.hrs < min.hrs ? cur : min, { hrs: 99 });
+  const [chartPage, setChartPage] = useState(0);
+  const PAGE_SIZE = 5;
+  const pagedTrend = trend.slice(chartPage * PAGE_SIZE, (chartPage + 1) * PAGE_SIZE);
+  const totalPages = Math.ceil(trend.length / PAGE_SIZE);
 
-  // Sleep Guide Data (for display, not the summary)
   const guides = [
     {
       label: 'Excellent',
       color: '#DFF7EC',
       borderColor: '#59AC77',
-      icon: '🌞',
+      image: excellentImg,
       hours: '8-10 hours',
       desc: 'Perfect for school',
       barColor: '#59AC77',
@@ -112,7 +119,7 @@ export default function SleepAnalysis() {
       label: 'Good',
       color: '#FFF9E3',
       borderColor: '#FFD600',
-      icon: '😊',
+      image: goodImg,
       hours: '7-8 hours',
       desc: 'Still manageable',
       barColor: '#FFD600',
@@ -123,7 +130,7 @@ export default function SleepAnalysis() {
       label: 'Low',
       color: '#FFEFE3',
       borderColor: '#FF714B',
-      icon: '😴',
+      image: lowImg,
       hours: '6-7 hours',
       desc: 'May affect focus',
       barColor: '#FF714B',
@@ -134,7 +141,7 @@ export default function SleepAnalysis() {
       label: 'Critical',
       color: '#FFE3E3',
       borderColor: '#FF6347',
-      icon: '😵',
+      image: criticalImg,
       hours: '<6 hours',
       desc: 'Impacts grades',
       barColor: '#FF6347',
@@ -143,10 +150,8 @@ export default function SleepAnalysis() {
     },
   ];
 
-  // Get the guide for the user's average sleep
-  const userGuide = getSleepGuide(Number(avgSleep));
 
-  // Summary message logic (bulleted)
+  const userGuide = getSleepGuide(Number(avgSleep));
 
 
   return (
@@ -208,7 +213,10 @@ export default function SleepAnalysis() {
               {['week', 'month'].map(opt => (
                 <TouchableOpacity
                   key={opt}
-                  onPress={() => setPeriod(opt)}
+                  onPress={() => {
+                    setPeriod(opt);
+                    setChartPage(0); 
+                  }}
                   style={{
                     backgroundColor: period === opt ? '#6FC3B2' : 'transparent',
                     borderRadius: 999,
@@ -343,7 +351,7 @@ export default function SleepAnalysis() {
             shadowRadius: 6,
             shadowOffset: { width: 0, height: 1 },
             elevation: 2,
-            width: chartWidth * 0.85,
+            width: chartWidth * 0.90,
             alignSelf: 'center',
           }}>
             <Text style={{
@@ -370,36 +378,78 @@ export default function SleepAnalysis() {
                 marginTop: 18,
               }}>No sleep data for this period.</Text>
             ) : (
-              <LineChart
-                data={{
-                  labels: trend.map(item => formatDate(item.date)),
-                  datasets: [{ data: trend.map(item => item.hrs) }]
-                }}
-                width={chartWidth * 0.85 - 16}
-                height={190}
-                yAxisSuffix="h"
-                yAxisInterval={1}
-                chartConfig={{
-                  backgroundColor: '#F8F8FF',
-                  backgroundGradientFrom: '#F8F8FF',
-                  backgroundGradientTo: '#F8F8FF',
-                  decimalPlaces: 1,
-                  color: (opacity = 1) => `rgba(67, 205, 131, ${opacity})`,
-                  labelColor: (opacity = 1) => `rgba(44, 62, 80, ${opacity})`,
-                  style: { borderRadius: 16 },
-                  propsForDots: {
-                    r: '5',
-                    strokeWidth: '2',
-                    stroke: '#3CB371',
-                  },
-                }}
-                bezier
-                style={{
-                  marginVertical: 8,
-                  borderRadius: 16,
-                  alignSelf: 'center',
-                }}
-              />
+              <>
+                <LineChart
+                  data={{
+                    labels: pagedTrend.map(item => formatDate(item.date)),
+                    datasets: [{ data: pagedTrend.map(item => item.hrs) }]
+                  }}
+                  width={chartWidth * 0.85 - 16}
+                  height={190}
+                  yAxisSuffix="h"
+                  yAxisInterval={1}
+                  chartConfig={{
+                    backgroundColor: '#F8F8FF',
+                    backgroundGradientFrom: '#F8F8FF',
+                    backgroundGradientTo: '#F8F8FF',
+                    decimalPlaces: 1,
+                    color: (opacity = 1) => `rgba(67, 205, 131, ${opacity})`,
+                    labelColor: (opacity = 1) => `rgba(44, 62, 80, ${opacity})`,
+                    style: { borderRadius: 16 },
+                    propsForDots: {
+                      r: '5',
+                      strokeWidth: '2',
+                      stroke: '#3CB371',
+                    },
+                  }}
+                  bezier
+                  style={{
+                    marginVertical: 8,
+                    borderRadius: 16,
+                    alignSelf: 'center',
+                  }}
+                />
+                {trend.length > PAGE_SIZE && (
+                  <View style={{
+                    flexDirection: 'row',
+                    justifyContent: 'center',
+                    alignItems: 'center',
+                    marginTop: 8,
+                    marginBottom: 4,
+                  }}>
+                    <TouchableOpacity
+                      onPress={() => setChartPage(p => Math.max(0, p - 1))}
+                      disabled={chartPage === 0}
+                      style={{
+                        opacity: chartPage === 0 ? 0.3 : 1,
+                        padding: 8,
+                        marginHorizontal: 12,
+                      }}
+                    >
+                      <Text style={{ fontSize: 28, color: colors.primary }}>{'←'}</Text>
+                    </TouchableOpacity>
+                    <Text style={{
+                      fontFamily: fonts.medium,
+                      fontSize: 15,
+                      color: colors.primary,
+                      marginHorizontal: 8,
+                    }}>
+                      Page {chartPage + 1} of {totalPages}
+                    </Text>
+                    <TouchableOpacity
+                      onPress={() => setChartPage(p => Math.min(totalPages - 1, p + 1))}
+                      disabled={chartPage >= totalPages - 1}
+                      style={{
+                        opacity: chartPage >= totalPages - 1 ? 0.3 : 1,
+                        padding: 8,
+                        marginHorizontal: 12,
+                      }}
+                    >
+                      <Text style={{ fontSize: 28, color: colors.primary }}>{'→'}</Text>
+                    </TouchableOpacity>
+                  </View>
+                )}
+              </>
             )}
           </View>
 
@@ -415,7 +465,7 @@ export default function SleepAnalysis() {
             Sleep Guide 
           </Text>
 
-          {/* Sleep Guide Containers - 1 per row, color-coded text, bar percent */}
+        
           <View style={{ marginBottom: 16 }}>
             {guides.map((guide, idx) => (
               <View
@@ -435,7 +485,11 @@ export default function SleepAnalysis() {
                   minHeight: 60,
                 }}
               >
-                <Text style={{ fontSize: 28, marginRight: 14 }}>{guide.icon}</Text>
+                <Image
+                  source={guide.image}
+                  style={{ width: 38, height: 38, marginRight: 14 }}
+                  resizeMode="contain"
+                />
                 <View style={{ flex: 1 }}>
                   <Text style={{
                     fontFamily: fonts.bold,
@@ -468,8 +522,6 @@ export default function SleepAnalysis() {
               </View>
             ))}
           </View>
-
-    
         </View>
       </View>
     </ScrollView>
