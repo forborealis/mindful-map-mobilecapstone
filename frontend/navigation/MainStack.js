@@ -31,6 +31,11 @@ import DailyAnova from '../screens/User/Statistics/Daily/DailyAnova';
 import WeeklyAnova from '../screens/User/Statistics/Weekly/WeeklyAnova';
 import Prediction from '../screens/User/Prediction/Prediction';
 import CategoryPrediction from '../screens/User/Prediction/CategoryPrediction';
+import BreathingExercises from '../screens/User/Activities/BreathingExercises';
+import PomodoroTechnique from '../screens/User/Activities/PomodoroTechnique';
+import GuidedMeditation from '../screens/User/Activities/GuidedMeditation';
+import DailyAffirmation from '../screens/User/Activities/DailyAffirmation';
+import CalmingMusic from '../screens/User/Activities/CalmingMusic';
 
 const Stack = createStackNavigator();
 
@@ -181,6 +186,26 @@ export default function MainStack({ initialRoute }) {
         name="CategoryPrediction"
         component={CategoryPrediction}
         options={{ headerShown: false }}
+      />
+      <Stack.Screen
+        name="BreathingExercises"
+        component={BreathingExercises}
+      />
+      <Stack.Screen
+        name="PomodoroTechnique"
+        component={PomodoroTechnique}
+      />
+      <Stack.Screen
+        name="GuidedMeditation"
+        component={GuidedMeditation}
+      />
+      <Stack.Screen
+        name="DailyAffirmation"
+        component={DailyAffirmation}
+      />
+      <Stack.Screen
+        name="CalmingMusic"
+        component={CalmingMusic}
       />
     </Stack.Navigator>
   );

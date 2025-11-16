@@ -3,10 +3,12 @@ import { Alert, TouchableOpacity, View } from 'react-native';
 import { createDrawerNavigator, DrawerContentScrollView, DrawerItemList } from '@react-navigation/drawer';
 import MoodEntries from '../screens/User/MoodEntries';
 import Home from '../screens/User/Home';
+import Activities from '../screens/User/Activities/Activities';
 import Calendar from '../screens/User/Calendar';
 import StatisticsDashboard from '../screens/User/Statistics/StatisticsDashboard';
 import Prediction from '../screens/User/Prediction/Prediction';
 import Profile from '../screens/User/Profile';
+
 import { authService } from '../services/authService';
 import Toast from 'react-native-toast-message';
 import { Ionicons } from '@expo/vector-icons';
@@ -131,6 +133,15 @@ export default function SideBarNav() {
         options={{
           drawerIcon: ({ color, size }) => (
             <Ionicons name="home" size={size} color={color} />
+          ),
+        }}
+      />
+      <Drawer.Screen
+        name="Activities"
+        component={Activities}
+        options={{
+          drawerIcon: ({ color, size }) => (
+            <Ionicons name="fitness" size={size} color={color} />
           ),
         }}
       />
