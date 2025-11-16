@@ -190,22 +190,27 @@ export default function MainStack({ initialRoute }) {
       <Stack.Screen
         name="BreathingExercises"
         component={BreathingExercises}
+        options={{ headerShown: false }}
       />
       <Stack.Screen
         name="PomodoroTechnique"
         component={PomodoroTechnique}
+        options={{ headerShown: false }}
       />
       <Stack.Screen
         name="GuidedMeditation"
         component={GuidedMeditation}
+        options={{ headerShown: false }}
       />
       <Stack.Screen
         name="DailyAffirmation"
         component={DailyAffirmation}
+        options={{ headerShown: false }}
       />
       <Stack.Screen
         name="CalmingMusic"
         component={CalmingMusic}
+        options={{ headerShown: false }}
       />
     </Stack.Navigator>
   );

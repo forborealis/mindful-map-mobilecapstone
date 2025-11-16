@@ -20,7 +20,7 @@ import { musicService } from '../../../services/musicService';
 import { authService } from '../../../services/authService';
 const { width } = Dimensions.get('window');
 
-const CalmingMusic = () => {
+const CalmingMusic = ({ navigation }) => {
   const [musicList, setMusicList] = useState([]);
   const [categories, setCategories] = useState([]);
   const [selectedCategory, setSelectedCategory] = useState('calming');
@@ -35,6 +35,7 @@ const CalmingMusic = () => {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [isSeeking, setIsSeeking] = useState(false);
   const [seekPosition, setSeekPosition] = useState(0);
+  const [isLoadingSwitch, setIsLoadingSwitch] = useState(false);
 
   useEffect(() => {
     initializeComponent();
@@ -47,9 +48,9 @@ const CalmingMusic = () => {
 
   useEffect(() => {
     if (selectedCategory) {
-      fetchMusic();
+      fetchMusic(true); // Pass true to indicate this is a view switch
     }
-  }, [selectedCategory, showFavorites]);
+  }, [selectedCategory, showFavorites, isAuthenticated]);
 
   const initializeComponent = async () => {
     setLoading(true);
@@ -98,12 +99,18 @@ const CalmingMusic = () => {
     }
   };
 
-  const fetchMusic = async () => {
+  const fetchMusic = async (isViewSwitch = false) => {
     try {
+      if (isViewSwitch) {
+        setIsLoadingSwitch(true);
+        setMusicList([]); // Clear the list immediately when switching views
+      }
+      
       let response;
       
       if (showFavorites) {
-        response = await musicService.getFavorites(selectedCategory);
+        // Get ALL favorites, not filtered by category
+        response = await musicService.getFavorites();
       } else {
         response = await musicService.getMusicByCategory(selectedCategory);
       }
@@ -125,8 +132,18 @@ const CalmingMusic = () => {
             }
           } catch (favError) {
             console.error('Error fetching favorites status:', favError);
-            // Continue with original data if favorites check fails
+            // Set isFavorite to false for all tracks if favorites check fails
+            musicData = musicData.map(track => ({
+              ...track,
+              isFavorite: false
+            }));
           }
+        } else if (!showFavorites) {
+          // If not authenticated, ensure isFavorite is set to false
+          musicData = musicData.map(track => ({
+            ...track,
+            isFavorite: false
+          }));
         }
         
         setMusicList(musicData);
@@ -136,6 +153,10 @@ const CalmingMusic = () => {
     } catch (error) {
       console.error('Error fetching music:', error);
       Alert.alert('Error', 'Failed to connect to server');
+    } finally {
+      if (isViewSwitch) {
+        setIsLoadingSwitch(false);
+      }
     }
   };
 
@@ -420,24 +441,51 @@ const CalmingMusic = () => {
     <View style={styles.container}>
       {/* Header */}
       <View style={styles.header}>
-        <View style={styles.headerTop}>
-          <View style={styles.headerLeft}>
+        <TouchableOpacity
+          style={styles.backButton}
+          onPress={() => navigation.goBack()}
+        >
+          <Ionicons name="arrow-back" size={24} color={colors.white} />
+        </TouchableOpacity>
+        
+        <View style={styles.headerContent}>
+          <Ionicons name="musical-notes-outline" size={32} color={colors.white} />
+          <Text style={styles.headerTitle}>Calming Music</Text>
+        </View>
+      </View>
+
+      {/* Sub Header for Categories and Favorites */}
+      <View style={styles.subHeader}>
+        <View style={styles.subHeaderTop}>
+          {showFavorites && (
+            <TouchableOpacity
+              style={styles.subBackButton}
+              onPress={() => setShowFavorites(false)}
+              activeOpacity={0.7}
+            >
+              <Ionicons name="arrow-back" size={20} color={colors.text} />
+            </TouchableOpacity>
+          )}
+          
+          <View style={[styles.headerLeft, showFavorites && styles.headerLeftWithBack]}>
             <Text style={styles.title}>
-              {showFavorites ? 'Favorites' : getCategoryDisplayName(selectedCategory)}
+              {showFavorites ? 'My Favorites' : getCategoryDisplayName(selectedCategory)}
             </Text>
-            <Text style={styles.subtitle}>{musicList.length} tracks</Text>
+            <Text style={styles.subtitle}>
+              {showFavorites ? `${musicList.length} saved tracks` : `${musicList.length} tracks`}
+            </Text>
           </View>
           
-          {isAuthenticated && (
+          {isAuthenticated && !showFavorites && (
             <TouchableOpacity
-              style={[styles.favoriteToggle, showFavorites && styles.favoriteToggleActive]}
-              onPress={() => setShowFavorites(!showFavorites)}
+              style={styles.favoriteToggle}
+              onPress={() => setShowFavorites(true)}
               activeOpacity={0.7}
             >
               <Ionicons
-                name={showFavorites ? 'heart' : 'heart-outline'}
+                name="heart-outline"
                 size={18}
-                color={showFavorites ? '#fff' : colors.primary}
+                color={colors.primary}
               />
             </TouchableOpacity>
           )}
@@ -457,11 +505,22 @@ const CalmingMusic = () => {
       </View>
 
       {/* Music List */}
-      {musicList.length === 0 ? (
+      {isLoadingSwitch ? (
+        <View style={styles.centerContainer}>
+          <ActivityIndicator size="large" color={colors.primary} />
+          <Text style={styles.loadingText}>
+            {showFavorites ? 'Loading favorites...' : 'Loading music...'}
+          </Text>
+        </View>
+      ) : musicList.length === 0 ? (
         <View style={styles.emptyContainer}>
           <Ionicons name="musical-notes-outline" size={48} color={colors.textSecondary} />
-          <Text style={styles.emptyText}>No music available</Text>
-          <Text style={styles.emptySubtext}>Check back later for new tracks</Text>
+          <Text style={styles.emptyText}>
+            {showFavorites ? 'No favorites yet' : 'No music available'}
+          </Text>
+          <Text style={styles.emptySubtext}>
+            {showFavorites ? 'Start adding songs to your favorites' : 'Check back later for new tracks'}
+          </Text>
         </View>
       ) : (
         <FlatList
@@ -575,6 +634,29 @@ const styles = StyleSheet.create({
     padding: 20,
   },
   header: {
+    paddingTop: 50,
+    paddingBottom: 20,
+    paddingHorizontal: 20,
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: colors.primary,
+  },
+  backButton: {
+    padding: 8,
+    marginRight: 16,
+  },
+  headerContent: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  headerTitle: {
+    fontSize: 20,
+    fontFamily: fonts.bold,
+    color: colors.white,
+    marginLeft: 12,
+  },
+  subHeader: {
     backgroundColor: colors.surface,
     paddingTop: 16,
     paddingHorizontal: 16,
@@ -582,7 +664,7 @@ const styles = StyleSheet.create({
     borderBottomWidth: 1,
     borderBottomColor: colors.border,
   },
-  headerTop: {
+  subHeaderTop: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
@@ -590,6 +672,20 @@ const styles = StyleSheet.create({
   },
   headerLeft: {
     flex: 1,
+  },
+  headerLeftWithBack: {
+    flex: 1,
+    marginLeft: 8,
+  },
+  subBackButton: {
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    backgroundColor: colors.background,
+    justifyContent: 'center',
+    alignItems: 'center',
+    borderWidth: 1,
+    borderColor: colors.border,
   },
   title: {
     fontSize: 20,

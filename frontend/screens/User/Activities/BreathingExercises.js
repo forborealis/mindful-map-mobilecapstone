@@ -1,13 +1,31 @@
 import React from 'react';
-import { View, Text, StyleSheet } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
 import { colors } from '../../../utils/colors/colors';
 import { fonts } from '../../../utils/fonts/fonts';
 
-const BreathingExercises = () => {
+const BreathingExercises = ({ navigation }) => {
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>Breathing Exercises</Text>
-      <Text style={styles.subtitle}>Coming Soon...</Text>
+      {/* Header */}
+      <View style={styles.header}>
+        <TouchableOpacity
+          style={styles.backButton}
+          onPress={() => navigation.goBack()}
+        >
+          <Ionicons name="arrow-back" size={24} color={colors.white} />
+        </TouchableOpacity>
+        
+        <View style={styles.headerContent}>
+          <Ionicons name="leaf-outline" size={32} color={colors.white} />
+          <Text style={styles.headerTitle}>Breathing Exercises</Text>
+        </View>
+      </View>
+
+      <View style={styles.content}>
+        <Text style={styles.title}>Breathing Exercises</Text>
+        <Text style={styles.subtitle}>Coming Soon...</Text>
+      </View>
     </View>
   );
 };
@@ -16,6 +34,32 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: colors.background,
+  },
+  header: {
+    paddingTop: 50,
+    paddingBottom: 20,
+    paddingHorizontal: 20,
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: colors.primary,
+  },
+  backButton: {
+    padding: 8,
+    marginRight: 16,
+  },
+  headerContent: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  headerTitle: {
+    fontSize: 20,
+    fontFamily: fonts.bold,
+    color: colors.white,
+    marginLeft: 12,
+  },
+  content: {
+    flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
     padding: 20,
