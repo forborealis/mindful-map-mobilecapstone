@@ -57,11 +57,11 @@ export default function MainStack({ initialRoute }) {
         component={SignupScreen}
         options={{ headerShown: false }}
       />
-      {/* <Stack.Screen
+      <Stack.Screen
         name="DailyQuote" 
         component={DailyQuote}
         options={{ headerShown: false }}
-      /> */}
+      />
       <Stack.Screen 
         name="ChooseCategory" 
         component={ChooseCategory}

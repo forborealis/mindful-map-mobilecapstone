@@ -7,7 +7,7 @@ export const initializeAuth = async () => {
     
     if (session.isAuthenticated) {
       console.log('User session found:', session.user.email);
-      return { initialRoute: 'ChooseCategory' };
+      return { initialRoute: 'DailyQuote' };
     } else {
       console.log('No user session found');
       return { initialRoute: 'Landing' };
