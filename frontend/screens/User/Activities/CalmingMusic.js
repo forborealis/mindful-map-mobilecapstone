@@ -13,7 +13,10 @@ import {
   GestureHandlerRootView,
   SafeAreaView
 } from 'react-native';
+import Svg, { Circle } from 'react-native-svg';
 import { Audio } from 'expo-av';
+import * as FileSystem from 'expo-file-system/legacy';
+import * as MediaLibrary from 'expo-media-library';
 import { Ionicons } from '@expo/vector-icons';
 import { colors } from '../../../utils/colors/colors';
 import { fonts } from '../../../utils/fonts/fonts';
@@ -37,6 +40,7 @@ const CalmingMusic = ({ navigation }) => {
   const [isSeeking, setIsSeeking] = useState(false);
   const [seekPosition, setSeekPosition] = useState(0);
   const [isLoadingSwitch, setIsLoadingSwitch] = useState(false);
+  const [downloadingIds, setDownloadingIds] = useState(new Set());
 
   useEffect(() => {
     initializeComponent();
@@ -212,7 +216,43 @@ const CalmingMusic = ({ navigation }) => {
       if (status.didJustFinish) {
         setIsPlaying(false);
         setCurrentPlaying(null);
+        // Auto-play next song
+        playNextSong();
       }
+    }
+  };
+
+  const playPreviousSong = () => {
+    if (musicList.length === 0 || currentPlaying === null) return;
+    
+    const currentIndex = musicList.findIndex(music => music._id === currentPlaying);
+    if (currentIndex <= 0) {
+      // Already at the beginning, don't do anything
+      return;
+    }
+    
+    const previousIndex = currentIndex - 1;
+    const previousSong = musicList[previousIndex];
+    
+    if (previousSong) {
+      playSound(previousSong);
+    }
+  };
+
+  const playNextSong = () => {
+    if (musicList.length === 0 || currentPlaying === null) return;
+    
+    const currentIndex = musicList.findIndex(music => music._id === currentPlaying);
+    if (currentIndex >= musicList.length - 1) {
+      // Already at the end, don't do anything
+      return;
+    }
+    
+    const nextIndex = currentIndex + 1;
+    const nextSong = musicList[nextIndex];
+    
+    if (nextSong) {
+      playSound(nextSong);
     }
   };
 
@@ -261,6 +301,9 @@ const CalmingMusic = ({ navigation }) => {
     const { locationX } = event.nativeEvent;
     const progressBarWidth = width - 32; // Account for padding
     const position = Math.max(0, Math.min(1, locationX / progressBarWidth));
+    
+    // Update progress immediately for instant feedback
+    setProgress(position * duration);
     seekToPosition(position);
   };
 
@@ -288,6 +331,87 @@ const CalmingMusic = ({ navigation }) => {
     }
     setIsSeeking(false);
     setSeekPosition(0);
+  };
+
+  const CircularProgressIndicator = () => {
+    if (!currentPlaying || !isPlaying) return null;
+    
+    const progressPercent = duration > 0 ? (progress / duration) * 100 : 0;
+    
+    return (
+      <View style={styles.circularProgress}>
+        <Svg width="14" height="14">
+          <Circle
+            cx="7"
+            cy="7"
+            r="5.5"
+            fill={colors.primary}
+            stroke={colors.background}
+            strokeWidth="1.5"
+          />
+        </Svg>
+      </View>
+    );
+  };
+
+  const downloadMusic = async (music) => {
+    try {
+      // Request storage permissions
+      const permission = await MediaLibrary.requestPermissionsAsync();
+      if (!permission.granted) {
+        Alert.alert('Permission Denied', 'Please enable storage permissions to download music');
+        return;
+      }
+
+      // Add to downloading set
+      setDownloadingIds(prev => new Set([...prev, music._id]));
+
+      const musicFileName = `${music.title.replace(/[^a-zA-Z0-9]/g, '_')}.mp3`;
+      const downloadsPath = `${FileSystem.documentDirectory}Download/`;
+      const musicPath = `${downloadsPath}${musicFileName}`;
+
+      try {
+        // Check if directory exists
+        const dirInfo = await FileSystem.getInfoAsync(downloadsPath);
+        if (!dirInfo.exists) {
+          // Create directory with intermediates
+          await FileSystem.makeDirectoryAsync(downloadsPath, { intermediates: true });
+          console.log('Created download directory:', downloadsPath);
+        }
+      } catch (dirError) {
+        console.error('Error creating directory:', dirError);
+        throw new Error('Failed to create download directory');
+      }
+
+      // Download the file
+      const downloadResult = await FileSystem.downloadAsync(
+        music.cloudinaryUrl,
+        musicPath
+      );
+
+      if (downloadResult.status === 200) {
+        // Try to add to media library
+        try {
+          await MediaLibrary.createAssetAsync(musicPath);
+        } catch (mediaError) {
+          console.log('Media library sync note:', mediaError);
+        }
+        
+        Alert.alert('Success', `Downloaded: ${music.title}`);
+      } else {
+        Alert.alert('Error', 'Failed to download music');
+      }
+    } catch (error) {
+      console.error('Error downloading music:', error);
+      Alert.alert('Error', 'Download failed: ' + error.message);
+    } finally {
+      // Remove from downloading set
+      setDownloadingIds(prev => {
+        const newSet = new Set(prev);
+        newSet.delete(music._id);
+        return newSet;
+      });
+    }
   };
 
   const toggleFavorite = async (music) => {
@@ -423,6 +547,25 @@ const CalmingMusic = ({ navigation }) => {
                 />
               </TouchableOpacity>
             )}
+            <TouchableOpacity
+              style={styles.musicDownloadButton}
+              onPress={(e) => {
+                e.stopPropagation();
+                downloadMusic(item);
+              }}
+              disabled={downloadingIds.has(item._id)}
+              activeOpacity={0.6}
+            >
+              {downloadingIds.has(item._id) ? (
+                <ActivityIndicator size="small" color={colors.primary} />
+              ) : (
+                <Ionicons
+                  name="download-outline"
+                  size={18}
+                  color={colors.primary}
+                />
+              )}
+            </TouchableOpacity>
           </View>
         </View>
       </TouchableOpacity>
@@ -547,6 +690,20 @@ const CalmingMusic = ({ navigation }) => {
                   }
                 ]}
               />
+              {/* Progress circle indicator */}
+              <View 
+                style={[
+                  styles.progressCircle,
+                  {
+                    left: `${isSeeking 
+                      ? (seekPosition / duration) * 100 
+                      : (progress / duration) * 100
+                    }%`
+                  }
+                ]}
+              >
+                <CircularProgressIndicator />
+              </View>
             </View>
             
             {isSeeking && (
@@ -576,7 +733,19 @@ const CalmingMusic = ({ navigation }) => {
             
             <View style={styles.playerControls}>
               <TouchableOpacity 
-                style={styles.controlButton}
+                style={styles.controlButtonIcon}
+                onPress={playPreviousSong}
+                activeOpacity={0.8}
+              >
+                <Ionicons
+                  name="play-skip-back"
+                  size={18}
+                  color={colors.text}
+                />
+              </TouchableOpacity>
+              
+              <TouchableOpacity 
+                style={styles.controlButtonMain}
                 onPress={() => {
                   const currentTrack = musicList.find(m => m._id === currentPlaying);
                   if (currentTrack) togglePlayPause(currentTrack);
@@ -586,16 +755,20 @@ const CalmingMusic = ({ navigation }) => {
                 <Ionicons
                   name={isPlaying ? 'pause' : 'play'}
                   size={18}
-                  color={colors.primary}
+                  color="#fff"
                 />
               </TouchableOpacity>
               
               <TouchableOpacity 
-                style={styles.controlButtonSecondary}
-                onPress={stopSound}
+                style={styles.controlButtonIcon}
+                onPress={playNextSong}
                 activeOpacity={0.8}
               >
-                <Ionicons name="stop" size={16} color={colors.textSecondary} />
+                <Ionicons
+                  name="play-skip-forward"
+                  size={18}
+                  color={colors.text}
+                />
               </TouchableOpacity>
             </View>
           </View>
@@ -735,7 +908,7 @@ const styles = StyleSheet.create({
   },
   listContent: {
     padding: 16,
-    paddingBottom: 100,
+    paddingBottom: 120,
   },
   musicCard: {
     backgroundColor: colors.surface,
@@ -813,6 +986,16 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: colors.border,
   },
+  musicDownloadButton: {
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    backgroundColor: colors.background,
+    justifyContent: 'center',
+    alignItems: 'center',
+    borderWidth: 1,
+    borderColor: colors.border,
+  },
 
   nowPlaying: {
     position: 'absolute',
@@ -825,6 +1008,7 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.1,
     shadowRadius: 8,
     elevation: 8,
+    paddingBottom: 20,
   },
   progressBarContainer: {
     paddingVertical: 8,
@@ -834,10 +1018,26 @@ const styles = StyleSheet.create({
     height: 4,
     backgroundColor: colors.border,
     marginHorizontal: 0,
+    position: 'relative',
   },
   progressFill: {
     height: '100%',
     backgroundColor: colors.primary,
+  },
+  progressCircle: {
+    position: 'absolute',
+    top: -5,
+    width: 14,
+    height: 14,
+    marginLeft: -7,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  circularProgress: {
+    width: 14,
+    height: 14,
+    justifyContent: 'center',
+    alignItems: 'center',
   },
   seekPreview: {
     position: 'absolute',
@@ -897,25 +1097,21 @@ const styles = StyleSheet.create({
   playerControls: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 8,
+    gap: 12,
   },
-  controlButton: {
-    width: 38,
-    height: 38,
-    borderRadius: 19,
-    backgroundColor: colors.primaryLight,
+  controlButtonMain: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: colors.primary,
     justifyContent: 'center',
     alignItems: 'center',
   },
-  controlButtonSecondary: {
-    width: 34,
-    height: 34,
-    borderRadius: 17,
-    backgroundColor: colors.background,
+  controlButtonIcon: {
+    width: 36,
+    height: 36,
     justifyContent: 'center',
     alignItems: 'center',
-    borderWidth: 1,
-    borderColor: colors.border,
   },
 
 });
