@@ -10,7 +10,8 @@ import {
   RefreshControl,
   Dimensions,
   PanGestureHandler,
-  GestureHandlerRootView
+  GestureHandlerRootView,
+  SafeAreaView
 } from 'react-native';
 import { Audio } from 'expo-av';
 import { Ionicons } from '@expo/vector-icons';
@@ -362,8 +363,8 @@ const CalmingMusic = ({ navigation }) => {
           {getCategoryDisplayName(item._id)}
         </Text>
         {item.count > 0 && (
-          <View style={styles.countBadge}>
-            <Text style={styles.countText}>{item.count}</Text>
+          <View style={[styles.countBadge, isSelected && styles.countBadgeSelected]}>
+            <Text style={[styles.countText, isSelected && styles.countTextSelected]}>{item.count}</Text>
           </View>
         )}
       </TouchableOpacity>
@@ -408,7 +409,7 @@ const CalmingMusic = ({ navigation }) => {
           <View style={styles.actions}>
             {isAuthenticated && (
               <TouchableOpacity
-                style={styles.favoriteButton}
+                style={styles.musicFavoriteButton}
                 onPress={(e) => {
                   e.stopPropagation();
                   toggleFavorite(item);
@@ -438,61 +439,44 @@ const CalmingMusic = ({ navigation }) => {
   }
 
   return (
-    <View style={styles.container}>
-      {/* Header */}
+    <SafeAreaView style={styles.container}>
+      {/* Simplified Header */}
       <View style={styles.header}>
         <TouchableOpacity
           style={styles.backButton}
-          onPress={() => navigation.goBack()}
+          onPress={() => {
+            if (showFavorites) {
+              setShowFavorites(false);
+            } else {
+              navigation.goBack();
+            }
+          }}
         >
-          <Ionicons name="arrow-back" size={24} color={colors.white} />
+          <Ionicons name="arrow-back" size={24} color={colors.text} />
         </TouchableOpacity>
         
-        <View style={styles.headerContent}>
-          <Ionicons name="musical-notes-outline" size={32} color={colors.white} />
-          <Text style={styles.headerTitle}>Calming Music</Text>
-        </View>
+        <Text style={styles.headerTitle}>{showFavorites ? 'My Songs' : 'Calming Music'}</Text>
+        
+        {isAuthenticated && (
+          <TouchableOpacity
+            style={styles.favoriteButton}
+            onPress={() => setShowFavorites(!showFavorites)}
+            activeOpacity={0.7}
+          >
+            <Ionicons
+              name={showFavorites ? "musical-notes" : "heart-outline"}
+              size={20}
+              color={showFavorites ? colors.text : colors.text}
+            />
+          </TouchableOpacity>
+        )}
+        
+        {!isAuthenticated && <View style={styles.spacer} />}
       </View>
 
-      {/* Sub Header for Categories and Favorites */}
-      <View style={styles.subHeader}>
-        <View style={styles.subHeaderTop}>
-          {showFavorites && (
-            <TouchableOpacity
-              style={styles.subBackButton}
-              onPress={() => setShowFavorites(false)}
-              activeOpacity={0.7}
-            >
-              <Ionicons name="arrow-back" size={20} color={colors.text} />
-            </TouchableOpacity>
-          )}
-          
-          <View style={[styles.headerLeft, showFavorites && styles.headerLeftWithBack]}>
-            <Text style={styles.title}>
-              {showFavorites ? 'My Favorites' : getCategoryDisplayName(selectedCategory)}
-            </Text>
-            <Text style={styles.subtitle}>
-              {showFavorites ? `${musicList.length} saved tracks` : `${musicList.length} tracks`}
-            </Text>
-          </View>
-          
-          {isAuthenticated && !showFavorites && (
-            <TouchableOpacity
-              style={styles.favoriteToggle}
-              onPress={() => setShowFavorites(true)}
-              activeOpacity={0.7}
-            >
-              <Ionicons
-                name="heart-outline"
-                size={18}
-                color={colors.primary}
-              />
-            </TouchableOpacity>
-          )}
-        </View>
-        
-        {/* Categories */}
-        {!showFavorites && (
+      {/* Categories */}
+      {!showFavorites && (
+        <View style={styles.categoriesSection}>
           <FlatList
             data={categories}
             renderItem={renderCategoryItem}
@@ -501,8 +485,8 @@ const CalmingMusic = ({ navigation }) => {
             showsHorizontalScrollIndicator={false}
             contentContainerStyle={styles.categoriesContainer}
           />
-        )}
-      </View>
+        </View>
+      )}
 
       {/* Music List */}
       {isLoadingSwitch ? (
@@ -617,7 +601,7 @@ const CalmingMusic = ({ navigation }) => {
           </View>
         </View>
       )}
-    </View>
+    </SafeAreaView>
   );
 };
 
@@ -634,87 +618,52 @@ const styles = StyleSheet.create({
     padding: 20,
   },
   header: {
-    paddingTop: 50,
-    paddingBottom: 20,
     paddingHorizontal: 20,
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: colors.primary,
-  },
-  backButton: {
-    padding: 8,
-    marginRight: 16,
-  },
-  headerContent: {
-    flex: 1,
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  headerTitle: {
-    fontSize: 20,
-    fontFamily: fonts.bold,
-    color: colors.white,
-    marginLeft: 12,
-  },
-  subHeader: {
-    backgroundColor: colors.surface,
-    paddingTop: 16,
-    paddingHorizontal: 16,
-    paddingBottom: 12,
-    borderBottomWidth: 1,
-    borderBottomColor: colors.border,
-  },
-  subHeaderTop: {
+    paddingTop: 60,
+    paddingBottom: 16,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    marginBottom: 12,
-  },
-  headerLeft: {
-    flex: 1,
-  },
-  headerLeftWithBack: {
-    flex: 1,
-    marginLeft: 8,
-  },
-  subBackButton: {
-    width: 36,
-    height: 36,
-    borderRadius: 18,
     backgroundColor: colors.background,
+  },
+  backButton: {
+    width: 40,
+    height: 40,
+    borderRadius: 24,
+    backgroundColor: colors.surface,
     justifyContent: 'center',
     alignItems: 'center',
     borderWidth: 1,
     borderColor: colors.border,
   },
-  title: {
+  headerTitle: {
     fontSize: 20,
     fontFamily: fonts.bold,
     color: colors.text,
-    marginBottom: 2,
+    textAlign: 'center',
+    flex: 1,
   },
-  subtitle: {
-    fontSize: 11,
-    fontFamily: fonts.regular,
-    color: colors.textSecondary,
-    textTransform: 'uppercase',
-    letterSpacing: 0.5,
-  },
-  favoriteToggle: {
-    width: 36,
-    height: 36,
-    borderRadius: 18,
-    backgroundColor: colors.primaryLight,
+  favoriteButton: {
+    width: 40,
+    height: 40,
+    borderRadius: 24,
+    backgroundColor: colors.surface,
     justifyContent: 'center',
     alignItems: 'center',
     borderWidth: 1,
-    borderColor: colors.primary,
+    borderColor: colors.border,
   },
-  favoriteToggleActive: {
-    backgroundColor: colors.primary,
+  spacer: {
+    width: 48,
+  },
+  categoriesSection: {
+    backgroundColor: colors.surface,
+    paddingVertical: 12,
+    borderBottomWidth: 1,
+    borderBottomColor: colors.border,
   },
   categoriesContainer: {
-    paddingVertical: 4,
+    paddingHorizontal: 16,
     gap: 8,
   },
   categoryChip: {
@@ -749,10 +698,16 @@ const styles = StyleSheet.create({
     minWidth: 18,
     alignItems: 'center',
   },
+  countBadgeSelected: {
+    backgroundColor: 'rgba(255, 255, 255, 0.3)',
+  },
   countText: {
     fontSize: 10,
     fontFamily: fonts.bold,
     color: colors.primary,
+  },
+  countTextSelected: {
+    color: '#fff',
   },
   loadingText: {
     marginTop: 8,
@@ -848,7 +803,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     gap: 8,
   },
-  favoriteButton: {
+  musicFavoriteButton: {
     width: 32,
     height: 32,
     borderRadius: 16,

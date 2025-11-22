@@ -1,32 +1,27 @@
 import React from 'react';
-import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, SafeAreaView } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { colors } from '../../../utils/colors/colors';
 import { fonts } from '../../../utils/fonts/fonts';
 
 const BreathingExercises = ({ navigation }) => {
   return (
-    <View style={styles.container}>
-      {/* Header */}
+    <SafeAreaView style={styles.container}>
       <View style={styles.header}>
         <TouchableOpacity
           style={styles.backButton}
           onPress={() => navigation.goBack()}
         >
-          <Ionicons name="arrow-back" size={24} color={colors.white} />
+          <Ionicons name="arrow-back" size={24} color={colors.text} />
         </TouchableOpacity>
-        
-        <View style={styles.headerContent}>
-          <Ionicons name="leaf-outline" size={32} color={colors.white} />
-          <Text style={styles.headerTitle}>Breathing Exercises</Text>
-        </View>
+        <Text style={styles.headerTitle}>Breathing Exercises</Text>
+        <View style={styles.spacer} />
       </View>
-
       <View style={styles.content}>
         <Text style={styles.title}>Breathing Exercises</Text>
         <Text style={styles.subtitle}>Coming Soon...</Text>
       </View>
-    </View>
+    </SafeAreaView>
   );
 };
 
@@ -36,27 +31,33 @@ const styles = StyleSheet.create({
     backgroundColor: colors.background,
   },
   header: {
-    paddingTop: 50,
-    paddingBottom: 20,
     paddingHorizontal: 20,
+    paddingTop: 60,
+    paddingBottom: 16,
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: colors.primary,
+    justifyContent: 'space-between',
+    backgroundColor: colors.background,
   },
   backButton: {
-    padding: 8,
-    marginRight: 16,
-  },
-  headerContent: {
-    flex: 1,
-    flexDirection: 'row',
+    width: 40,
+    height: 40,
+    borderRadius: 24,
+    backgroundColor: colors.surface,
+    justifyContent: 'center',
     alignItems: 'center',
+    borderWidth: 1,
+    borderColor: colors.border,
   },
   headerTitle: {
     fontSize: 20,
     fontFamily: fonts.bold,
-    color: colors.white,
-    marginLeft: 12,
+    color: colors.text,
+    textAlign: 'center',
+    flex: 1,
+  },
+  spacer: {
+    width: 48,
   },
   content: {
     flex: 1,
