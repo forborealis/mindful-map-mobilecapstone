@@ -1,8 +1,8 @@
 import React from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, SafeAreaView } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { colors } from '../../../utils/colors/colors';
-import { fonts } from '../../../utils/fonts/fonts';
+import { colors } from '../../../../utils/colors/colors';
+import { fonts } from '../../../../utils/fonts/fonts';
 
 const BreathingExercises = ({ navigation }) => {
   return (

@@ -20,11 +20,13 @@ const authRoutes = require('./routes/authRoutes');
 const moodRoutes = require('./routes/moodDataRoutes');
 const predictionRoutes = require('./routes/predictionRoutes');
 const musicRoutes = require('./routes/musicRoutes');
+const activityRoutes = require('./routes/activityRoutes');
 app.use('/api/mood-data', moodRoutes);
 app.use('/api/statistics', moodRoutes);
 app.use('/api/auth', authRoutes);
 app.use('/api', predictionRoutes);
 app.use('/api/music', musicRoutes);
+app.use('/api/activity', activityRoutes);
 
 app.get('/api/health', async (req, res) => {
   try {

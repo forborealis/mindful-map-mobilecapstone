@@ -31,7 +31,7 @@ import DailyAnova from '../screens/User/Statistics/Daily/DailyAnova';
 import WeeklyAnova from '../screens/User/Statistics/Weekly/WeeklyAnova';
 import Prediction from '../screens/User/Prediction/Prediction';
 import CategoryPrediction from '../screens/User/Prediction/CategoryPrediction';
-import BreathingExercises from '../screens/User/Activities/BreathingExercises';
+import BreathingExercises from '../screens/User/Activities/BreathingExercise/BreathingExercises';
 import PomodoroTechnique from '../screens/User/Activities/PomodoroTechnique';
 import GuidedMeditation from '../screens/User/Activities/GuidedMeditation';
 import DailyAffirmation from '../screens/User/Activities/DailyAffirmation';
