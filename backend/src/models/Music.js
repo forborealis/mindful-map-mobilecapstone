@@ -1,4 +1,3 @@
-// models/Music.js
 const mongoose = require('mongoose');
 
 const musicSchema = new mongoose.Schema({
@@ -15,7 +14,7 @@ const musicSchema = new mongoose.Schema({
   category: {
     type: String,
     required: true,
-    enum: ['calming', 'focus', 'sleep', 'meditation', 'nature', 'other'],
+    enum: ['calming', 'uplifting', 'meditation', 'focus', 'sleep', 'nature'],
     lowercase: true
   },
   cloudinaryPublicId: {

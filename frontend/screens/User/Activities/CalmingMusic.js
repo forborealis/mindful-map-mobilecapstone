@@ -13,6 +13,7 @@ import {
   GestureHandlerRootView,
   SafeAreaView
 } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import Svg, { Circle } from 'react-native-svg';
 import { Audio } from 'expo-av';
 import * as FileSystem from 'expo-file-system/legacy';
@@ -25,6 +26,7 @@ import { authService } from '../../../services/authService';
 const { width } = Dimensions.get('window');
 
 const CalmingMusic = ({ navigation }) => {
+  const insets = useSafeAreaInsets();
   const [musicList, setMusicList] = useState([]);
   const [categories, setCategories] = useState([]);
   const [selectedCategory, setSelectedCategory] = useState('calming');
@@ -50,6 +52,34 @@ const CalmingMusic = ({ navigation }) => {
       }
     };
   }, []);
+
+  // Handle navigation focus/blur to stop music when leaving the page
+  useEffect(() => {
+    const unsubscribeFocus = navigation.addListener('focus', () => {
+      // Component is focused - music can continue or resume
+    });
+
+    const unsubscribeBlur = navigation.addListener('blur', async () => {
+      // Component is no longer focused - stop playing and reset state
+      if (sound) {
+        try {
+          await sound.stopAsync();
+          await sound.unloadAsync();
+        } catch (error) {
+          console.error('Error stopping sound on blur:', error);
+        }
+      }
+      setSound(null);
+      setIsPlaying(false);
+      setCurrentPlaying(null);
+      setProgress(0);
+    });
+
+    return () => {
+      unsubscribeFocus();
+      unsubscribeBlur();
+    };
+  }, [navigation, sound]);
 
   useEffect(() => {
     if (selectedCategory) {
@@ -78,14 +108,16 @@ const CalmingMusic = ({ navigation }) => {
     try {
       const response = await musicService.getCategories();
       if (response.success) {
-        const availableCategories = [
-          { _id: 'calming', count: 0 },
-          { _id: 'focus', count: 0 },
-          { _id: 'sleep', count: 0 },
-          { _id: 'meditation', count: 0 },
-          { _id: 'nature', count: 0 },
-          ...response.data
-        ];
+          // Categories should match backend schema: calming, uplifting, meditation, focus, sleep, nature
+          const availableCategories = [
+            { _id: 'calming', count: 0 },
+            { _id: 'uplifting', count: 0 },
+            { _id: 'meditation', count: 0 },
+            { _id: 'focus', count: 0 },
+            { _id: 'sleep', count: 0 },
+            { _id: 'nature', count: 0 },
+            ...response.data
+          ];
         
         const uniqueCategories = availableCategories.reduce((acc, category) => {
           const existing = acc.find(c => c._id === category._id);
@@ -181,8 +213,14 @@ const CalmingMusic = ({ navigation }) => {
 
   const playSound = async (music) => {
     try {
+      // Stop and unload existing sound
       if (sound) {
-        await sound.unloadAsync();
+        try {
+          await sound.stopAsync();
+          await sound.unloadAsync();
+        } catch (error) {
+          console.error('Error unloading previous sound:', error);
+        }
       }
 
       await Audio.setAudioModeAsync({
@@ -448,11 +486,11 @@ const CalmingMusic = ({ navigation }) => {
   const getCategoryDisplayName = (category) => {
     const categoryNames = {
       calming: 'Calming',
+      uplifting: 'Uplifting',
+      meditation: 'Meditation',
       focus: 'Focus',
       sleep: 'Sleep',
-      meditation: 'Meditation',
-      nature: 'Nature',
-      other: 'Other'
+      nature: 'Nature'
     };
     return categoryNames[category] || category;
   };
@@ -460,11 +498,11 @@ const CalmingMusic = ({ navigation }) => {
   const getCategoryIcon = (category) => {
     const categoryIcons = {
       calming: 'leaf-outline',
+      uplifting: 'sunny-outline',
+      meditation: 'flower-outline',
       focus: 'bulb-outline',
       sleep: 'moon-outline',
-      meditation: 'flower-outline',
-      nature: 'leaf-outline',
-      other: 'musical-note-outline'
+      nature: 'leaf-outline'
     };
     return categoryIcons[category] || 'musical-note-outline';
   };
@@ -669,7 +707,7 @@ const CalmingMusic = ({ navigation }) => {
 
       {/* Now Playing Bar */}
       {currentPlaying && (
-        <View style={styles.nowPlaying}>
+        <View style={[styles.nowPlaying, { paddingBottom: insets.bottom + 12 }]}>
           <TouchableOpacity 
             style={styles.progressBarContainer}
             onPress={handleProgressBarPress}
@@ -1008,7 +1046,6 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.1,
     shadowRadius: 8,
     elevation: 8,
-    paddingBottom: 20,
   },
   progressBarContainer: {
     paddingVertical: 8,
