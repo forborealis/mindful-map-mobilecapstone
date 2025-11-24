@@ -21,7 +21,7 @@ exports.updateProgress = async (req, res) => {
     const update = req.body;
     let progress = await BreathingExercise.findOneAndUpdate(
       { user: userId },
-      update,
+      { $set: update }, // <-- Only set provided fields
       { new: true, upsert: true }
     );
     res.json({ success: true, progress });

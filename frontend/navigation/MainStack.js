@@ -32,6 +32,8 @@ import WeeklyAnova from '../screens/User/Statistics/Weekly/WeeklyAnova';
 import Prediction from '../screens/User/Prediction/Prediction';
 import CategoryPrediction from '../screens/User/Prediction/CategoryPrediction';
 import BreathingExercises from '../screens/User/Activities/BreathingExercise/BreathingExercises';
+import CompletionModal from '../screens/User/Activities/BreathingExercise/CompletionModal';
+import ProgressModal from '../screens/User/Activities/BreathingExercise/ProgressModal';
 import PomodoroTechnique from '../screens/User/Activities/PomodoroTechnique';
 import GuidedMeditation from '../screens/User/Activities/GuidedMeditation';
 import DailyAffirmation from '../screens/User/Activities/DailyAffirmation';
@@ -190,6 +192,16 @@ export default function MainStack({ initialRoute }) {
       <Stack.Screen
         name="BreathingExercises"
         component={BreathingExercises}
+        options={{ headerShown: false }}
+      />
+      <Stack.Screen
+        name="CompletionModal"
+        component={CompletionModal}
+        options={{ headerShown: false }}
+      />
+      <Stack.Screen
+        name="ProgressModal"
+        component={ProgressModal}
         options={{ headerShown: false }}
       />
       <Stack.Screen
