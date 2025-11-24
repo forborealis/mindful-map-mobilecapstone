@@ -1,14 +1,17 @@
 import React, { useState, useEffect } from 'react';
 import { View, Text, TouchableOpacity, ScrollView, Image } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { Ionicons } from '@expo/vector-icons';
 import { fonts } from '../../../utils/fonts/fonts';
 import { colors } from '../../../utils/colors/colors';
 import { moodDataService } from '../../../services/moodDataService';
+import TutorialModal from '../../../components/TutorialModal';
 
 const ChooseCategory = ({ navigation, route }) => {
     const { selectedDate } = route.params || {};
     const [hasSleepLog, setHasSleepLog] = useState(false);
     const [existingSleepLog, setExistingSleepLog] = useState(null);
+    const [showTutorial, setShowTutorial] = useState(false);
     
     // Check for existing sleep log when component mounts
     useEffect(() => {
@@ -80,6 +83,20 @@ const ChooseCategory = ({ navigation, route }) => {
 
   return (
     <SafeAreaView className="flex-1" style={{ backgroundColor: colors.secondary }}>
+      {/* Help Icon */}
+      <TouchableOpacity
+        onPress={() => setShowTutorial(true)}
+        className="absolute top-4 right-6 z-10 p-2"
+        activeOpacity={0.7}
+        style={{ top: 50 }}
+      >
+        <Ionicons 
+          name="help-circle-outline" 
+          size={24} 
+          color={colors.primary}
+        />
+      </TouchableOpacity>
+
       <ScrollView 
         className="flex-1 px-6"
         showsVerticalScrollIndicator={false}
@@ -90,7 +107,8 @@ const ChooseCategory = ({ navigation, route }) => {
             className="text-4xl text-center mb-3"
             style={{ 
               color: colors.text,
-              fontFamily: fonts.semiBold
+              fontFamily: fonts.semiBold,
+              paddingBottom: 8 // Add extra padding for descenders
             }}
           >
             Choose a category
@@ -188,6 +206,10 @@ const ChooseCategory = ({ navigation, route }) => {
           </Text>
         </TouchableOpacity>
       </ScrollView>
+      <TutorialModal 
+        isOpen={showTutorial}
+        onClose={() => setShowTutorial(false)}
+      />
     </SafeAreaView>
   );
 };
