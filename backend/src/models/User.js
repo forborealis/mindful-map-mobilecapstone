@@ -51,6 +51,12 @@ const UserSchema = new mongoose.Schema({
     type: String,
     default: 'user',
   },
+  provider: {
+    type: String,
+    enum: ['Google'],
+    required: false,
+    default: undefined
+  },
   createdAt: {
     type: Date,
     default: Date.now,

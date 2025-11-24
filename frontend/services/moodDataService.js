@@ -362,9 +362,9 @@
           headers
         });
 
-        if (!response.ok) {
-          throw new Error(`Failed to fetch today's sleep log: ${response.status}`);
-        }
+        // if (!response.ok) {
+        //   throw new Error(`Failed to fetch today's sleep log: ${response.status}`);
+        // }
 
         const data = await response.json();
         return {

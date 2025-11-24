@@ -349,6 +349,7 @@ static async googleAuth(req, res) {
         gender: 'Rather not say',
         section: 'N/A',
         password: 'google-auth', 
+        provider: 'Google'
       });
       
       await mongoUser.save();
@@ -374,7 +375,8 @@ static async googleAuth(req, res) {
         avatar: mongoUser.avatar,
         section: mongoUser.section,
         gender: mongoUser.gender,
-        role: mongoUser.role
+        role: mongoUser.role,
+        provider: mongoUser.provider
       },
       token: customToken,
       isNewUser
