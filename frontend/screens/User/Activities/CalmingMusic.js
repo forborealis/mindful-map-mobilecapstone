@@ -28,6 +28,13 @@ const { width } = Dimensions.get('window');
 const CalmingMusic = ({ navigation }) => {
   const insets = useSafeAreaInsets();
   const [musicList, setMusicList] = useState([]);
+  const musicListRef = useRef([]);
+  const currentPlayingRef = useRef(null);
+  const currentTrackRef = useRef(null);
+  const currentCategoryRef = useRef(null);
+  const currentCategoryPlaylistRef = useRef([]);
+  const soundRef = useRef(null);
+  const isPlayingSoundRef = useRef(false);
   const [categories, setCategories] = useState([]);
   const [selectedCategory, setSelectedCategory] = useState('calming');
   const [loading, setLoading] = useState(true);
@@ -61,17 +68,33 @@ const CalmingMusic = ({ navigation }) => {
 
     const unsubscribeBlur = navigation.addListener('blur', async () => {
       // Component is no longer focused - stop playing and reset state
-      if (sound) {
+      if (sound || soundRef.current) {
         try {
-          await sound.stopAsync();
-          await sound.unloadAsync();
+          if (soundRef.current) {
+            const status = await soundRef.current.getStatusAsync();
+            if (status && status.isLoaded) {
+              await soundRef.current.stopAsync();
+              await soundRef.current.unloadAsync();
+            }
+          } else if (sound) {
+            const status = await sound.getStatusAsync();
+            if (status && status.isLoaded) {
+              await sound.stopAsync();
+              await sound.unloadAsync();
+            }
+          }
         } catch (error) {
-          console.error('Error stopping sound on blur:', error);
+          // Silently ignore errors
         }
       }
       setSound(null);
+      soundRef.current = null;
       setIsPlaying(false);
       setCurrentPlaying(null);
+      currentPlayingRef.current = null;
+      currentTrackRef.current = null;
+      currentCategoryRef.current = null;
+      currentCategoryPlaylistRef.current = [];
       setProgress(0);
     });
 
@@ -140,7 +163,11 @@ const CalmingMusic = ({ navigation }) => {
     try {
       if (isViewSwitch) {
         setIsLoadingSwitch(true);
-        setMusicList([]); // Clear the list immediately when switching views
+        // Only clear the list if no music is currently playing to avoid interrupting playback
+        if (!currentPlayingRef.current || !isPlaying) {
+          setMusicList([]);
+          musicListRef.current = [];
+        }
       }
       
       let response;
@@ -184,6 +211,7 @@ const CalmingMusic = ({ navigation }) => {
         }
         
         setMusicList(musicData);
+        musicListRef.current = musicData;
       } else {
         Alert.alert('Error', 'Failed to load music');
       }
@@ -211,15 +239,23 @@ const CalmingMusic = ({ navigation }) => {
     }
   };
 
-  const playSound = async (music) => {
+  const playSound = async (music, updateCategoryPlaylist = true) => {
+    // Prevent concurrent playSound calls
+    if (isPlayingSoundRef.current) return;
+    isPlayingSoundRef.current = true;
+    
     try {
-      // Stop and unload existing sound
-      if (sound) {
+      // Stop and unload existing sound completely using the ref for reliability
+      if (soundRef.current) {
         try {
-          await sound.stopAsync();
-          await sound.unloadAsync();
+          const status = await soundRef.current.getStatusAsync();
+          if (status && status.isLoaded) {
+            await soundRef.current.stopAsync();
+            await soundRef.current.unloadAsync();
+          }
         } catch (error) {
-          console.error('Error unloading previous sound:', error);
+          // Silently ignore errors - sound may already be unloaded
+          soundRef.current = null;
         }
       }
 
@@ -236,13 +272,26 @@ const CalmingMusic = ({ navigation }) => {
       );
 
       setSound(newSound);
+      soundRef.current = newSound;
       setCurrentPlaying(music._id);
+      currentPlayingRef.current = music._id;
+      currentTrackRef.current = music;
+      
+      // Only update category/playlist if flag is true
+      // This allows tracking which category a song belongs to for proper previous/next navigation
+      if (updateCategoryPlaylist) {
+        currentCategoryRef.current = music.category || selectedCategory;
+        currentCategoryPlaylistRef.current = musicListRef.current;
+      }
+      
       setIsPlaying(true);
 
       await musicService.incrementPlayCount(music._id);
     } catch (error) {
       console.error('Error playing sound:', error);
       Alert.alert('Error', 'Failed to play audio');
+    } finally {
+      isPlayingSoundRef.current = false;
     }
   };
 
@@ -253,49 +302,80 @@ const CalmingMusic = ({ navigation }) => {
       
       if (status.didJustFinish) {
         setIsPlaying(false);
-        setCurrentPlaying(null);
-        // Auto-play next song
+        // Auto-play next song before clearing currentPlaying
         playNextSong();
       }
     }
   };
 
   const playPreviousSong = () => {
-    if (musicList.length === 0 || currentPlaying === null) return;
+    // Use the playlist from when the current song was started, not the current view
+    // If the stored playlist is from a different category than the current playing song, it's invalid
+    let playlistToUse = currentCategoryPlaylistRef.current;
     
-    const currentIndex = musicList.findIndex(music => music._id === currentPlaying);
+    // Validate the playlist - if it doesn't contain the current playing song, it's from a different context
+    if (playlistToUse.length > 0 && !playlistToUse.find(m => m._id === currentPlayingRef.current)) {
+      playlistToUse = [];
+    }
+    
+    if (playlistToUse.length === 0) {
+      playlistToUse = musicListRef.current;
+    }
+    
+    const currentId = currentPlayingRef.current;
+    if (playlistToUse.length === 0 || currentId === null) return;
+    
+    const currentIndex = playlistToUse.findIndex(music => music._id === currentId);
     if (currentIndex <= 0) {
       // Already at the beginning, don't do anything
       return;
     }
     
     const previousIndex = currentIndex - 1;
-    const previousSong = musicList[previousIndex];
+    const previousSong = playlistToUse[previousIndex];
     
     if (previousSong) {
-      playSound(previousSong);
+      currentTrackRef.current = previousSong;
+      playSound(previousSong, false);
     }
   };
 
   const playNextSong = () => {
-    if (musicList.length === 0 || currentPlaying === null) return;
+    // Use the playlist from when the current song was started, not the current view
+    // If the stored playlist is from a different category than the current playing song, it's invalid
+    let playlistToUse = currentCategoryPlaylistRef.current;
     
-    const currentIndex = musicList.findIndex(music => music._id === currentPlaying);
-    if (currentIndex >= musicList.length - 1) {
-      // Already at the end, don't do anything
-      return;
+    // Validate the playlist - if it doesn't contain the current playing song, it's from a different context
+    if (playlistToUse.length > 0 && !playlistToUse.find(m => m._id === currentPlayingRef.current)) {
+      playlistToUse = [];
     }
     
-    const nextIndex = currentIndex + 1;
-    const nextSong = musicList[nextIndex];
+    if (playlistToUse.length === 0) {
+      playlistToUse = musicListRef.current;
+    }
+    
+    if (playlistToUse.length === 0 || currentPlayingRef.current === null) return;
+    
+    const currentIndex = playlistToUse.findIndex(music => music._id === currentPlayingRef.current);
+    let nextIndex;
+    
+    if (currentIndex >= playlistToUse.length - 1) {
+      // Loop back to the first song
+      nextIndex = 0;
+    } else {
+      nextIndex = currentIndex + 1;
+    }
+    
+    const nextSong = playlistToUse[nextIndex];
     
     if (nextSong) {
-      playSound(nextSong);
+      currentTrackRef.current = nextSong;
+      playSound(nextSong, false);
     }
   };
 
   const togglePlayPause = async (music) => {
-    if (currentPlaying === music._id && sound) {
+    if (currentPlayingRef.current === music._id && sound) {
       if (isPlaying) {
         await sound.pauseAsync();
         setIsPlaying(false);
@@ -309,12 +389,33 @@ const CalmingMusic = ({ navigation }) => {
   };
 
   const stopSound = async () => {
-    if (sound) {
-      await sound.stopAsync();
-      await sound.unloadAsync();
+    if (sound || soundRef.current) {
+      try {
+        if (soundRef.current) {
+          const status = await soundRef.current.getStatusAsync();
+          if (status && status.isLoaded) {
+            await soundRef.current.stopAsync();
+            await soundRef.current.unloadAsync();
+          }
+        } else if (sound) {
+          const status = await sound.getStatusAsync();
+          if (status && status.isLoaded) {
+            await sound.stopAsync();
+            await sound.unloadAsync();
+          }
+        }
+      } catch (error) {
+        // Silently ignore errors
+      }
       setSound(null);
+      soundRef.current = null;
+      isPlayingSoundRef.current = false;
       setIsPlaying(false);
       setCurrentPlaying(null);
+      currentPlayingRef.current = null;
+      currentTrackRef.current = null;
+      currentCategoryRef.current = null;
+      currentCategoryPlaylistRef.current = [];
       setProgress(0);
     }
   };
@@ -372,7 +473,7 @@ const CalmingMusic = ({ navigation }) => {
   };
 
   const CircularProgressIndicator = () => {
-    if (!currentPlaying || !isPlaying) return null;
+    if (!currentPlayingRef.current || !isPlaying) return null;
     
     const progressPercent = duration > 0 ? (progress / duration) * 100 : 0;
     
@@ -534,7 +635,7 @@ const CalmingMusic = ({ navigation }) => {
   };
 
   const renderMusicItem = ({ item }) => {
-    const isCurrentlyPlaying = currentPlaying === item._id;
+    const isCurrentlyPlaying = currentPlayingRef.current === item._id;
     
     return (
       <TouchableOpacity
@@ -706,7 +807,7 @@ const CalmingMusic = ({ navigation }) => {
       )}
 
       {/* Now Playing Bar */}
-      {currentPlaying && (
+      {currentPlayingRef.current && (
         <View style={[styles.nowPlaying, { paddingBottom: insets.bottom + 12 }]}>
           <TouchableOpacity 
             style={styles.progressBarContainer}
@@ -761,10 +862,10 @@ const CalmingMusic = ({ navigation }) => {
               
               <View style={styles.trackDetails}>
                 <Text style={styles.trackTitle} numberOfLines={1}>
-                  {musicList.find(m => m._id === currentPlaying)?.title || 'Unknown Track'}
+                  {currentTrackRef.current?.title || 'Unknown Track'}
                 </Text>
                 <Text style={styles.trackArtist} numberOfLines={1}>
-                  {musicList.find(m => m._id === currentPlaying)?.artist || 'Unknown Artist'}
+                  {currentTrackRef.current?.artist || 'Unknown Artist'}
                 </Text>
               </View>
             </View>
@@ -785,8 +886,7 @@ const CalmingMusic = ({ navigation }) => {
               <TouchableOpacity 
                 style={styles.controlButtonMain}
                 onPress={() => {
-                  const currentTrack = musicList.find(m => m._id === currentPlaying);
-                  if (currentTrack) togglePlayPause(currentTrack);
+                  if (currentTrackRef.current) togglePlayPause(currentTrackRef.current);
                 }}
                 activeOpacity={0.8}
               >

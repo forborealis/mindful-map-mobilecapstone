@@ -35,6 +35,17 @@ const Profile = () => {
     avatar: null
   });
 
+  // Password visibility toggles
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+
+  // Form validation errors
+  const [formErrors, setFormErrors] = useState({
+    email: '',
+    password: '',
+    confirmPassword: ''
+  });
+
   // Account statistics
   const [accountStats, setAccountStats] = useState({
     consecutiveDays: 0,
@@ -100,8 +111,8 @@ const Profile = () => {
       return {
         consecutiveDays: 0,
         totalMoodLogs: 0,
-        mostFrequentMoodWeekly: { mood: 'N/A', count: 0 },
-        mostFrequentMoodOverall: { mood: 'N/A', count: 0 }
+        mostFrequentMoodWeekly: { mood: '—', count: 0 },
+        mostFrequentMoodOverall: { mood: '—', count: 0 }
       };
     }
 
@@ -214,7 +225,7 @@ const Profile = () => {
 
   const getMostFrequentMood = (moodCounts) => {
     const entries = Object.entries(moodCounts);
-    if (entries.length === 0) return { mood: 'N/A', count: 0 };
+    if (entries.length === 0) return { mood: '—', count: 0 };
     
     const sorted = entries.sort((a, b) => b[1] - a[1]);
     return {
@@ -227,28 +238,138 @@ const Profile = () => {
     return mood.charAt(0).toUpperCase() + mood.slice(1);
   };
 
-  const handleEditProfile = () => {
-    setShowEditModal(true);
+  const validateFormField = (fieldName, value) => {
+    const newErrors = { ...formErrors };
+    
+    if (fieldName === 'email') {
+      if (value.trim() && value !== user.email) {
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        if (!emailRegex.test(value)) {
+          newErrors.email = 'Please enter a valid email address';
+        } else {
+          newErrors.email = '';
+        }
+      } else {
+        newErrors.email = '';
+      }
+    }
+    
+    if (fieldName === 'password') {
+      if (value) {
+        if (value.length < 6) {
+          newErrors.password = 'Password must be at least 6 characters';
+        } else {
+          newErrors.password = '';
+        }
+        // Check confirm password match if it exists
+        if (editForm.confirmPassword && value !== editForm.confirmPassword) {
+          newErrors.confirmPassword = 'Passwords do not match';
+        } else if (editForm.confirmPassword && value === editForm.confirmPassword) {
+          newErrors.confirmPassword = '';
+        }
+      } else {
+        newErrors.password = '';
+        newErrors.confirmPassword = '';
+      }
+    }
+    
+    if (fieldName === 'confirmPassword') {
+      if (editForm.password) {
+        if (value !== editForm.password) {
+          newErrors.confirmPassword = 'Passwords do not match';
+        } else {
+          newErrors.confirmPassword = '';
+        }
+      }
+    }
+    
+    setFormErrors(newErrors);
   };
 
-  const handleSaveProfile = () => {
-    // Basic validation for password confirmation
-    if (editForm.password && editForm.password !== editForm.confirmPassword) {
+  const handleEditProfile = () => {
+    if (user?.provider === 'Google') {
       Toast.show({
-        type: 'error',
-        text1: 'Password Mismatch',
-        text2: 'Password and confirm password do not match.',
+        type: 'info',
+        text1: 'Google Account',
+        text2: 'Profile editing is not available for Google accounts.',
       });
       return;
     }
+    setShowEditModal(true);
+  };
 
-    // Since no logic is required, just show a success message
-    setShowEditModal(false);
-    Toast.show({
-      type: 'success',
-      text1: 'Profile Updated',
-      text2: 'Your profile has been updated successfully.',
-    });
+  const handleSaveProfile = async () => {
+    // Validation
+    const errors = {};
+    
+    // Email validation
+    if (editForm.email.trim() && editForm.email !== user.email) {
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      if (!emailRegex.test(editForm.email)) {
+        errors.email = 'Please enter a valid email address';
+      }
+    }
+    
+    // Password validation
+    if (editForm.password) {
+      if (editForm.password.length < 6) {
+        errors.password = 'Password must be at least 6 characters';
+      } else if (editForm.password !== editForm.confirmPassword) {
+        errors.confirmPassword = 'Passwords do not match';
+      }
+    }
+    
+    // Check if there are errors
+    if (Object.values(errors).some(error => error !== '')) {
+      setFormErrors(errors);
+      return;
+    }
+    
+    setFormErrors({});
+
+    try {
+      setProfileLoading(true);
+      
+      const result = await authService.updateProfile(user.uid, {
+        email: editForm.email !== user.email ? editForm.email : undefined,
+        password: editForm.password || undefined,
+        confirmPassword: editForm.confirmPassword || undefined,
+      }, editForm.avatar);
+
+      if (result.success) {
+        // Update local user data
+        setUser(result.user);
+        setEditForm(prev => ({
+          ...prev,
+          password: '',
+          confirmPassword: '',
+          avatar: null
+        }));
+        
+        setShowEditModal(false);
+        
+        Toast.show({
+          type: 'success',
+          text1: 'Success',
+          text2: 'Your profile has been updated successfully.',
+        });
+      } else {
+        Toast.show({
+          type: 'error',
+          text1: 'Error',
+          text2: result.error || 'Failed to update profile.',
+        });
+      }
+    } catch (error) {
+      console.error('Error updating profile:', error);
+      Toast.show({
+        type: 'error',
+        text1: 'Error',
+        text2: error.message || 'Failed to update profile.',
+      });
+    } finally {
+      setProfileLoading(false);
+    }
   };
 
   const handleImagePicker = () => {
@@ -408,33 +529,46 @@ const Profile = () => {
             fontFamily: fonts.regular,
             color: colors.text,
             opacity: 0.7,
-            marginBottom: 16,
+            marginBottom: 8,
           }}>
             {user?.email}
           </Text>
+          {user?.section && user?.section !== 'N/A' && (
+            <Text style={{
+              fontSize: 14,
+              fontFamily: fonts.regular,
+              color: colors.text,
+              opacity: 0.6,
+              marginBottom: 16,
+            }}>
+              {user.section}
+            </Text>
+          )}
 
           {/* Edit Profile Button */}
-          <TouchableOpacity
-            onPress={handleEditProfile}
-            style={{
-              backgroundColor: colors.primary,
-              paddingHorizontal: 24,
-              paddingVertical: 12,
-              borderRadius: 25,
-              flexDirection: 'row',
-              alignItems: 'center',
-            }}
-          >
-            <Ionicons name="create-outline" size={20} color={colors.white} />
-            <Text style={{
-              marginLeft: 8,
-              fontSize: 16,
-              fontFamily: fonts.semiBold,
-              color: colors.white,
-            }}>
-              Edit Profile
-            </Text>
-          </TouchableOpacity>
+          {user?.provider !== 'Google' && (
+            <TouchableOpacity
+              onPress={handleEditProfile}
+              style={{
+                backgroundColor: colors.primary,
+                paddingHorizontal: 24,
+                paddingVertical: 12,
+                borderRadius: 25,
+                flexDirection: 'row',
+                alignItems: 'center',
+              }}
+            >
+              <Ionicons name="create-outline" size={20} color={colors.white} />
+              <Text style={{
+                marginLeft: 8,
+                fontSize: 16,
+                fontFamily: fonts.semiBold,
+                color: colors.white,
+              }}>
+                Edit Profile
+              </Text>
+            </TouchableOpacity>
+          )}
         </View>
 
         {/* Account Statistics */}
@@ -492,7 +626,7 @@ const Profile = () => {
                   <Ionicons name="flame" size={20} color={colors.primary} />
                   <Text style={{
                     marginLeft: 12,
-                    fontSize: 16,
+                    fontSize: 13,
                     fontFamily: fonts.regular,
                     color: colors.text,
                   }}>
@@ -521,7 +655,7 @@ const Profile = () => {
                   <Ionicons name="journal" size={20} color={colors.primary} />
                   <Text style={{
                     marginLeft: 12,
-                    fontSize: 16,
+                    fontSize: 13,
                     fontFamily: fonts.regular,
                     color: colors.text,
                   }}>
@@ -550,7 +684,7 @@ const Profile = () => {
                   <Ionicons name="calendar" size={20} color={colors.primary} />
                   <Text style={{
                     marginLeft: 12,
-                    fontSize: 16,
+                    fontSize: 13,
                     fontFamily: fonts.regular,
                     color: colors.text,
                   }}>
@@ -589,7 +723,7 @@ const Profile = () => {
                   <Ionicons name="trophy" size={20} color={colors.primary} />
                   <Text style={{
                     marginLeft: 12,
-                    fontSize: 16,
+                    fontSize: 13,
                     fontFamily: fonts.regular,
                     color: colors.text,
                   }}>
@@ -620,56 +754,7 @@ const Profile = () => {
           )}
         </View>
 
-        {/* Additional User Info */}
-        {user?.section && (
-          <View style={{
-            backgroundColor: colors.white,
-            borderRadius: 20,
-            padding: 20,
-            shadowColor: colors.primary,
-            shadowOffset: { width: 0, height: 2 },
-            shadowOpacity: 0.1,
-            shadowRadius: 8,
-            elevation: 4,
-          }}>
-            <View style={{
-              flexDirection: 'row',
-              alignItems: 'center',
-              marginBottom: 16,
-            }}>
-              <Ionicons name="information-circle" size={24} color={colors.primary} />
-              <Text style={{
-                marginLeft: 12,
-                fontSize: 20,
-                fontFamily: fonts.semiBold,
-                color: colors.text,
-              }}>
-                Additional Information
-              </Text>
-            </View>
 
-            <View style={{
-              flexDirection: 'row',
-              justifyContent: 'space-between',
-              alignItems: 'center',
-            }}>
-              <Text style={{
-                fontSize: 16,
-                fontFamily: fonts.regular,
-                color: colors.text,
-              }}>
-                Section
-              </Text>
-              <Text style={{
-                fontSize: 16,
-                fontFamily: fonts.semiBold,
-                color: colors.primary,
-              }}>
-                {user.section}
-              </Text>
-            </View>
-          </View>
-        )}
       </ScrollView>
 
       {/* Edit Profile Modal */}
@@ -723,20 +808,36 @@ const Profile = () => {
               </Text>
               <TextInput
                 value={editForm.email}
-                onChangeText={(text) => setEditForm(prev => ({ ...prev, email: text }))}
+                onChangeText={(text) => {
+                  setEditForm(prev => ({ ...prev, email: text }));
+                  validateFormField('email', text);
+                }}
                 placeholder="Enter your email"
                 style={{
-                  backgroundColor: colors.accent,
+                  backgroundColor: formErrors.email ? colors.accent + 'cc' : colors.accent,
                   borderRadius: 12,
                   paddingHorizontal: 16,
                   paddingVertical: 12,
                   fontSize: 16,
                   fontFamily: fonts.regular,
                   color: colors.text,
+                  borderWidth: formErrors.email ? 1.5 : 0,
+                  borderColor: formErrors.email ? '#FF6B6B' : 'transparent',
                 }}
                 keyboardType="email-address"
                 autoCapitalize="none"
               />
+              {formErrors.email && (
+                <Text style={{
+                  fontSize: 12,
+                  fontFamily: fonts.regular,
+                  color: '#FF6B6B',
+                  marginTop: 6,
+                  marginLeft: 4,
+                }}>
+                  {formErrors.email}
+                </Text>
+              )}
             </View>
 
             {/* Password Field */}
@@ -747,23 +848,52 @@ const Profile = () => {
                 color: colors.text,
                 marginBottom: 8,
               }}>
-                Password
+                New Password
               </Text>
-              <TextInput
-                value={editForm.password}
-                onChangeText={(text) => setEditForm(prev => ({ ...prev, password: text }))}
-                placeholder="Enter new password"
-                style={{
-                  backgroundColor: colors.accent,
-                  borderRadius: 12,
-                  paddingHorizontal: 16,
-                  paddingVertical: 12,
-                  fontSize: 16,
+              <View style={{
+                flexDirection: 'row',
+                alignItems: 'center',
+                backgroundColor: formErrors.password ? colors.accent + 'cc' : colors.accent,
+                borderRadius: 12,
+                paddingHorizontal: 16,
+                borderWidth: formErrors.password ? 1.5 : 0,
+                borderColor: formErrors.password ? '#FF6B6B' : 'transparent',
+              }}>
+                <TextInput
+                  value={editForm.password}
+                  onChangeText={(text) => {
+                    setEditForm(prev => ({ ...prev, password: text }));
+                    validateFormField('password', text);
+                  }}
+                  placeholder="Leave blank to keep current password"
+                  style={{
+                    flex: 1,
+                    paddingVertical: 12,
+                    fontSize: 16,
+                    fontFamily: fonts.regular,
+                    color: colors.text,
+                  }}
+                  secureTextEntry={!showPassword}
+                />
+                <TouchableOpacity onPress={() => setShowPassword(!showPassword)}>
+                  <Ionicons 
+                    name={showPassword ? 'eye' : 'eye-off'} 
+                    size={20} 
+                    color={colors.primary} 
+                  />
+                </TouchableOpacity>
+              </View>
+              {formErrors.password && (
+                <Text style={{
+                  fontSize: 12,
                   fontFamily: fonts.regular,
-                  color: colors.text,
-                }}
-                secureTextEntry
-              />
+                  color: '#FF6B6B',
+                  marginTop: 6,
+                  marginLeft: 4,
+                }}>
+                  {formErrors.password}
+                </Text>
+              )}
             </View>
 
             {/* Confirm Password Field */}
@@ -771,40 +901,61 @@ const Profile = () => {
               <Text style={{
                 fontSize: 16,
                 fontFamily: fonts.medium,
-                color: colors.text,
+                color: editForm.password ? colors.text : colors.text + '80',
                 marginBottom: 8,
               }}>
                 Confirm Password
               </Text>
-              <TextInput
-                value={editForm.confirmPassword}
-                onChangeText={(text) => setEditForm(prev => ({ ...prev, confirmPassword: text }))}
-                placeholder="Confirm new password"
-                style={{
-                  backgroundColor: colors.accent,
-                  borderRadius: 12,
-                  paddingHorizontal: 16,
-                  paddingVertical: 12,
-                  fontSize: 16,
-                  fontFamily: fonts.regular,
-                  color: colors.text,
-                  borderWidth: editForm.password && editForm.confirmPassword && editForm.password !== editForm.confirmPassword ? 2 : 0,
-                  borderColor: editForm.password && editForm.confirmPassword && editForm.password !== editForm.confirmPassword ? '#FF6B6B' : 'transparent',
-                }}
-                secureTextEntry
-              />
-              {editForm.password && editForm.confirmPassword && editForm.password !== editForm.confirmPassword && (
+              <View style={{
+                flexDirection: 'row',
+                alignItems: 'center',
+                backgroundColor: formErrors.confirmPassword ? colors.accent + 'cc' : (editForm.password ? colors.accent : colors.accent + '80'),
+                borderRadius: 12,
+                paddingHorizontal: 16,
+                borderWidth: formErrors.confirmPassword ? 1.5 : 0,
+                borderColor: formErrors.confirmPassword ? '#FF6B6B' : 'transparent',
+              }}>
+                <TextInput
+                  value={editForm.confirmPassword}
+                  onChangeText={(text) => {
+                    setEditForm(prev => ({ ...prev, confirmPassword: text }));
+                    validateFormField('confirmPassword', text);
+                  }}
+                  placeholder="Confirm new password"
+                  editable={!!editForm.password}
+                  style={{
+                    flex: 1,
+                    paddingVertical: 12,
+                    fontSize: 16,
+                    fontFamily: fonts.regular,
+                    color: editForm.password ? colors.text : colors.text + '80',
+                  }}
+                  secureTextEntry={!showConfirmPassword}
+                />
+                <TouchableOpacity 
+                  onPress={() => setShowConfirmPassword(!showConfirmPassword)}
+                  disabled={!editForm.password}
+                >
+                  <Ionicons 
+                    name={showConfirmPassword ? 'eye' : 'eye-off'} 
+                    size={20} 
+                    color={editForm.password ? colors.primary : colors.primary + '80'}
+                  />
+                </TouchableOpacity>
+              </View>
+              {formErrors.confirmPassword && (
                 <Text style={{
                   fontSize: 12,
                   fontFamily: fonts.regular,
                   color: '#FF6B6B',
-                  marginTop: 4,
+                  marginTop: 6,
                   marginLeft: 4,
                 }}>
-                  Passwords do not match
+                  {formErrors.confirmPassword}
                 </Text>
               )}
             </View>
+
 
             {/* Avatar Upload */}
             <View style={{ marginBottom: 24 }}>
@@ -889,21 +1040,27 @@ const Profile = () => {
               
               <TouchableOpacity
                 onPress={handleSaveProfile}
+                disabled={profileLoading}
                 style={{
                   flex: 1,
                   backgroundColor: colors.primary,
                   paddingVertical: 14,
                   borderRadius: 12,
                   alignItems: 'center',
+                  opacity: profileLoading ? 0.6 : 1,
                 }}
               >
-                <Text style={{
-                  fontSize: 16,
-                  fontFamily: fonts.semiBold,
-                  color: colors.white,
-                }}>
-                  Save Changes
-                </Text>
+                {profileLoading ? (
+                  <ActivityIndicator size="small" color={colors.white} />
+                ) : (
+                  <Text style={{
+                    fontSize: 16,
+                    fontFamily: fonts.semiBold,
+                    color: colors.white,
+                  }}>
+                    Save Changes
+                  </Text>
+                )}
               </TouchableOpacity>
             </View>
           </View>

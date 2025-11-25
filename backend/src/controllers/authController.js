@@ -80,7 +80,8 @@ static async login(req, res) {
           avatar: mongoUser.avatar,
           section: mongoUser.section,
           gender: mongoUser.gender,
-          role: mongoUser.role
+          role: mongoUser.role,
+          provider: mongoUser.provider || 'email'
         },
         token: customToken
       });
@@ -158,12 +159,16 @@ static async register(req, res) {
     const auth = getAuth();
     const firestore = getFirestore();
     const avatarUrl = req.file ? req.file.path : '';
-    const avatarPublicId = req.file ? req.file.filename : '';
+    const avatarPublicId = req.file ? (req.file.public_id || req.file.filename) : '';
     
     console.log('📷 Avatar upload info:', {
       hasFile: !!req.file,
       avatarUrl,
-      avatarPublicId
+      avatarPublicId,
+      fileDetails: req.file ? {
+        public_id: req.file.public_id,
+        filename: req.file.filename
+      } : null
     });
     
     try {
@@ -207,7 +212,8 @@ static async register(req, res) {
         password: hashedPassword,
         avatar: avatarUrl,              
         avatarPublicId: avatarPublicId, 
-        role: 'user'
+        role: 'user',
+        provider: 'email'
       });
       
       await mongoUser.save();
@@ -228,7 +234,8 @@ static async register(req, res) {
           avatar: mongoUser.avatar,
           section: mongoUser.section,
           gender: mongoUser.gender,
-          role: mongoUser.role
+          role: mongoUser.role,
+          provider: mongoUser.provider || 'email'
         },
         token: customToken
       });
@@ -387,6 +394,204 @@ static async googleAuth(req, res) {
     res.status(500).json({
       success: false,
       error: 'Google authentication failed'
+    });
+  }
+}
+
+static async updateProfile(req, res) {
+  try {
+    const { uid } = req.params;
+    const { email, password, confirmPassword } = req.body;
+    
+    // Find user
+    const mongoUser = await User.findOne({ firebaseUid: uid });
+    
+    if (!mongoUser) {
+      if (req.file) {
+        try {
+          await cloudinary.uploader.destroy(req.file.filename);
+        } catch (deleteError) {
+          console.log('⚠️ Failed to delete uploaded avatar:', deleteError);
+        }
+      }
+      return res.status(404).json({
+        success: false,
+        error: 'User not found'
+      });
+    }
+    
+    console.log('📝 Update profile request for:', uid);
+    
+    // Check if anything is being updated
+    if (!email && !password && !req.file) {
+      return res.status(400).json({
+        success: false,
+        error: 'No fields to update'
+      });
+    }
+    
+    let hasUpdates = false;
+    
+    // Handle email update
+    if (email && email.trim()) {
+      if (email !== mongoUser.email) {
+        const emailExists = await User.findOne({ 
+          email: email,
+          firebaseUid: { $ne: uid }
+        });
+        
+        if (emailExists) {
+          if (req.file) {
+            try {
+              await cloudinary.uploader.destroy(req.file.filename);
+            } catch (deleteError) {
+              console.log('⚠️ Failed to delete uploaded avatar:', deleteError);
+            }
+          }
+          return res.status(400).json({
+            success: false,
+            error: 'Email already in use'
+          });
+        }
+        
+        // Update email in Firebase
+        const auth = getAuth();
+        try {
+          await auth.updateUser(uid, { email });
+          mongoUser.email = email;
+          hasUpdates = true;
+          console.log('✅ Email updated for:', uid);
+        } catch (firebaseError) {
+          if (req.file) {
+            try {
+              await cloudinary.uploader.destroy(req.file.filename);
+            } catch (deleteError) {
+              console.log('⚠️ Failed to delete uploaded avatar:', deleteError);
+            }
+          }
+          console.error('❌ Firebase email update error:', firebaseError);
+          return res.status(400).json({
+            success: false,
+            error: 'Failed to update email: ' + firebaseError.message
+          });
+        }
+      }
+    }
+    
+    // Handle password update
+    if (password && password.trim()) {
+      if (password.length < 6) {
+        if (req.file) {
+          try {
+            await cloudinary.uploader.destroy(req.file.filename);
+          } catch (deleteError) {
+            console.log('⚠️ Failed to delete uploaded avatar:', deleteError);
+          }
+        }
+        return res.status(400).json({
+          success: false,
+          error: 'Password must be at least 6 characters long'
+        });
+      }
+      
+      if (password !== confirmPassword) {
+        if (req.file) {
+          try {
+            await cloudinary.uploader.destroy(req.file.filename);
+          } catch (deleteError) {
+            console.log('⚠️ Failed to delete uploaded avatar:', deleteError);
+          }
+        }
+        return res.status(400).json({
+          success: false,
+          error: 'Passwords do not match'
+        });
+      }
+      
+      const hashedPassword = await bcrypt.hash(password, 12);
+      
+      // Update password in Firebase
+      const auth = getAuth();
+      try {
+        await auth.updateUser(uid, { password });
+        mongoUser.password = hashedPassword;
+        hasUpdates = true;
+        console.log('✅ Password updated for:', uid);
+      } catch (firebaseError) {
+        if (req.file) {
+          try {
+            await cloudinary.uploader.destroy(req.file.filename);
+          } catch (deleteError) {
+            console.log('⚠️ Failed to delete uploaded avatar:', deleteError);
+          }
+        }
+        console.error('❌ Firebase password update error:', firebaseError);
+        return res.status(400).json({
+          success: false,
+          error: 'Failed to update password: ' + firebaseError.message
+        });
+      }
+    }
+    
+    // Handle avatar update
+    if (req.file) {
+      // Delete old avatar from Cloudinary if it exists
+      if (mongoUser.avatarPublicId) {
+        try {
+          await cloudinary.uploader.destroy(mongoUser.avatarPublicId);
+          console.log('🗑️ Deleted old avatar with public_id:', mongoUser.avatarPublicId);
+        } catch (deleteError) {
+          console.log('⚠️ Failed to delete old avatar:', deleteError.message);
+        }
+      }
+      
+      // Get the public_id from the file (includes folder path)
+      const newPublicId = req.file.public_id || req.file.filename;
+      mongoUser.avatar = req.file.path;
+      mongoUser.avatarPublicId = newPublicId;
+      hasUpdates = true;
+      console.log('📷 Avatar updated with public_id:', newPublicId);
+      console.log('📷 Avatar URL:', req.file.path);
+    }
+    
+    // Save updated user if there are any changes
+    if (hasUpdates) {
+      await mongoUser.save();
+      console.log('✅ Profile saved successfully for:', uid);
+    }
+    
+    console.log('✅ Profile update completed for:', uid);
+    res.json({
+      success: true,
+      message: 'Profile updated successfully',
+      user: {
+        uid: mongoUser.firebaseUid,
+        email: mongoUser.email,
+        firstName: mongoUser.firstName,
+        lastName: mongoUser.lastName,
+        avatar: mongoUser.avatar,
+        avatarPublicId: mongoUser.avatarPublicId,
+        section: mongoUser.section,
+        gender: mongoUser.gender,
+        role: mongoUser.role,
+        provider: mongoUser.provider || 'email'
+      }
+    });
+    
+  } catch (error) {
+    if (req.file) {
+      try {
+        await cloudinary.uploader.destroy(req.file.filename);
+        console.log('🗑️ Cleaned up avatar after update error');
+      } catch (deleteError) {
+        console.log('⚠️ Failed to cleanup avatar:', deleteError);
+      }
+    }
+    
+    console.error('❌ Update profile error:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Failed to update profile: ' + error.message
     });
   }
 }

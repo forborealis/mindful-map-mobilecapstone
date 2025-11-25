@@ -391,5 +391,51 @@ export const authService = {
       console.error('Error getting fresh token:', error);
       return null;
     }
+  },
+
+  async updateProfile(uid, updateData, avatarUri = null) {
+    try {
+      console.log('Updating profile for:', uid);
+
+      const formData = new FormData();
+      
+      // Add optional fields
+      if (updateData.email) formData.append('email', updateData.email);
+      if (updateData.password) formData.append('password', updateData.password);
+      if (updateData.confirmPassword) formData.append('confirmPassword', updateData.confirmPassword);
+
+      // Add avatar if provided
+      if (avatarUri) {
+        const filename = avatarUri.uri ? avatarUri.uri.split('/').pop() : avatarUri.split('/').pop();
+        const uri = avatarUri.uri || avatarUri;
+        const match = /\.(\w+)$/.exec(filename || '');
+        const type = match ? `image/${match[1]}` : 'image/jpeg';
+        formData.append('avatar', { uri, type, name: filename || 'avatar.jpg' });
+      }
+
+      const token = await AsyncStorage.getItem('token');
+      const response = await fetch(`${API_BASE_URL}/api/auth/profile/${uid}`, {
+        method: 'PUT',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+        },
+        body: formData
+      });
+
+      const data = await response.json();
+      
+      if (data.success) {
+        // Update stored user data
+        await AsyncStorage.setItem('user', JSON.stringify(data.user));
+        console.log('Profile updated successfully');
+      } else {
+        console.log('Profile update failed:', data.error);
+      }
+      
+      return data;
+    } catch (error) {
+      console.error('Network error during profile update:', error);
+      return { success: false, error: 'Network error. Please check your connection.' };
+    }
   }
 };
