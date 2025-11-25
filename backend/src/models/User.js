@@ -57,6 +57,13 @@ const UserSchema = new mongoose.Schema({
     required: false,
     default: undefined
   },
+  pushTokens: {
+    type: [String],
+    default: []
+  },
+  lastReminderSentAt: {
+    type: Date,
+  },
   createdAt: {
     type: Date,
     default: Date.now,

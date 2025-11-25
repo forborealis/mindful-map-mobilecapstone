@@ -20,6 +20,8 @@ import { fonts } from '../utils/fonts/fonts';
 import { colors } from '../utils/colors/colors';
 import { useNavigation } from '@react-navigation/native';
 import { authService } from '../services/authService';
+import { registerPushTokenIfLoggedIn } from '../AppNotifications';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import 'expo-dev-client';
 
 const LoginSchema = Yup.object().shape({
@@ -45,7 +47,7 @@ export default function Login() {
       
       const result = await authService.login(values.email.trim(), values.password);
       if (result.success) {
-
+        await registerPushTokenIfLoggedIn();
         setTimeout(() => {
           navigation.replace('ChooseCategory');
         }, 1000);
@@ -111,7 +113,7 @@ export default function Login() {
       const result = await authService.signInWithGoogle();
       
       if (result.success) {
-
+        await registerPushTokenIfLoggedIn();
         console.log('Google login successful:', result.user.email);
         
         setTimeout(() => {

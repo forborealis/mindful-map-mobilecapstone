@@ -21,7 +21,12 @@ const moodRoutes = require('./routes/moodDataRoutes');
 const predictionRoutes = require('./routes/predictionRoutes');
 const musicRoutes = require('./routes/musicRoutes');
 const activityRoutes = require('./routes/activityRoutes');
-app.use('/api/mood-data', moodRoutes);
+const notificationRoutes = require('./routes/notificationRoutes');
+const { startMoodReminderJob } = require('./utils/moodReminder');
+const { startFrequentReminderJob } = require('./utils/frequentReminder');
+
+app.use('/api/notifications', notificationRoutes);
+app.use('/api/mood-data', moodRoutes);  
 app.use('/api/statistics', moodRoutes);
 app.use('/api/auth', authRoutes);
 app.use('/api', predictionRoutes);
@@ -73,7 +78,9 @@ const startServer = async () => {
     await connectDB();
     
     initializeFirebase();
-    
+
+    startFrequentReminderJob();
+    startMoodReminderJob();
     app.listen(PORT, () => {
       console.log(`\n🚀 Server running on port ${PORT}`);
       console.log(`📱 Ready for Expo app connection`);

@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import { NavigationContainer } from '@react-navigation/native';
 import { Provider as PaperProvider } from 'react-native-paper';
 import { View, ActivityIndicator, Text } from 'react-native';
@@ -7,13 +7,13 @@ import * as Font from 'expo-font';
 import './global.css';
 import { initializeAuth } from './services/authInitializer';
 import Ionicons from 'react-native-vector-icons/Ionicons';
-
+import { subscribeNotificationResponses, registerPushTokenIfLoggedIn } from './AppNotifications';
 import MainStack from './navigation/MainStack';
 
 export default function App() {
   const [isLoading, setIsLoading] = useState(true);
   const [initialRoute, setInitialRoute] = useState('Landing');
-
+  const navRef = useRef(null);
   useEffect(() => {
     async function prepare() {
       try {
@@ -27,6 +27,7 @@ export default function App() {
         });
         const authResult = await initializeAuth();
         setInitialRoute(authResult.initialRoute);
+       await registerPushTokenIfLoggedIn();
       } catch (error) {
         setInitialRoute('Landing');
       } finally {
@@ -34,6 +35,12 @@ export default function App() {
       }
     }
     prepare();
+  }, []);
+
+   useEffect(() => {
+    if (!navRef.current) return; // guard
+    const sub = subscribeNotificationResponses(navRef.current);
+    return () => sub?.remove();
   }, []);
 
   if (isLoading) {
