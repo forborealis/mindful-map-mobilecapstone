@@ -2,7 +2,6 @@ import React from 'react';
 import { Alert, TouchableOpacity, View } from 'react-native';
 import { createDrawerNavigator, DrawerContentScrollView, DrawerItemList } from '@react-navigation/drawer';
 import MoodEntries from '../screens/User/MoodEntries';
-import Home from '../screens/User/Home';
 import Activities from '../screens/User/Activities/Activities';
 import Calendar from '../screens/User/Calendar';
 import StatisticsDashboard from '../screens/User/Statistics/StatisticsDashboard';
@@ -21,7 +20,14 @@ const Placeholder = () => <View />;
 
 function CustomDrawerContent(props) {
   return (
-    <DrawerContentScrollView {...props} contentContainerStyle={{ flex: 1 }}>
+    <DrawerContentScrollView
+      {...props}
+      contentContainerStyle={{
+        flex: 1,
+        paddingTop: 28,       // increased top padding
+        paddingBottom: 40     // space at bottom
+      }}
+    >
       <DrawerItemList {...props} />
       <View style={{ flex: 1 }} />
       <View style={{ alignItems: 'center', marginBottom: 24 }}>
@@ -51,7 +57,7 @@ export default function SideBarNav() {
         { text: 'Cancel', style: 'cancel' },
         {
           text: 'Sign Out',
-          style: 'destructive',
+            style: 'destructive',
           onPress: async () => {
             try {
               const result = await authService.logout();
@@ -98,6 +104,13 @@ export default function SideBarNav() {
           backgroundColor: colors.background,
           width: 240,
         },
+        drawerContentStyle: {
+          paddingHorizontal: 10 // optional side padding
+        },
+        drawerItemStyle: {
+          marginVertical: 10,   // gap between items (increase to 12–14 if needed)
+          borderRadius: 12
+        },
         drawerActiveTintColor: colors.primary,
         drawerInactiveTintColor: colors.text,
         drawerLabelStyle: {
@@ -124,15 +137,6 @@ export default function SideBarNav() {
         options={{
           drawerIcon: ({ color, size }) => (
             <Ionicons name="list" size={size} color={color} />
-          ),
-        }}
-      />
-      <Drawer.Screen
-        name="Home"
-        component={Home}
-        options={{
-          drawerIcon: ({ color, size }) => (
-            <Ionicons name="home" size={size} color={color} />
           ),
         }}
       />

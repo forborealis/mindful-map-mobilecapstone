@@ -4,8 +4,8 @@ const MoodLog = require('../models/MoodLog');
 const { sendPush } = require('./sendPush');
 
 function startFrequentReminderJob() {
-  console.log('[FrequentReminder] scheduling */5 min job');
-  cron.schedule('*/5 * * * *', async () => {
+  console.log('[FrequentReminder] scheduling */10 min job');
+  cron.schedule('*/10 * * * *', async () => {
     const start = new Date(); start.setHours(0,0,0,0);
     const end = new Date(); end.setHours(23,59,59,999);
 
