@@ -1,7 +1,7 @@
 {
   "expo": {
-    "name": "Mindful Map Mobile",
-    "slug": "mindful-map-mobile",
+    "name": "Mindful Map",
+    "slug": "mindful-map",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
@@ -13,7 +13,10 @@
       "backgroundColor": "#ffffff"
     },
     "ios": {
-      "supportsTablet": true
+      "supportsTablet": true,
+      "infoPlist": {
+        "NSUserTrackingUsageDescription": "Used to deliver relevant wellness notifications."
+      }
     },
     "android": {
       "package": "com.mindfulmap.mobile",
@@ -22,13 +25,21 @@
         "backgroundColor": "#ffffff"
       },
       "googleServicesFile": "./google-services.json",
-      "edgeToEdgeEnabled": true
+      "edgeToEdgeEnabled": true,
+      "permissions": [
+        "NOTIFICATIONS"
+      ],
+      "notification": {
+        "icon": "./assets/notification-icon.png",
+        "color": "#4CAF50"
+      }
     },
     "web": {
       "favicon": "./assets/favicon.png"
     },
     "plugins": [
-      "@react-native-google-signin/google-signin"
+      "@react-native-google-signin/google-signin",
+      "expo-notifications"
     ],
     "extra": {
       "eas": {
