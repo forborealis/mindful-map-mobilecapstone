@@ -80,7 +80,8 @@ static async login(req, res) {
           avatar: mongoUser.avatar,
           section: mongoUser.section,
           gender: mongoUser.gender,
-          role: mongoUser.role
+          role: mongoUser.role,
+          provider: mongoUser.provider || 'email'
         },
         token: customToken
       });
@@ -158,12 +159,16 @@ static async register(req, res) {
     const auth = getAuth();
     const firestore = getFirestore();
     const avatarUrl = req.file ? req.file.path : '';
-    const avatarPublicId = req.file ? req.file.filename : '';
+    const avatarPublicId = req.file ? (req.file.public_id || req.file.filename) : '';
     
     console.log('📷 Avatar upload info:', {
       hasFile: !!req.file,
       avatarUrl,
-      avatarPublicId
+      avatarPublicId,
+      fileDetails: req.file ? {
+        public_id: req.file.public_id,
+        filename: req.file.filename
+      } : null
     });
     
     try {
@@ -207,7 +212,8 @@ static async register(req, res) {
         password: hashedPassword,
         avatar: avatarUrl,              
         avatarPublicId: avatarPublicId, 
-        role: 'user'
+        role: 'user',
+        provider: 'email'
       });
       
       await mongoUser.save();
@@ -228,7 +234,8 @@ static async register(req, res) {
           avatar: mongoUser.avatar,
           section: mongoUser.section,
           gender: mongoUser.gender,
-          role: mongoUser.role
+          role: mongoUser.role,
+          provider: mongoUser.provider || 'email'
         },
         token: customToken
       });
@@ -532,16 +539,19 @@ static async updateProfile(req, res) {
       if (mongoUser.avatarPublicId) {
         try {
           await cloudinary.uploader.destroy(mongoUser.avatarPublicId);
-          console.log('🗑️ Deleted old avatar:', mongoUser.avatarPublicId);
+          console.log('🗑️ Deleted old avatar with public_id:', mongoUser.avatarPublicId);
         } catch (deleteError) {
-          console.log('⚠️ Failed to delete old avatar:', deleteError);
+          console.log('⚠️ Failed to delete old avatar:', deleteError.message);
         }
       }
       
+      // Get the public_id from the file (includes folder path)
+      const newPublicId = req.file.public_id || req.file.filename;
       mongoUser.avatar = req.file.path;
-      mongoUser.avatarPublicId = req.file.filename;
+      mongoUser.avatarPublicId = newPublicId;
       hasUpdates = true;
-      console.log('📷 Avatar updated:', req.file.path);
+      console.log('📷 Avatar updated with public_id:', newPublicId);
+      console.log('📷 Avatar URL:', req.file.path);
     }
     
     // Save updated user if there are any changes
@@ -563,7 +573,8 @@ static async updateProfile(req, res) {
         avatarPublicId: mongoUser.avatarPublicId,
         section: mongoUser.section,
         gender: mongoUser.gender,
-        role: mongoUser.role
+        role: mongoUser.role,
+        provider: mongoUser.provider || 'email'
       }
     });
     

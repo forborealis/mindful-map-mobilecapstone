@@ -53,7 +53,7 @@ const UserSchema = new mongoose.Schema({
   },
   provider: {
     type: String,
-    enum: ['Google'],
+    enum: ['email', 'Google'],
     required: false,
     default: undefined
   },
