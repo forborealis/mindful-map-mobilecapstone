@@ -19,7 +19,7 @@ const getMusicByCategory = async (req, res) => {
     const music = await Music.find({ 
       category: category.toLowerCase(), 
       isActive: true 
-    }).sort({ createdAt: -1 });
+    }).sort({ createdAt: 1 });
     
     // If user is authenticated, check favorites
     let musicWithFavorites = music;
@@ -57,7 +57,7 @@ const getAllMusic = async (req, res) => {
   try {
     const userId = req.user?.id;
     
-    const music = await Music.find({ isActive: true }).sort({ createdAt: -1 });
+    const music = await Music.find({ isActive: true }).sort({ createdAt: 1 });
     
     // If user is authenticated, check favorites
     let musicWithFavorites = music;
@@ -347,7 +347,7 @@ const getFavorites = async (req, res) => {
     
     const favorites = await Favorite.find(query)
       .populate('music')
-      .sort({ addedAt: -1 });
+      .sort({ addedAt: 1 });
     
     const favoriteMusic = favorites.map(fav => ({
       ...fav.music.toObject(),
