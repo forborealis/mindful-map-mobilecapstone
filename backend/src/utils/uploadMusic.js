@@ -7,7 +7,7 @@ const fs = require('fs');
  * @param {string} folder - Cloudinary folder to upload to (optional).
  * @returns {Promise<object>} - Cloudinary upload result.
  */
-const uploadMp3ToCloudinary = async (filePath, folder = 'music') => {
+const uploadMp3ToCloudinary = async (filePath, folder = 'mindful-map/music') => {
   try {
     const result = await cloudinary.uploader.upload(filePath, {
       resource_type: 'video', 
@@ -26,7 +26,7 @@ const uploadMp3ToCloudinary = async (filePath, folder = 'music') => {
  * @param {string} folder - Cloudinary folder to upload to (optional).
  * @returns {Promise<object[]>} - Array of Cloudinary upload results.
  */
-const uploadMultipleMp3s = async (filePaths, folder = 'music') => {
+const uploadMultipleMp3s = async (filePaths, folder = 'mindful-map/music') => {
   const results = [];
   for (const filePath of filePaths) {
     const result = await uploadMp3ToCloudinary(filePath, folder);

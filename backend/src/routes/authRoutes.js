@@ -28,5 +28,6 @@ const upload = multer({
 router.post('/login', AuthController.login);
 router.post('/register', upload.single('avatar'), AuthController.register); // Make sure this line exists
 router.get('/profile/:uid', AuthController.getProfile);
+router.put('/profile/:uid', upload.single('avatar'), AuthController.updateProfile);
 router.post('/google-auth', AuthController.googleAuth);
 module.exports = router;

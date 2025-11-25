@@ -14,7 +14,7 @@ const musicSchema = new mongoose.Schema({
   category: {
     type: String,
     required: true,
-    enum: ['calming', 'uplifting', 'meditation', 'focus', 'sleep', 'nature'],
+    enum: ['calming', 'uplifting', 'meditation', 'focus', 'sleep', 'nature', 'other'],
     lowercase: true
   },
   cloudinaryPublicId: {
