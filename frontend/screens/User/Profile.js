@@ -11,7 +11,7 @@ import {
   Modal
 } from 'react-native';
 import * as ImagePicker from 'expo-image-picker';
-import { SafeAreaView } from 'react-native-safe-area-context';
+
 import { Ionicons } from '@expo/vector-icons';
 import { authService } from '../../services/authService';
 import { moodDataService } from '../../services/moodDataService';
@@ -504,7 +504,7 @@ const Profile = () => {
 
   if (loading) {
     return (
-      <SafeAreaView style={{ flex: 1, backgroundColor: colors.background }}>
+      <View style={{ flex: 1, backgroundColor: colors.background }}>
         <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
           <ActivityIndicator size="large" color={colors.primary} />
           <Text style={{ 
@@ -515,12 +515,12 @@ const Profile = () => {
             Loading profile...
           </Text>
         </View>
-      </SafeAreaView>
+      </View>
     );
   }
 
   return (
-    <SafeAreaView style={{ flex: 1, backgroundColor: colors.background }}>
+    <View style={{ flex: 1, backgroundColor: colors.background }}>
       <ScrollView 
         style={{ flex: 1 }}
         contentContainerStyle={{ padding: 20, paddingBottom: 40 }}
@@ -1138,7 +1138,7 @@ const Profile = () => {
           </View>
         </View>
       </Modal>
-    </SafeAreaView>
+    </View>
   );
 };
 

@@ -119,13 +119,13 @@ export default function SideBarNav() {
         },
         headerStyle: {
           backgroundColor: colors.secondary,
-          height: 70,
+          height: 80,
         },
         headerTintColor: colors.white,
         headerTitle: '',
         headerLeft: () => (
           <TouchableOpacity onPress={() => navigation.toggleDrawer()} style={{ marginLeft: 15 }}>
-            <Ionicons name="menu" size={24} color={colors.white} />
+            <Ionicons name="menu" size={32} color={colors.white} />
           </TouchableOpacity>
         ),
         headerShown: true,
