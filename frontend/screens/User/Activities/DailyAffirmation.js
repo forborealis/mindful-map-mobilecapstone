@@ -40,8 +40,8 @@ const styles = StyleSheet.create({
     backgroundColor: colors.background,
   },
   backButton: {
-    width: 40,
-    height: 40,
+    width: 36,
+    height: 36,
     borderRadius: 24,
     backgroundColor: colors.surface,
     justifyContent: 'center',
@@ -53,7 +53,7 @@ const styles = StyleSheet.create({
     fontSize: 20,
     fontFamily: fonts.bold,
     color: colors.text,
-    textAlign: 'center',
+    marginHorizontal: 12,
     flex: 1,
   },
   spacer: {
