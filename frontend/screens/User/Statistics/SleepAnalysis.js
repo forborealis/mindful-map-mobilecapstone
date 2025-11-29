@@ -155,17 +155,14 @@ export default function SleepAnalysis() {
 
 
   return (
-    <ScrollView style={{ backgroundColor: colors.background }}>
-      <View style={{
-        marginTop: 28,
-        marginBottom: 18,
-        alignItems: 'center',
-      }}>
+    <View style={{
+      marginHorizontal: 16,
+    }}>
         <View style={{
           backgroundColor: '#fff',
-          borderRadius: 28,
-          padding: 22,
-          width: chartWidth,
+          borderRadius: 24,
+          padding: 20,
+          width: '100%',
           shadowColor: '#000',
           shadowOpacity: 0.08,
           shadowRadius: 12,
@@ -173,11 +170,11 @@ export default function SleepAnalysis() {
           elevation: 4,
         }}>
           {/* Header */}
-          <View style={{ marginBottom: 18, alignItems: 'center', justifyContent: 'center' }}>
+          <View style={{ marginBottom: 14, alignItems: 'center', justifyContent: 'center' }}>
             <Text
               style={{
                 fontFamily: fonts.bold,
-                fontSize: 24,
+                fontSize: 22,
                 color: colors.primary,
                 marginBottom: 2,
                 textAlign: 'center',
@@ -188,10 +185,11 @@ export default function SleepAnalysis() {
             <Text
               style={{
                 fontFamily: fonts.medium,
-                fontSize: 15,
+                fontSize: 14,
                 color: colors.text,
                 opacity: 0.7,
                 textAlign: 'center',
+                lineHeight: 20,
               }}
             >
               Track your sleep hours and patterns
@@ -202,7 +200,7 @@ export default function SleepAnalysis() {
           <View style={{
             flexDirection: 'row',
             justifyContent: 'center',
-            marginBottom: 18,
+            marginBottom: 14,
           }}>
             <View style={{
               flexDirection: 'row',
@@ -220,8 +218,8 @@ export default function SleepAnalysis() {
                   style={{
                     backgroundColor: period === opt ? '#6FC3B2' : 'transparent',
                     borderRadius: 999,
-                    paddingVertical: 8,
-                    paddingHorizontal: 24,
+                    paddingVertical: 6,
+                    paddingHorizontal: 18,
                     marginHorizontal: 2,
                     elevation: period === opt ? 2 : 0,
                   }}
@@ -229,7 +227,7 @@ export default function SleepAnalysis() {
                   <Text style={{
                     color: period === opt ? '#fff' : colors.primary,
                     fontFamily: fonts.semiBold,
-                    fontSize: 16,
+                    fontSize: 13,
                     textAlign: 'center',
                   }}>
                     {opt === 'week' ? 'Weekly' : 'Monthly'}
@@ -243,42 +241,42 @@ export default function SleepAnalysis() {
           <View style={{
             flexDirection: 'row',
             justifyContent: 'space-between',
-            marginBottom: 18,
+            marginBottom: 14,
+            gap: 8,
           }}>
             <View style={{
               backgroundColor: '#E6F7F2',
-              borderRadius: 18,
-              paddingVertical: 18,
+              borderRadius: 16,
+              paddingVertical: 16,
               paddingHorizontal: 10,
               alignItems: 'center',
               flex: 1,
-              marginRight: 8,
               elevation: 2,
               justifyContent: 'center',
             }}>
               <Text style={{
                 fontFamily: fonts.bold,
-                fontSize: 24,
+                fontSize: 22,
                 color: '#3CB371',
                 marginBottom: 2,
                 textAlign: 'center',
               }}>{avgSleep}h</Text>
               <Text style={{
                 fontFamily: fonts.medium,
-                fontSize: 14,
+                fontSize: 12,
                 color: colors.text,
                 opacity: 0.7,
                 textAlign: 'center',
+                lineHeight: 16,
               }}>Average Sleep</Text>
             </View>
             <View style={{
               backgroundColor: '#F0FFF0',
-              borderRadius: 18,
-              paddingVertical: 18,
+              borderRadius: 16,
+              paddingVertical: 16,
               paddingHorizontal: 10,
               alignItems: 'center',
               flex: 1,
-              marginHorizontal: 4,
               elevation: 2,
               justifyContent: 'center',
             }}>
@@ -291,14 +289,15 @@ export default function SleepAnalysis() {
               }}>{bestDay.date ? formatDate(bestDay.date) : '--'}</Text>
               <Text style={{
                 fontFamily: fonts.medium,
-                fontSize: 14,
+                fontSize: 12,
                 color: colors.text,
                 opacity: 0.7,
                 textAlign: 'center',
-              }}>Best Sleep Day</Text>
+                lineHeight: 16,
+              }}>Best Day</Text>
               <Text style={{
                 fontFamily: fonts.semiBold,
-                fontSize: 15,
+                fontSize: 13,
                 color: '#3CB371',
                 marginTop: 2,
                 textAlign: 'center',
@@ -306,12 +305,11 @@ export default function SleepAnalysis() {
             </View>
             <View style={{
               backgroundColor: '#FFF0F0',
-              borderRadius: 18,
-              paddingVertical: 18,
+              borderRadius: 16,
+              paddingVertical: 16,
               paddingHorizontal: 10,
               alignItems: 'center',
               flex: 1,
-              marginLeft: 8,
               elevation: 2,
               justifyContent: 'center',
             }}>
@@ -324,14 +322,15 @@ export default function SleepAnalysis() {
               }}>{leastDay.date ? formatDate(leastDay.date) : '--'}</Text>
               <Text style={{
                 fontFamily: fonts.medium,
-                fontSize: 14,
+                fontSize: 12,
                 color: colors.text,
                 opacity: 0.7,
                 textAlign: 'center',
-              }}>Least Sleep Day</Text>
+                lineHeight: 16,
+              }}>Least Day</Text>
               <Text style={{
                 fontFamily: fonts.semiBold,
-                fontSize: 15,
+                fontSize: 13,
                 color: '#FF6347',
                 marginTop: 2,
                 textAlign: 'center',
@@ -342,25 +341,25 @@ export default function SleepAnalysis() {
           {/* Line Chart */}
           <View style={{
             backgroundColor: '#F8F8FF',
-            borderRadius: 20,
-            padding: 18,
-            marginTop: 8,
-            marginBottom: 8,
+            borderRadius: 16,
+            padding: 16,
+            marginTop: 12,
+            marginBottom: 12,
             shadowColor: '#000',
             shadowOpacity: 0.06,
             shadowRadius: 6,
             shadowOffset: { width: 0, height: 1 },
             elevation: 2,
-            width: chartWidth * 0.90,
+            width: '100%',
             alignSelf: 'center',
           }}>
             <Text style={{
               fontFamily: fonts.bold,
-              fontSize: 18,
+              fontSize: 16,
               color: colors.primary,
-              marginBottom: 10,
+              marginBottom: 12,
               textAlign: 'center',
-            }}>Sleep Hours Trend</Text>
+            }}>Sleep Trend</Text>
             {loading ? (
               <Text style={{
                 fontFamily: fonts.medium,
@@ -414,38 +413,38 @@ export default function SleepAnalysis() {
                     flexDirection: 'row',
                     justifyContent: 'center',
                     alignItems: 'center',
-                    marginTop: 8,
-                    marginBottom: 4,
+                    marginTop: 10,
+                    marginBottom: 2,
                   }}>
                     <TouchableOpacity
                       onPress={() => setChartPage(p => Math.max(0, p - 1))}
                       disabled={chartPage === 0}
                       style={{
                         opacity: chartPage === 0 ? 0.3 : 1,
-                        padding: 8,
-                        marginHorizontal: 12,
+                        padding: 6,
+                        marginHorizontal: 10,
                       }}
                     >
-                      <Text style={{ fontSize: 28, color: colors.primary }}>{'←'}</Text>
+                      <Text style={{ fontSize: 24, color: colors.primary }}>{'←'}</Text>
                     </TouchableOpacity>
                     <Text style={{
                       fontFamily: fonts.medium,
-                      fontSize: 15,
+                      fontSize: 13,
                       color: colors.primary,
                       marginHorizontal: 8,
                     }}>
-                      Page {chartPage + 1} of {totalPages}
+                      {chartPage + 1} of {totalPages}
                     </Text>
                     <TouchableOpacity
                       onPress={() => setChartPage(p => Math.min(totalPages - 1, p + 1))}
                       disabled={chartPage >= totalPages - 1}
                       style={{
                         opacity: chartPage >= totalPages - 1 ? 0.3 : 1,
-                        padding: 8,
-                        marginHorizontal: 12,
+                        padding: 6,
+                        marginHorizontal: 10,
                       }}
                     >
-                      <Text style={{ fontSize: 28, color: colors.primary }}>{'→'}</Text>
+                      <Text style={{ fontSize: 24, color: colors.primary }}>{'→'}</Text>
                     </TouchableOpacity>
                   </View>
                 )}
@@ -458,63 +457,63 @@ export default function SleepAnalysis() {
             fontFamily: fonts.bold,
             fontSize: 16,
             color: colors.primary,
-            marginBottom: 8,
-            marginTop: 10,
+            marginBottom: 12,
+            marginTop: 12,
             textAlign: 'center',
           }}>
             Sleep Guide 
           </Text>
 
         
-          <View style={{ marginBottom: 16 }}>
+          <View style={{ marginBottom: 0 }}>
             {guides.map((guide, idx) => (
               <View
                 key={guide.label}
                 style={{
                   backgroundColor: guide.color,
-                  borderRadius: 16,
+                  borderRadius: 14,
                   borderWidth: 2,
                   borderColor: guide.borderColor,
-                  paddingVertical: 8,
-                  paddingHorizontal: 14,
+                  paddingVertical: 12,
+                  paddingHorizontal: 12,
                   alignItems: 'center',
-                  marginBottom: 12,
+                  marginBottom: idx === guides.length - 1 ? 0 : 10,
                   width: '100%',
                   elevation: 2,
                   flexDirection: 'row',
-                  minHeight: 60,
+                  minHeight: 56,
                 }}
               >
                 <Image
                   source={guide.image}
-                  style={{ width: 38, height: 38, marginRight: 14 }}
+                  style={{ width: 36, height: 36, marginRight: 12 }}
                   resizeMode="contain"
                 />
                 <View style={{ flex: 1 }}>
                   <Text style={{
                     fontFamily: fonts.bold,
-                    fontSize: 16,
+                    fontSize: 14,
                     color: guide.textColor,
                     marginBottom: 2,
                   }}>{guide.label}</Text>
                   <Text style={{
                     fontFamily: fonts.medium,
-                    fontSize: 13,
+                    fontSize: 12,
                     color: colors.text,
                     marginBottom: 2,
                   }}>{guide.hours}</Text>
                   <Text style={{
                     fontFamily: fonts.medium,
-                    fontSize: 12,
+                    fontSize: 11,
                     color: colors.text,
                     opacity: 0.7,
                     marginBottom: 4,
                   }}>{guide.desc}</Text>
                   <View style={{
-                    height: 6,
+                    height: 5,
                     width: `${guide.barPercent * 100}%`,
                     backgroundColor: guide.barColor,
-                    borderRadius: 4,
+                    borderRadius: 3,
                     marginTop: 2,
                     alignSelf: 'flex-start',
                   }} />
@@ -523,7 +522,6 @@ export default function SleepAnalysis() {
             ))}
           </View>
         </View>
-      </View>
-    </ScrollView>
+    </View>
   );
 }

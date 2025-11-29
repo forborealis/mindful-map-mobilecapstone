@@ -149,6 +149,12 @@ function formatWeekRange(start, end) {
   return `${start.toLocaleDateString(undefined, options)} - ${end.toLocaleDateString(undefined, options)}`;
 }
 
+function getWeekdayRange(start, end) {
+  const startDay = start.toLocaleDateString(undefined, { weekday: 'short' });
+  const endDay = end.toLocaleDateString(undefined, { weekday: 'short' });
+  return `${startDay} - ${endDay}`;
+}
+
 // Skeleton component
 const SkeletonBox = ({ width, height, style }) => (
   <View
@@ -201,7 +207,7 @@ export default function WeeklyAnova() {
     if (!data || (!data.positive?.length && !data.negative?.length)) {
       return (
         <View style={{ alignItems: 'center', justifyContent: 'center', minHeight: 60 }}>
-          <Text style={{ color: '#888', fontSize: 16, fontFamily: fonts.medium, textAlign: 'center' }}>
+          <Text style={{ color: '#888', fontSize: 14, fontFamily: fonts.medium, textAlign: 'center' }}>
             No data for this category
           </Text>
         </View>
@@ -215,7 +221,7 @@ export default function WeeklyAnova() {
               <MaterialIcons name="trending-up" size={20} color={POSITIVE_COLOR} />
               <Text style={{
                 fontFamily: fonts.semiBold,
-                fontSize: 16,
+                fontSize: 14,
                 color: POSITIVE_COLOR,
                 marginLeft: 6,
               }}>
@@ -241,7 +247,7 @@ export default function WeeklyAnova() {
                 <View style={{ marginRight: 10 }}>{getMoodIcon(item.moodScore)}</View>
                 <View style={{ flex: 1 }}>
                   <Text style={{
-                    fontSize: 15,
+                    fontSize: 14,
                     color: '#272829',
                     fontFamily: fonts.medium,
                   }}>
@@ -273,7 +279,7 @@ export default function WeeklyAnova() {
               <MaterialIcons name="trending-down" size={20} color={NEGATIVE_COLOR} />
               <Text style={{
                 fontFamily: fonts.semiBold,
-                fontSize: 16,
+                fontSize: 14,
                 color: NEGATIVE_COLOR,
                 marginLeft: 6,
               }}>
@@ -299,7 +305,7 @@ export default function WeeklyAnova() {
                 <View style={{ marginRight: 10 }}>{getMoodIcon(item.moodScore)}</View>
                 <View style={{ flex: 1 }}>
                   <Text style={{
-                    fontSize: 15,
+                    fontSize: 14,
                     color: '#272829',
                     fontFamily: fonts.medium,
                   }}>
@@ -398,15 +404,15 @@ export default function WeeklyAnova() {
                     flexDirection: 'row',
                     alignItems: 'center',
                     width: '100%',
-                    justifyContent: 'center',
+                    justifyContent: 'flex-start',
                   }}>
                     <View style={{ marginRight: 8 }}>{getMoodIcon(sleepMoodScore)}</View>
                     <Text style={{
-                      fontSize: 15,
+                      fontSize: 14,
                       color: '#272829',
                       flex: 1,
-                      textAlign: 'center',
-                      marginHorizontal: 8,
+                      textAlign: 'left',
+                      marginHorizontal: 0,
                       fontFamily: fonts.medium,
                     }}>
                       {getSleepMessage(avgSleepHours, sleepMoodScore)}
@@ -418,14 +424,14 @@ export default function WeeklyAnova() {
                           ? NEGATIVE_COLOR
                           : '#f7b801',
                       borderRadius: 999,
-                      paddingHorizontal: 14,
+                      paddingHorizontal: 12,
                       paddingVertical: 6,
                       marginLeft: 8,
                     }}>
                       <Text style={{
                         color: '#fff',
                         fontFamily: fonts.bold,
-                        fontSize: 15,
+                        fontSize: 13,
                       }}>
                         {`${Math.abs(sleepMoodScore)}%`}
                       </Text>
@@ -436,7 +442,7 @@ export default function WeeklyAnova() {
             </View>
           ) : (
             <View style={{ alignItems: 'center', justifyContent: 'center', minHeight: 80, width: '100%' }}>
-              <Text style={{ color: '#888', fontSize: 16, fontFamily: fonts.medium, textAlign: 'center' }}>
+              <Text style={{ color: '#888', fontSize: 14, fontFamily: fonts.medium, textAlign: 'center' }}>
                 No sleep data recorded
               </Text>
             </View>
@@ -469,30 +475,46 @@ export default function WeeklyAnova() {
 
   return (
     <View style={{ flex: 1, backgroundColor: colors.primary }}>
-      <ScrollView style={{ flex: 1 }}>
-        {/* Back Button */}
-        <View
-          style={{
-            position: 'absolute',
-            top: 38,
-            left: 18,
-            zIndex: 100,
-            elevation: 10,
-          }}
-          pointerEvents="box-none"
+      {/* Fixed Header with Back Button */}
+      <View
+        style={{
+          position: 'absolute',
+          top: 0,
+          left: 0,
+          right: 0,
+          paddingTop: 30,
+          height: 56 + 18,
+          backgroundColor: colors.primary,
+          flexDirection: 'row',
+          alignItems: 'center',
+          paddingHorizontal: 12,
+          zIndex: 101,
+          elevation: 8,
+          shadowColor: '#000',
+          shadowOpacity: 0.1,
+          shadowRadius: 4,
+          shadowOffset: { width: 0, height: 2 },
+        }}
+      >
+        <TouchableOpacity
+          onPress={() => navigation.goBack()}
+          hitSlop={{ top: 16, bottom: 16, left: 16, right: 16 }}
         >
-          <TouchableOpacity
-            onPress={() => navigation.goBack()}
-            hitSlop={{ top: 16, bottom: 16, left: 16, right: 16 }}
-          >
-            <Ionicons name="arrow-back" size={28} color="#222" />
-          </TouchableOpacity>
-        </View>
+          <Ionicons name="arrow-back" size={26} color="#222" />
+        </TouchableOpacity>
+      </View>
+
+      <ScrollView
+        style={{ flex: 1, marginTop: 74 }}
+        contentContainerStyle={{ paddingTop: 0 }}
+        keyboardShouldPersistTaps="handled"
+      >
+      
         {/* Week Navigation */}
         <View
           style={{
             backgroundColor: '#fff',
-            marginTop: 74,
+            marginTop: 0,
             marginBottom: 24,
             paddingVertical: 18,
             paddingHorizontal: 12,
@@ -528,7 +550,7 @@ export default function WeeklyAnova() {
                 ? 'This Week'
                 : weekOffset === -1
                 ? 'Last Week'
-                : formatWeekRange(start, end)}
+                : getWeekdayRange(start, end)}
             </Text>
             <Text
               style={{
@@ -576,15 +598,15 @@ export default function WeeklyAnova() {
               {/* Card header */}
               <View style={{
                 flexDirection: 'row',
-                alignItems: 'center',
+                alignItems: 'flex-start',
                 paddingVertical: 18,
                 paddingHorizontal: 16,
                 backgroundColor: '#95D2B3',
                 borderTopLeftRadius: 18,
                 borderTopRightRadius: 18,
               }}>
-                <View>{cat.icon}</View>
-                <View style={{ marginLeft: 10 }}>
+                <View style={{ marginTop: 2 }}>{cat.icon}</View>
+                <View style={{ marginLeft: 10, flex: 1 }}>
                   <Text style={{
                     fontFamily: fonts.semiBold,
                     fontSize: 20,
@@ -598,6 +620,7 @@ export default function WeeklyAnova() {
                     fontFamily: fonts.medium,
                     fontSize: 14,
                     marginTop: 2,
+                    flexWrap: 'wrap',
                   }}>
                     {cat.header}
                   </Text>

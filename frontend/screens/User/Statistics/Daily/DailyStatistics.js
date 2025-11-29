@@ -57,7 +57,7 @@ function formatDate(date) {
 
   if (date.toDateString() === today.toDateString()) return 'Today';
   if (date.toDateString() === yesterday.toDateString()) return 'Yesterday';
-  return date.toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
+  return date.toLocaleDateString('en-US', { weekday: 'long' });
 }
 
 function formatText(text) {
@@ -310,34 +310,45 @@ export default function DailyStatistics({ navigation }) {
 
   return (
     <View style={{ flex: 1, backgroundColor: colors.primary }}>
+      {/* Fixed Header with Back Button */}
+      <View
+        style={{
+          position: 'absolute',
+          top: 0,
+          left: 0,
+          right: 0,
+          paddingTop: 30,
+          height: 56 + 18,
+          backgroundColor: colors.primary,
+          flexDirection: 'row',
+          alignItems: 'center',
+          paddingHorizontal: 12,
+          zIndex: 101,
+          elevation: 8,
+          shadowColor: '#000',
+          shadowOpacity: 0.1,
+          shadowRadius: 4,
+          shadowOffset: { width: 0, height: 2 },
+        }}
+      >
+        <TouchableOpacity
+          onPress={() => navigation.goBack()}
+          hitSlop={{ top: 16, bottom: 16, left: 16, right: 16 }}
+        >
+          <Ionicons name="arrow-back" size={26} color="#222" />
+        </TouchableOpacity>
+      </View>
 
       <ScrollView 
-      style={{ flex: 1 }}
+      style={{ flex: 1, marginTop: 74 }}
         contentContainerStyle={{ paddingTop: 0 }} 
         keyboardShouldPersistTaps="handled"
       >
-        <View
-                style={{
-                  position: 'absolute',
-                  top: 38,
-                  left: 18,
-                  zIndex: 100,
-                  elevation: 10,
-                }}
-                pointerEvents="box-none"
-              >
-                <TouchableOpacity
-                  onPress={() => navigation.goBack()}
-                  hitSlop={{ top: 16, bottom: 16, left: 16, right: 16 }}
-                >
-                  <Ionicons name="arrow-back" size={26} color="#222" />
-                </TouchableOpacity>
-              </View>
         {/* Date Navigation */}
         <View
           style={{
             backgroundColor: '#fff',
-            marginTop: 74,
+            marginTop: 0,
             marginBottom: 24,
             paddingVertical: 18,
             paddingHorizontal: 12,
