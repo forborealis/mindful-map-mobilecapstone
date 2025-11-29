@@ -11,7 +11,7 @@ cloudinary.config({
 });
 
 // GET all music by category
-const getMusicByCategory = async (req, res) => {
+exports.getMusicByCategory = async (req, res) => {
   try {
     const { category } = req.params;
     const userId = req.user?._id; // Get user ID if authenticated
@@ -53,7 +53,7 @@ const getMusicByCategory = async (req, res) => {
 };
 
 // GET all music
-const getAllMusic = async (req, res) => {
+exports.getAllMusic = async (req, res) => {
   try {
     const userId = req.user?.id;
     
@@ -87,7 +87,7 @@ const getAllMusic = async (req, res) => {
 };
 
 // GET single music
-const getMusicById = async (req, res) => {
+exports.getMusicById = async (req, res) => {
   try {
     const userId = req.user?._id;
     const music = await Music.findById(req.params.id);
@@ -122,7 +122,7 @@ const getMusicById = async (req, res) => {
 };
 
 // POST create new music
-const createMusic = async (req, res) => {
+exports.createMusic = async (req, res) => {
   try {
     const { title, artist, category, cloudinaryPublicId, cloudinaryUrl, duration, thumbnail } = req.body;
     
@@ -169,7 +169,7 @@ const createMusic = async (req, res) => {
 };
 
 // PUT update music
-const updateMusic = async (req, res) => {
+exports.updateMusic = async (req, res) => {
   try {
     const music = await Music.findByIdAndUpdate(
       req.params.id,
@@ -200,7 +200,7 @@ const updateMusic = async (req, res) => {
 };
 
 // POST increment play count
-const incrementPlayCount = async (req, res) => {
+exports.incrementPlayCount = async (req, res) => {
   try {
     const music = await Music.findByIdAndUpdate(
       req.params.id,
@@ -230,7 +230,7 @@ const incrementPlayCount = async (req, res) => {
 };
 
 // DELETE music (soft delete)
-const deleteMusic = async (req, res) => {
+exports.deleteMusic = async (req, res) => {
   try {
     const music = await Music.findByIdAndUpdate(
       req.params.id,
@@ -261,7 +261,7 @@ const deleteMusic = async (req, res) => {
 };
 
 // POST add music to favorites
-const addToFavorites = async (req, res) => {
+exports.addToFavorites = async (req, res) => {
   try {
     const { id: musicId } = req.params;
     const userId = req.user._id;
@@ -306,7 +306,7 @@ const addToFavorites = async (req, res) => {
 };
 
 // DELETE remove music from favorites
-const removeFromFavorites = async (req, res) => {
+exports.removeFromFavorites = async (req, res) => {
   try {
     const { id: musicId } = req.params;
     const userId = req.user._id;
@@ -335,7 +335,7 @@ const removeFromFavorites = async (req, res) => {
 };
 
 // GET user's favorite music
-const getFavorites = async (req, res) => {
+exports.getFavorites = async (req, res) => {
   try {
     const userId = req.user._id;
     const { category } = req.query;
@@ -371,7 +371,7 @@ const getFavorites = async (req, res) => {
 };
 
 // GET music categories with counts
-const getMusicCategories = async (req, res) => {
+exports.getMusicCategories = async (req, res) => {
   try {
     const categories = await Music.aggregate([
       { $match: { isActive: true } },
@@ -391,18 +391,4 @@ const getMusicCategories = async (req, res) => {
       error: error.message
     });
   }
-};
-
-module.exports = {
-  getMusicByCategory,
-  getAllMusic,
-  getMusicById,
-  createMusic,
-  updateMusic,
-  incrementPlayCount,
-  deleteMusic,
-  addToFavorites,
-  removeFromFavorites,
-  getFavorites,
-  getMusicCategories
 };
