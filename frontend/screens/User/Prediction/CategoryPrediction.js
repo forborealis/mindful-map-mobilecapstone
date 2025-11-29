@@ -159,12 +159,42 @@ const CategoryPrediction = ({ navigation, route }) => {
     return emojiMap[emotion.toLowerCase()] || '😐';
   };
 
+  const getShortMonthName = (dateString) => {
+    if (!dateString || dateString === 'No data available') return dateString;
+    
+    const monthMap = {
+      'January': 'Jan',
+      'February': 'Feb',
+      'March': 'Mar',
+      'April': 'Apr',
+      'May': 'May',
+      'June': 'Jun',
+      'July': 'Jul',
+      'August': 'Aug',
+      'September': 'Sep',
+      'October': 'Oct',
+      'November': 'Nov',
+      'December': 'Dec'
+    };
+    
+    let result = dateString;
+    Object.keys(monthMap).forEach(month => {
+      result = result.replace(month, monthMap[month]);
+    });
+    return result;
+  };
+
   const getActivityDisplayName = (activityId) => {
     const activityMap = {
       // Activity category
+      'commute': 'Commute',
+      'exam': 'Exam',
+      'homework': 'Homework',
       'study': 'Study',
+      'project': 'Project',
       'read': 'Read',
       'extracurricular': 'Extracurricular Activities',
+      'household-chores': 'Household Chores',
       'relax': 'Relax',
       'watch-movie': 'Watch Movie',
       'listen-music': 'Listen to Music',
@@ -186,6 +216,7 @@ const CategoryPrediction = ({ navigation, route }) => {
       'jog': 'Jog',
       'walk': 'Walk',
       'exercise': 'Exercise',
+      'sports': 'Sports',
       'meditate': 'Meditate',
       'eat-healthy': 'Eat Healthy',
       'no-physical': 'No Physical Activity',
@@ -230,7 +261,7 @@ const CategoryPrediction = ({ navigation, route }) => {
                 )}
               </View>
               {dayData.date && dayData.date !== 'No data available' && (
-                <Text style={styles.dayDate}>{dayData.date}</Text>
+                <Text style={styles.dayDate}>{getShortMonthName(dayData.date)}</Text>
               )}
             </View>
             {dayData.prediction !== 'No data available' && (
