@@ -363,6 +363,14 @@ export default function ActivitiesStatistics({ route }) {
   });
   const [isDownloading, setIsDownloading] = useState(false);
 
+  // Check if data is loaded and not empty
+  const isDataReady = () => {
+    const totalCount = Object.values(breakdowns).reduce((sum, category) => {
+      return sum + category.reduce((catSum, item) => catSum + (item.count || 0), 0);
+    }, 0);
+    return totalCount > 0;
+  };
+
   // For header subtitle
   function getTypeLabel(type) {
     if (type === 'after') return 'After Emotion';
@@ -474,7 +482,7 @@ function getPeriodLabel(period) {
         {/* Download PDF Button */}
         <TouchableOpacity
           onPress={handleDownloadPDF}
-          disabled={isDownloading}
+          disabled={isDownloading || !isDataReady()}
           style={{
             alignSelf: 'flex-end',
             marginBottom: 16,
@@ -485,7 +493,7 @@ function getPeriodLabel(period) {
             flexDirection: 'row',
             alignItems: 'center',
             justifyContent: 'center',
-            opacity: isDownloading ? 0.6 : 1,
+            opacity: (isDownloading || !isDataReady()) ? 0.5 : 1,
             shadowColor: '#000',
             shadowOpacity: 0.1,
             shadowRadius: 4,
@@ -503,7 +511,7 @@ function getPeriodLabel(period) {
             fontSize: 14,
             color: '#fff',
           }}>
-            {isDownloading ? 'Exporting...' : 'Export PDF'}
+            {isDownloading ? 'Exporting...' : !isDataReady() ? 'Loading...' : 'Export PDF'}
           </Text>
         </TouchableOpacity>
       </View>

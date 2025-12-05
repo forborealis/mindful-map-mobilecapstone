@@ -292,14 +292,14 @@ export async function generateActivitiesStatisticsPDF(emotion, moodType, moodPer
             text-align: center;
           }
           .system-title {
-            font-size: 22px;
+            font-size: 18px;
             font-weight: bold;
             color: #55ad9b;
-            margin: 0 0 4px 0;
+            margin: 0 0 2px 0;
             letter-spacing: 0.5px;
           }
           .system-subtitle {
-            font-size: 15px;
+            font-size: 18px;
             font-weight: 600;
             color: #55ad9b;
             margin: 0;
