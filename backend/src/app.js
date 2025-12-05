@@ -22,6 +22,7 @@ const predictionRoutes = require('./routes/predictionRoutes');
 const musicRoutes = require('./routes/musicRoutes');
 const activityRoutes = require('./routes/activityRoutes');
 const notificationRoutes = require('./routes/notificationRoutes');
+const anovaRoutes = require('./routes/anovaRoutes');
 const { startMoodReminderJob } = require('./utils/moodReminder');
 const { startFrequentReminderJob } = require('./utils/frequentReminder');
 
@@ -32,6 +33,7 @@ app.use('/api/auth', authRoutes);
 app.use('/api', predictionRoutes);
 app.use('/api/music', musicRoutes);
 app.use('/api/activity', activityRoutes);
+app.use('/api/anova', anovaRoutes);
 
 app.get('/api/health', async (req, res) => {
   try {
