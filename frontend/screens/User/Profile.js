@@ -11,7 +11,7 @@ import {
   Modal
 } from 'react-native';
 import * as ImagePicker from 'expo-image-picker';
-import { SafeAreaView } from 'react-native-safe-area-context';
+
 import { Ionicons } from '@expo/vector-icons';
 import { authService } from '../../services/authService';
 import { moodDataService } from '../../services/moodDataService';
@@ -131,18 +131,31 @@ const Profile = () => {
 
     // Most frequent mood overall (both before and after emotions)
     const overallMoodCounts = {};
+    const overallMoodLatestInfo = {};
     logs.forEach(log => {
+      const logDate = new Date(log.selectedDate || log.date || log.createdAt);
       // Count before emotions
       if (log.beforeEmotion) {
         overallMoodCounts[log.beforeEmotion] = (overallMoodCounts[log.beforeEmotion] || 0) + 1;
+        if (!overallMoodLatestInfo[log.beforeEmotion] || logDate > overallMoodLatestInfo[log.beforeEmotion].date) {
+          overallMoodLatestInfo[log.beforeEmotion] = { date: logDate, type: 'before', log };
+        } else if (logDate.getTime() === overallMoodLatestInfo[log.beforeEmotion].date.getTime() && overallMoodLatestInfo[log.beforeEmotion].type === 'before') {
+          // Same date and both are before, keep the existing one
+        }
       }
       // Count after emotions
       if (log.afterEmotion) {
         overallMoodCounts[log.afterEmotion] = (overallMoodCounts[log.afterEmotion] || 0) + 1;
+        if (!overallMoodLatestInfo[log.afterEmotion] || logDate > overallMoodLatestInfo[log.afterEmotion].date) {
+          overallMoodLatestInfo[log.afterEmotion] = { date: logDate, type: 'after', log };
+        } else if (logDate.getTime() === overallMoodLatestInfo[log.afterEmotion].date.getTime() && overallMoodLatestInfo[log.afterEmotion].type === 'before') {
+          // Same date but after emotion is more recent in the day, prefer after
+          overallMoodLatestInfo[log.afterEmotion] = { date: logDate, type: 'after', log };
+        }
       }
     });
 
-    const mostFrequentMoodOverall = getMostFrequentMood(overallMoodCounts);
+    const mostFrequentMoodOverall = getMostFrequentMood(overallMoodCounts, overallMoodLatestInfo);
 
     // Most frequent mood this week (both before and after emotions)
     const now = new Date();
@@ -153,18 +166,31 @@ const Profile = () => {
     });
 
     const weeklyMoodCounts = {};
+    const weeklyMoodLatestInfo = {};
     weeklyLogs.forEach(log => {
+      const logDate = new Date(log.selectedDate || log.date || log.createdAt);
       // Count before emotions
       if (log.beforeEmotion) {
         weeklyMoodCounts[log.beforeEmotion] = (weeklyMoodCounts[log.beforeEmotion] || 0) + 1;
+        if (!weeklyMoodLatestInfo[log.beforeEmotion] || logDate > weeklyMoodLatestInfo[log.beforeEmotion].date) {
+          weeklyMoodLatestInfo[log.beforeEmotion] = { date: logDate, type: 'before', log };
+        } else if (logDate.getTime() === weeklyMoodLatestInfo[log.beforeEmotion].date.getTime() && weeklyMoodLatestInfo[log.beforeEmotion].type === 'before') {
+          // Same date and both are before, keep the existing one
+        }
       }
       // Count after emotions
       if (log.afterEmotion) {
         weeklyMoodCounts[log.afterEmotion] = (weeklyMoodCounts[log.afterEmotion] || 0) + 1;
+        if (!weeklyMoodLatestInfo[log.afterEmotion] || logDate > weeklyMoodLatestInfo[log.afterEmotion].date) {
+          weeklyMoodLatestInfo[log.afterEmotion] = { date: logDate, type: 'after', log };
+        } else if (logDate.getTime() === weeklyMoodLatestInfo[log.afterEmotion].date.getTime() && weeklyMoodLatestInfo[log.afterEmotion].type === 'before') {
+          // Same date but after emotion is more recent in the day, prefer after
+          weeklyMoodLatestInfo[log.afterEmotion] = { date: logDate, type: 'after', log };
+        }
       }
     });
 
-    const mostFrequentMoodWeekly = getMostFrequentMood(weeklyMoodCounts);
+    const mostFrequentMoodWeekly = getMostFrequentMood(weeklyMoodCounts, weeklyMoodLatestInfo);
 
     return {
       consecutiveDays,
@@ -223,11 +249,57 @@ const Profile = () => {
     return weekStart;
   };
 
-  const getMostFrequentMood = (moodCounts) => {
+  const getMostFrequentMood = (moodCounts, moodLatestInfo = {}) => {
     const entries = Object.entries(moodCounts);
     if (entries.length === 0) return { mood: '—', count: 0 };
     
-    const sorted = entries.sort((a, b) => b[1] - a[1]);
+    // Filter moods that appear at least twice
+    const validMoods = entries.filter(([mood, count]) => count >= 2);
+    
+    if (validMoods.length === 0) return { mood: '—', count: 0 };
+    
+    // Sort by count (descending), then by latest info for tie-breaking
+    const sorted = validMoods.sort((a, b) => {
+      if (b[1] !== a[1]) {
+        return b[1] - a[1]; // Sort by count descending
+      }
+      
+      // If counts are equal, apply tie-breaking logic
+      const moodA = a[0];
+      const moodB = b[0];
+      const infoA = moodLatestInfo[moodA];
+      const infoB = moodLatestInfo[moodB];
+      
+      if (!infoA || !infoB) {
+        return 0;
+      }
+      
+      const dateA = infoA.date;
+      const dateB = infoB.date;
+      
+      // Compare dates
+      if (dateB.getTime() !== dateA.getTime()) {
+        return dateB - dateA; // Sort by date descending (newest first)
+      }
+      
+      // Same date: if one is after and other is before, prefer after
+      if (infoA.type === 'after' && infoB.type === 'before') {
+        return -1; // A comes first (preferred)
+      }
+      if (infoA.type === 'before' && infoB.type === 'after') {
+        return 1; // B comes first (preferred)
+      }
+      
+      // Both same type, check if before and after are the same mood in the latest log
+      if (infoA.log && infoB.log && infoA.log === infoB.log) {
+        // Same log entry, prefer after emotion
+        if (infoA.type === 'after') return -1;
+        if (infoB.type === 'after') return 1;
+      }
+      
+      return 0;
+    });
+    
     return {
       mood: formatMoodName(sorted[0][0]),
       count: sorted[0][1]
@@ -432,7 +504,7 @@ const Profile = () => {
 
   if (loading) {
     return (
-      <SafeAreaView style={{ flex: 1, backgroundColor: colors.background }}>
+      <View style={{ flex: 1, backgroundColor: colors.background }}>
         <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
           <ActivityIndicator size="large" color={colors.primary} />
           <Text style={{ 
@@ -443,12 +515,12 @@ const Profile = () => {
             Loading profile...
           </Text>
         </View>
-      </SafeAreaView>
+      </View>
     );
   }
 
   return (
-    <SafeAreaView style={{ flex: 1, backgroundColor: colors.background }}>
+    <View style={{ flex: 1, backgroundColor: colors.background }}>
       <ScrollView 
         style={{ flex: 1 }}
         contentContainerStyle={{ padding: 20, paddingBottom: 40 }}
@@ -1066,7 +1138,7 @@ const Profile = () => {
           </View>
         </View>
       </Modal>
-    </SafeAreaView>
+    </View>
   );
 };
 

@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { View, Text, ScrollView, Dimensions, Image, TouchableOpacity } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
 import { PieChart } from 'react-native-chart-kit';
 import { useNavigation } from '@react-navigation/native';
 import { moodDataService } from '../../../services/moodDataService';
@@ -8,7 +9,7 @@ import { fonts } from '../../../utils/fonts/fonts';
 import activityImages from '../../../utils/images/activities';
 
 const screenWidth = Dimensions.get('window').width;
-const chartWidth = screenWidth * 0.78;
+const chartWidth = screenWidth * 0.80;
 
 const pieColors = [
   '#8FABD4', '#59AC77', '#FF714B', '#f7b40bff', '#F564A9',
@@ -167,7 +168,7 @@ function PieSection({ title, data, category }) {
       }}>
         <Text style={{
           fontFamily: fonts.bold,
-          fontSize: 24,
+          fontSize: 20,
           color: categoryColors[title] || colors.primary,
           letterSpacing: 1,
           textShadowColor: '#e5e7eb',
@@ -190,7 +191,7 @@ function PieSection({ title, data, category }) {
         >
           <Text style={{
             fontFamily: fonts.bold,
-            fontSize: 15,
+            fontSize: 13,
             color: categoryColors[title] || colors.primary,
             letterSpacing: 0.5,
           }}>
@@ -254,7 +255,7 @@ function PieSection({ title, data, category }) {
       ) : (
         <Text style={{
           fontFamily: fonts.medium,
-          fontSize: 16,
+          fontSize: 14,
           color: colors.text,
           marginTop: 18,
         }}>
@@ -280,7 +281,7 @@ function PieSection({ title, data, category }) {
       }}>
         <Text style={{
           fontFamily: fonts.bold,
-          fontSize: 19,
+          fontSize: 16,
           color: '#222',
           textAlign: 'center',
         }}>
@@ -325,7 +326,7 @@ function PieSection({ title, data, category }) {
               )}
               <Text style={{
                 fontFamily: fonts.semiBold,
-                fontSize: 17,
+                fontSize: 15,
                 color: colors.primary,
                 flexShrink: 1,
                 textShadowColor: '#e5e7eb',
@@ -337,7 +338,7 @@ function PieSection({ title, data, category }) {
             </View>
             <Text style={{
               fontFamily: fonts.bold,
-              fontSize: 17,
+              fontSize: 14,
               color: colors.primary,
               marginLeft: 14,
             }}>
@@ -385,93 +386,76 @@ function getPeriodLabel(period) {
   }, [mood, type, period]);
 
   return (
-    <ScrollView style={{
-      flex: 1,
-      backgroundColor: '#fcfcfcff',
-      paddingTop: 0,
-    }}>
-      {/* Web-style header */}
-      <View style={{
-        width: '100%',
-        alignItems: 'flex-start',
-        paddingTop: 28,
-        paddingBottom: 18,
-        paddingHorizontal: 18,
-        backgroundColor: '#f6fdff',
-        borderBottomWidth: 0,
-        marginBottom: 10,
-      }}>
-        <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 2 }}>
-  <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 2 }}>
-    <View
-      style={{
-        borderRadius: 999,
-        paddingHorizontal: 20,
-        paddingVertical: 8,
-        marginRight: 16,
-        backgroundColor: colors.primary, // or any color you want
-        shadowColor: '#000',
-        shadowOpacity: 0.10,
-        shadowRadius: 6,
-        shadowOffset: { width: 0, height: 2 },
-        elevation: 3,
-      }}
-    >
-      <TouchableOpacity
-        onPress={() => navigation.goBack()}
-        style={{ flexDirection: 'row', alignItems: 'center' }}
-        activeOpacity={0.7}
+    <View style={{ flex: 1, backgroundColor: '#fcfcfcff' }}>
+      {/* Fixed Header */}
+      <View
+        style={{
+          position: 'absolute',
+          top: 0,
+          left: 0,
+          right: 0,
+          paddingTop: 40,
+          paddingBottom: 20,
+          paddingHorizontal: 16,
+          height: 90,
+          backgroundColor: '#fcfcfcff',
+          flexDirection: 'row',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          zIndex: 101,
+          elevation: 8,
+          shadowColor: '#000',
+          shadowOpacity: 0.1,
+          shadowRadius: 4,
+          shadowOffset: { width: 0, height: 2 },
+        }}
       >
-        <Text
+        <TouchableOpacity
+          onPress={() => navigation.goBack()}
+          hitSlop={{ top: 16, bottom: 16, left: 16, right: 16 }}
           style={{
-            fontSize: 18,
-            color: '#fff',
-            fontFamily: fonts.semiBold,
-            marginRight: 6,
+            backgroundColor: colors.primary,
+            borderRadius: 999,
+            padding: 10,
+            width: 44,
+            height: 44,
+            justifyContent: 'center',
+            alignItems: 'center',
           }}
         >
-          ←
+          <Ionicons name="arrow-back" size={22} color="#fff" />
+        </TouchableOpacity>
+        
+        <Text style={{
+          fontFamily: fonts.bold,
+          fontSize: 18,
+          color: colors.primary,
+          flex: 1,
+          marginLeft: 16,
+          textAlign: 'left',
+        }}>
+          {mood.charAt(0).toUpperCase() + mood.slice(1)}
         </Text>
-        <Text
-          style={{
-            fontSize: 18,
-            color: '#fff',
-            fontFamily: fonts.semiBold,
-          }}
-        >
-          Back
-        </Text>
-      </TouchableOpacity>
-  </View>
-  <Text style={{
-    fontFamily: fonts.bold,
-    fontSize: 25,
-    color: colors.primary,
-    textAlign: 'left',
-    marginBottom: 0,
-    marginRight: 12,
-    letterSpacing: 1.5,
-    textShadowColor: '#e5e7eb',
-    textShadowOffset: { width: 1, height: 1 },
-    textShadowRadius: 2,
-  }}>
-    {mood.charAt(0).toUpperCase() + mood.slice(1)}
-  </Text>
-</View>
-        </View>
+
         <Text style={{
           fontFamily: fonts.medium,
-          fontSize: 18,
-          color: '#6b7280',
-          marginLeft: 4,
-          marginTop: 2,
+          fontSize: 12,
+          color: colors.text,
+          opacity: 0.8,
+          textAlign: 'right',
         }}>
           {getTypeLabel(type)} · {getPeriodLabel(period)}
         </Text>
       </View>
+
+    <ScrollView style={{
+      flex: 1,
+      backgroundColor: '#fcfcfcff',
+    }}>
       <View style={{
         alignItems: 'center',
-        paddingBottom: 36,
+        paddingTop: 120,
+        paddingBottom: 20,
       }}>
         <PieSection title="Activity" data={breakdowns.Activity} category="Activity" />
         <PieSection title="Social" data={breakdowns.Social} category="Social" />
@@ -494,7 +478,7 @@ function getPeriodLabel(period) {
           }}>
             <Text style={{
               fontFamily: fonts.medium,
-              fontSize: 16,
+              fontSize: 14,
               color: colors.text,
               textAlign: 'center',
             }}>
@@ -504,5 +488,6 @@ function getPeriodLabel(period) {
         )}
       </View>
     </ScrollView>
+    </View>
   );
 }

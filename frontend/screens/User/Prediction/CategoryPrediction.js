@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import {
   View,
   Text,
@@ -8,6 +8,7 @@ import {
   StyleSheet,
   Dimensions,
   TouchableOpacity,
+  Animated,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import Toast from 'react-native-toast-message';
@@ -17,20 +18,34 @@ import { fonts } from '../../../utils/fonts/fonts';
 
 const { width } = Dimensions.get('window');
 
+const daysOfWeek = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
+
+const categoryInfo = {
+  activity: { name: 'Activity', icon: 'fitness', color: '#FF6B6B' },
+  social: { name: 'Social', icon: 'people', color: '#4ECDC4' },
+  health: { name: 'Health', icon: 'heart', color: '#45B7D1' },
+  sleep: { name: 'Sleep', icon: 'moon', color: '#96CEB4' },
+};
+
 const CategoryPrediction = ({ navigation, route }) => {
   const { category } = route.params;
   const [loading, setLoading] = useState(false);
   const [predictions, setPredictions] = useState(null);
   const [dateRange, setDateRange] = useState(null);
+  const scrollViewRef = useRef(null);
+  const dayCardRefs = useRef({});
+  const scaleAnim = useRef(new Animated.Value(1)).current;
 
-  const categoryInfo = {
-    activity: { name: 'Activity', icon: 'fitness', color: '#FF6B6B' },
-    social: { name: 'Social', icon: 'people', color: '#4ECDC4' },
-    health: { name: 'Health', icon: 'heart', color: '#45B7D1' },
-    sleep: { name: 'Sleep', icon: 'moon', color: '#96CEB4' },
+  // Get today's day of week (0 = Sunday, 1 = Monday, etc.)
+  const getTodayDayName = () => {
+    const today = new Date();
+    const dayIndex = today.getDay();
+    // Convert Sunday (0) to end of week format
+    const adjustedIndex = dayIndex === 0 ? 6 : dayIndex - 1;
+    return daysOfWeek[adjustedIndex];
   };
 
-  const daysOfWeek = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
+  const [todayDayName] = useState(getTodayDayName());
 
   const emotionColors = {
     // Negative emotions
@@ -66,6 +81,11 @@ const CategoryPrediction = ({ navigation, route }) => {
           text2: `${categoryInfo[category].name} prediction is ready!`,
           position: 'top',
         });
+        
+        // Schedule scroll and animation to happen after render
+        setTimeout(() => {
+          scrollToTodayAndAnimate();
+        }, 300);
       } else {
         Alert.alert('Error', response.message || 'Failed to generate prediction');
         navigation.goBack();
@@ -76,6 +96,37 @@ const CategoryPrediction = ({ navigation, route }) => {
       navigation.goBack();
     } finally {
       setLoading(false);
+    }
+  };
+
+  const scrollToTodayAndAnimate = () => {
+    if (dayCardRefs.current[todayDayName] && scrollViewRef.current) {
+      dayCardRefs.current[todayDayName].measureLayout(
+        scrollViewRef.current,
+        (x, y) => {
+          scrollViewRef.current?.scrollTo({
+            y: y - 100,
+            animated: true,
+          });
+          
+          // Trigger zoom animation
+          Animated.sequence([
+            Animated.timing(scaleAnim, {
+              toValue: 1.05,
+              duration: 300,
+              useNativeDriver: true,
+            }),
+            Animated.timing(scaleAnim, {
+              toValue: 1,
+              duration: 300,
+              useNativeDriver: true,
+            }),
+          ]).start();
+        },
+        (error) => {
+          console.warn('Error measuring layout:', error);
+        }
+      );
     }
   };
 
@@ -108,12 +159,42 @@ const CategoryPrediction = ({ navigation, route }) => {
     return emojiMap[emotion.toLowerCase()] || '😐';
   };
 
+  const getShortMonthName = (dateString) => {
+    if (!dateString || dateString === 'No data available') return dateString;
+    
+    const monthMap = {
+      'January': 'Jan',
+      'February': 'Feb',
+      'March': 'Mar',
+      'April': 'Apr',
+      'May': 'May',
+      'June': 'Jun',
+      'July': 'Jul',
+      'August': 'Aug',
+      'September': 'Sep',
+      'October': 'Oct',
+      'November': 'Nov',
+      'December': 'Dec'
+    };
+    
+    let result = dateString;
+    Object.keys(monthMap).forEach(month => {
+      result = result.replace(month, monthMap[month]);
+    });
+    return result;
+  };
+
   const getActivityDisplayName = (activityId) => {
     const activityMap = {
       // Activity category
+      'commute': 'Commute',
+      'exam': 'Exam',
+      'homework': 'Homework',
       'study': 'Study',
+      'project': 'Project',
       'read': 'Read',
       'extracurricular': 'Extracurricular Activities',
+      'household-chores': 'Household Chores',
       'relax': 'Relax',
       'watch-movie': 'Watch Movie',
       'listen-music': 'Listen to Music',
@@ -135,6 +216,7 @@ const CategoryPrediction = ({ navigation, route }) => {
       'jog': 'Jog',
       'walk': 'Walk',
       'exercise': 'Exercise',
+      'sports': 'Sports',
       'meditate': 'Meditate',
       'eat-healthy': 'Eat Healthy',
       'no-physical': 'No Physical Activity',
@@ -150,88 +232,109 @@ const CategoryPrediction = ({ navigation, route }) => {
 
   const renderDayCard = (day) => {
     const dayData = predictions[day];
+    const isToday = day === todayDayName;
     
     if (!dayData) return null;
 
     return (
-      <View key={day} style={styles.dayCard}>
-        <View style={styles.dayHeader}>
-          <View style={styles.dayTitleContainer}>
-            <Text style={styles.dayTitle}>{day}</Text>
-            {dayData.date && dayData.date !== 'No data available' && (
-              <Text style={styles.dayDate}>{dayData.date}</Text>
+      <Animated.View
+        key={day}
+        ref={(ref) => {
+          if (ref) dayCardRefs.current[day] = ref;
+        }}
+        style={[
+          isToday && { transform: [{ scale: scaleAnim }] }
+        ]}
+      >
+        <View style={[
+          styles.dayCard,
+          isToday && styles.todayCardHighlight,
+        ]}>
+          <View style={styles.dayHeader}>
+            <View style={styles.dayTitleContainer}>
+              <View style={styles.dayLabelRow}>
+                <Text style={styles.dayTitle}>{day}</Text>
+                {isToday && (
+                  <View style={styles.todayBadge}>
+                    <Text style={styles.todayBadgeText}>Today</Text>
+                  </View>
+                )}
+              </View>
+              {dayData.date && dayData.date !== 'No data available' && (
+                <Text style={styles.dayDate}>{getShortMonthName(dayData.date)}</Text>
+              )}
+            </View>
+            {dayData.prediction !== 'No data available' && (
+              <View style={styles.confidenceBadge}>
+                <Text style={styles.confidenceText}>
+                  {(dayData.confidence * 100).toFixed(1)}%
+                </Text>
+              </View>
             )}
           </View>
-          {dayData.prediction !== 'No data available' && (
-            <View style={styles.confidenceBadge}>
-              <Text style={styles.confidenceText}>
-                {(dayData.confidence * 100).toFixed(1)}%
-              </Text>
+
+          {dayData.prediction === 'No data available' ? (
+            <View style={styles.noDataContainer}>
+              <Ionicons name="information-circle" size={24} color={colors.textSecondary} />
+              <Text style={styles.noDataText}>No data for this day</Text>
+            </View>
+          ) : (
+            <View style={styles.predictionContent}>
+              {/* Main Prediction */}
+              <View style={styles.mainPrediction}>
+                <Text style={styles.emotionEmoji}>{getEmotionEmoji(dayData.prediction)}</Text>
+                <Text style={styles.emotionText}>{dayData.prediction}</Text>
+              </View>
+
+              {/* Valence and Activity */}
+              <View style={styles.metricsContainer}>
+                <View style={styles.metricItem}>
+                  <Text style={styles.metricLabel}>Valence:</Text>
+                  <Text style={styles.metricValue}>
+                    {getValenceLabel(dayData.valence_avg)}
+                  </Text>
+                </View>
+                <View style={styles.metricItem}>
+                  <Text style={styles.metricLabel}>Likely Cause:</Text>
+                  <Text style={styles.metricValue}>
+                    {category === 'sleep' 
+                      ? `${dayData.activity || 'Unknown'} hours of sleep`
+                      : getActivityDisplayName(dayData.activity)
+                    }
+                  </Text>
+                </View>
+              </View>
+
+              {/* Emotion Breakdown */}
+              <View style={styles.emotionBreakdown}>
+                <Text style={styles.breakdownTitle}>Emotion Probabilities:</Text>
+                <View style={styles.emotionsList}>
+                  {Object.entries(dayData.emotion_breakdown || {})
+                    .filter(([_, probability]) => probability > 0)
+                    .sort(([_, a], [__, b]) => b - a)
+                    .slice(0, 3)
+                    .map(([emotion, probability]) => (
+                      <View key={emotion} style={styles.emotionItem}>
+                        <View style={[
+                          styles.emotionColorDot,
+                          { 
+                            backgroundColor: categoryInfo[category].color,
+                            opacity: emotion.toLowerCase() === dayData.prediction.toLowerCase() ? 1 : 0.6
+                          }
+                        ]} />
+                        <Text style={styles.emotionName}>{emotion}</Text>
+                        <Text style={styles.emotionProbability}>
+                          {(probability * 100).toFixed(1)}%
+                        </Text>
+                      </View>
+                    ))
+                  }
+                </View>
+              </View>
             </View>
           )}
         </View>
-
-        {dayData.prediction === 'No data available' ? (
-          <View style={styles.noDataContainer}>
-            <Ionicons name="information-circle" size={24} color={colors.textSecondary} />
-            <Text style={styles.noDataText}>No data for this day</Text>
-          </View>
-        ) : (
-          <View style={styles.predictionContent}>
-            {/* Main Prediction */}
-            <View style={styles.mainPrediction}>
-              <Text style={styles.emotionEmoji}>{getEmotionEmoji(dayData.prediction)}</Text>
-              <Text style={styles.emotionText}>{dayData.prediction}</Text>
-            </View>
-
-            {/* Valence and Activity */}
-            <View style={styles.metricsContainer}>
-              <View style={styles.metricItem}>
-                <Text style={styles.metricLabel}>Valence:</Text>
-                <Text style={styles.metricValue}>
-                  {getValenceLabel(dayData.valence_avg)}
-                </Text>
-              </View>
-              <View style={styles.metricItem}>
-                <Text style={styles.metricLabel}>Likely Cause:</Text>
-                <Text style={styles.metricValue}>
-                  {category === 'sleep' 
-                    ? `${dayData.activity || 'Unknown'} hours of sleep`
-                    : getActivityDisplayName(dayData.activity)
-                  }
-                </Text>
-              </View>
-            </View>
-
-            {/* Emotion Breakdown */}
-            <View style={styles.emotionBreakdown}>
-              <Text style={styles.breakdownTitle}>Emotion Probabilities:</Text>
-              <View style={styles.emotionsList}>
-                {Object.entries(dayData.emotion_breakdown || {})
-                  .filter(([_, probability]) => probability > 0)
-                  .sort(([_, a], [__, b]) => b - a)
-                  .slice(0, 3)
-                  .map(([emotion, probability]) => (
-                    <View key={emotion} style={styles.emotionItem}>
-                      <View style={[
-                        styles.emotionColorDot,
-                        { 
-                          backgroundColor: categoryInfo[category].color,
-                          opacity: emotion.toLowerCase() === dayData.prediction.toLowerCase() ? 1 : 0.6
-                        }
-                      ]} />
-                      <Text style={styles.emotionName}>{emotion}</Text>
-                      <Text style={styles.emotionProbability}>
-                        {(probability * 100).toFixed(1)}%
-                      </Text>
-                    </View>
-                  ))
-                }
-              </View>
-            </View>
-          </View>
-        )}
-      </View>
+      </Animated.View>
     );
   };
 
@@ -280,7 +383,7 @@ const CategoryPrediction = ({ navigation, route }) => {
         </View>
       </View>
 
-      <ScrollView style={styles.scrollContent} showsVerticalScrollIndicator={false}>
+      <ScrollView ref={scrollViewRef} style={styles.scrollContent} showsVerticalScrollIndicator={false}>
         {renderDataRangeInfo()}
         
         <View style={styles.predictionSection}>
@@ -416,6 +519,31 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.1,
     shadowRadius: 4,
     elevation: 3,
+  },
+  todayCardHighlight: {
+    borderWidth: 2,
+    borderColor: colors.primary,
+    shadowColor: colors.primary,
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 8,
+    elevation: 8,
+  },
+  dayLabelRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  todayBadge: {
+    backgroundColor: colors.primary,
+    borderRadius: 8,
+    paddingHorizontal: 8,
+    paddingVertical: 2,
+    marginLeft: 12,
+  },
+  todayBadgeText: {
+    fontSize: 11,
+    fontFamily: fonts.bold,
+    color: colors.white,
   },
   dayHeader: {
     flexDirection: 'row',

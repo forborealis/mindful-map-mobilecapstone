@@ -110,7 +110,11 @@ export default function DailyAnova() {
   const getDayLabel = () => {
     const today = new Date().toISOString().split('T')[0];
     if (date === today) return 'Today';
-    return getDateString(date);
+    const yesterday = new Date();
+    yesterday.setDate(yesterday.getDate() - 1);
+    const yesterdayStr = yesterday.toISOString().split('T')[0];
+    if (date === yesterdayStr) return 'Yesterday';
+    return new Date(date).toLocaleDateString('en-US', { weekday: 'long' });
   };
 
   // Build top lists from groupMeans/groupCounts (fallback to arrays if already present)
@@ -221,7 +225,7 @@ export default function DailyAnova() {
     if (!data) {
       return (
         <View style={{ alignItems: 'center', justifyContent: 'center', minHeight: 60 }}>
-          <Text style={{ color: '#888', fontSize: 16, fontFamily: fonts.medium, textAlign: 'center' }}>
+          <Text style={{ color: '#888', fontSize: 14, fontFamily: fonts.medium, textAlign: 'center' }}>
             No data for this category
           </Text>
         </View>
@@ -252,7 +256,16 @@ export default function DailyAnova() {
           <View style={{ marginBottom: 12 }}>
             <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 6 }}>
               <MaterialIcons name="trending-up" size={20} color={POSITIVE_COLOR} />
+<<<<<<< HEAD
               <Text style={{ fontFamily: fonts.semiBold, fontSize: 16, color: POSITIVE_COLOR, marginLeft: 6 }}>
+=======
+              <Text style={{
+                fontFamily: fonts.semiBold,
+                fontSize: 14,
+                color: POSITIVE_COLOR,
+                marginLeft: 6,
+              }}>
+>>>>>>> 9ca5e2fc2c33ad0797d04afc8c438e1a7f1a06d3
                 Habits that boosted your mood
               </Text>
             </View>
@@ -274,8 +287,17 @@ export default function DailyAnova() {
               >
                 <View style={{ marginRight: 10 }}>{getMoodIcon(item.moodScore)}</View>
                 <View style={{ flex: 1 }}>
+<<<<<<< HEAD
                   <Text style={{ fontSize: 15, color: '#272829', fontFamily: fonts.medium }}>
                     {(ACTIVITY_LABELS[item.activity] || formatText(item.activity))} improved your mood.
+=======
+                  <Text style={{
+                    fontSize: 14,
+                    color: '#272829',
+                    fontFamily: fonts.medium,
+                  }}>
+                    {getMoodMessage(item.activity, item.moodScore, idx)}
+>>>>>>> 9ca5e2fc2c33ad0797d04afc8c438e1a7f1a06d3
                   </Text>
                 </View>
                 <View style={{ backgroundColor: POSITIVE_COLOR, borderRadius: 999, paddingHorizontal: 14, paddingVertical: 6, marginLeft: 8 }}>
@@ -292,7 +314,16 @@ export default function DailyAnova() {
           <View>
             <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 6 }}>
               <MaterialIcons name="trending-down" size={20} color={NEGATIVE_COLOR} />
+<<<<<<< HEAD
               <Text style={{ fontFamily: fonts.semiBold, fontSize: 16, color: NEGATIVE_COLOR, marginLeft: 6 }}>
+=======
+              <Text style={{
+                fontFamily: fonts.semiBold,
+                fontSize: 14,
+                color: NEGATIVE_COLOR,
+                marginLeft: 6,
+              }}>
+>>>>>>> 9ca5e2fc2c33ad0797d04afc8c438e1a7f1a06d3
                 Habits that lowered your mood
               </Text>
             </View>
@@ -314,8 +345,17 @@ export default function DailyAnova() {
               >
                 <View style={{ marginRight: 10 }}>{getMoodIcon(item.moodScore)}</View>
                 <View style={{ flex: 1 }}>
+<<<<<<< HEAD
                   <Text style={{ fontSize: 15, color: '#272829', fontFamily: fonts.medium }}>
                     {(ACTIVITY_LABELS[item.activity] || formatText(item.activity))} lowered your mood.
+=======
+                  <Text style={{
+                    fontSize: 14,
+                    color: '#272829',
+                    fontFamily: fonts.medium,
+                  }}>
+                    {getMoodMessage(item.activity, item.moodScore, idx)}
+>>>>>>> 9ca5e2fc2c33ad0797d04afc8c438e1a7f1a06d3
                   </Text>
                 </View>
                 <View style={{ backgroundColor: NEGATIVE_COLOR, borderRadius: 999, paddingHorizontal: 14, paddingVertical: 6, marginLeft: 8 }}>
@@ -360,6 +400,7 @@ export default function DailyAnova() {
                       {formatText(sleep.quality)}
                     </Text>
                   </View>
+<<<<<<< HEAD
                   <View style={{ flexDirection: 'row', alignItems: 'center', width: '100%', justifyContent: 'center' }}>
                     <View style={{ marginRight: 8 }}>{getMoodIcon(sleep.moodScore)}</View>
                     <Text style={{ fontSize: 15, color: '#272829', flex: 1, textAlign: 'center', marginHorizontal: 8, fontFamily: fonts.medium }}>
@@ -368,6 +409,42 @@ export default function DailyAnova() {
                     <View style={{ backgroundColor: sleep.moodScore > 0 ? POSITIVE_COLOR : sleep.moodScore < 0 ? NEGATIVE_COLOR : '#f7b801', borderRadius: 999, paddingHorizontal: 14, paddingVertical: 6, marginLeft: 8 }}>
                       <Text style={{ color: '#fff', fontFamily: fonts.bold, fontSize: 15 }}>
                         {`${Math.abs(sleep.moodScore)}%`}
+=======
+                  <View style={{
+                    flexDirection: 'row',
+                    alignItems: 'center',
+                    width: '100%',
+                    justifyContent: 'flex-start',
+                  }}>
+                    <View style={{ marginRight: 8 }}>{getMoodIcon(sleepMoodScore)}</View>
+                    <Text style={{
+                      fontSize: 14,
+                      color: '#272829',
+                      flex: 1,
+                      textAlign: 'left',
+                      marginHorizontal: 0,
+                      fontFamily: fonts.medium,
+                    }}>
+                      {getSleepMessage(sleepHours, sleepMoodScore)}
+                    </Text>
+                    <View style={{
+                      backgroundColor: sleepMoodScore > 0
+                        ? POSITIVE_COLOR
+                        : sleepMoodScore < 0
+                          ? NEGATIVE_COLOR
+                          : '#f7b801',
+                      borderRadius: 999,
+                      paddingHorizontal: 12,
+                      paddingVertical: 6,
+                      marginLeft: 8,
+                    }}>
+                      <Text style={{
+                        color: '#fff',
+                        fontFamily: fonts.bold,
+                        fontSize: 13,
+                      }}>
+                        {`${Math.abs(sleepMoodScore)}%`}
+>>>>>>> 9ca5e2fc2c33ad0797d04afc8c438e1a7f1a06d3
                       </Text>
                     </View>
                   </View>
@@ -376,7 +453,7 @@ export default function DailyAnova() {
             </View>
           ) : (
             <View style={{ alignItems: 'center', justifyContent: 'center', minHeight: 80, width: '100%' }}>
-              <Text style={{ color: '#888', fontSize: 16, fontFamily: fonts.medium, textAlign: 'center' }}>
+              <Text style={{ color: '#888', fontSize: 14, fontFamily: fonts.medium, textAlign: 'center' }}>
                 No sleep data recorded
               </Text>
             </View>
@@ -425,6 +502,7 @@ export default function DailyAnova() {
 
   return (
     <View style={{ flex: 1, backgroundColor: colors.primary }}>
+<<<<<<< HEAD
       <ScrollView style={{ flex: 1 }}>
         {/* Back */}
         <View style={{ position: 'absolute', top: 38, left: 18, zIndex: 100, elevation: 10 }} pointerEvents="box-none">
@@ -450,6 +528,67 @@ export default function DailyAnova() {
           shadowRadius: 6,
         }}>
           <TouchableOpacity onPress={handlePrev} style={{ padding: 10, marginRight: 18 }}>
+=======
+      {/* Fixed Header with Back Button */}
+      <View
+        style={{
+          position: 'absolute',
+          top: 0,
+          left: 0,
+          right: 0,
+          paddingTop: 30,
+          height: 56 + 18,
+          backgroundColor: colors.primary,
+          flexDirection: 'row',
+          alignItems: 'center',
+          paddingHorizontal: 12,
+          zIndex: 101,
+          elevation: 8,
+          shadowColor: '#000',
+          shadowOpacity: 0.1,
+          shadowRadius: 4,
+          shadowOffset: { width: 0, height: 2 },
+        }}
+      >
+        <TouchableOpacity
+          onPress={() => navigation.goBack()}
+          hitSlop={{ top: 16, bottom: 16, left: 16, right: 16 }}
+        >
+          <Ionicons name="arrow-back" size={26} color="#222" />
+        </TouchableOpacity>
+      </View>
+
+      <ScrollView
+        style={{ flex: 1, marginTop: 74 }}
+        contentContainerStyle={{ paddingTop: 0 }}
+        keyboardShouldPersistTaps="handled"
+      >
+        {/* Date Navigation */}
+        <View
+          style={{
+            backgroundColor: '#fff',
+            marginTop: 0,
+            marginBottom: 24,
+            paddingVertical: 18,
+            paddingHorizontal: 12,
+            flexDirection: 'row',
+            alignItems: 'center',
+            justifyContent: 'center',
+            elevation: 2,
+            shadowColor: '#000',
+            shadowOpacity: 0.06,
+            shadowOffset: { width: 0, height: 2 },
+            shadowRadius: 6,
+          }}
+        >
+          <TouchableOpacity
+            onPress={handlePrev}
+            style={{
+              padding: 10,
+              marginRight: 18,
+            }}
+          >
+>>>>>>> 9ca5e2fc2c33ad0797d04afc8c438e1a7f1a06d3
             <Ionicons name="chevron-back" size={28} color={colors.primary} />
           </TouchableOpacity>
           <View style={{ alignItems: 'center', flex: 1 }}>
@@ -490,19 +629,39 @@ export default function DailyAnova() {
             >
               <View style={{
                 flexDirection: 'row',
-                alignItems: 'center',
+                alignItems: 'flex-start',
                 paddingVertical: 18,
                 paddingHorizontal: 16,
                 backgroundColor: '#95D2B3',
                 borderTopLeftRadius: 18,
                 borderTopRightRadius: 18,
               }}>
+<<<<<<< HEAD
                 <View>{cat.icon}</View>
                 <View style={{ marginLeft: 10 }}>
                   <Text style={{ fontFamily: fonts.semiBold, fontSize: 20, color: '#fff' }}>
                     {cat.title}
                   </Text>
                   <Text style={{ color: '#fff', opacity: 0.9, fontFamily: fonts.medium, fontSize: 14, marginTop: 2 }}>
+=======
+                <View style={{ marginTop: 2 }}>{cat.icon}</View>
+                <View style={{ marginLeft: 10, flex: 1 }}>
+                  <Text style={{
+                    fontFamily: fonts.semiBold,
+                    fontSize: 20,
+                    color: '#fff',
+                  }}>
+                    {cat.title}
+                  </Text>
+                  <Text style={{
+                    color: '#fff',
+                    opacity: 0.9,
+                    fontFamily: fonts.medium,
+                    fontSize: 14,
+                    marginTop: 2,
+                    flexWrap: 'wrap',
+                  }}>
+>>>>>>> 9ca5e2fc2c33ad0797d04afc8c438e1a7f1a06d3
                     {cat.header}
                   </Text>
                 </View>

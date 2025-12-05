@@ -9,16 +9,16 @@ import { colors } from '../../../utils/colors/colors';
 export default function StatisticsDashboard() {
   return (
     <ScrollView style={{ backgroundColor: colors.background }}>
-      <View style={{ marginBottom: 24 }}>
+      <View style={{ paddingTop: 16 }}>
         <Anova />
       </View>
-      <View style={{ marginBottom: 24 }}>
+      <View style={{ marginTop: 16 }}>
         <DetailedMoodAnalysis />
       </View>
-      <View style={{ marginBottom: 24 }}>
+      <View style={{ marginTop: 16 }}>
         <MoodCount />
       </View>
-      <View style={{ marginBottom: 24 }}>
+      <View style={{ marginTop: 16, paddingBottom: 30 }}>
         <SleepAnalysis />
       </View>
     </ScrollView>

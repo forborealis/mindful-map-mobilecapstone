@@ -220,17 +220,19 @@ export default function MoodCount() {
       <View
         style={{
           backgroundColor: '#fff',
-          borderRadius: 32,
+          borderRadius: 24,
           borderWidth: 1,
           borderColor: '#e5e7eb',
           width: mainContainerWidth,
-          paddingBottom: 22,
-          paddingTop: 12,
+          paddingBottom: 20,
+          paddingTop: 20,
+          marginHorizontal: 16,
+          marginBottom: 0,
           elevation: 6,
           shadowColor: '#000',
-          shadowOpacity: 0.09,
-          shadowRadius: 14,
-          shadowOffset: { width: 0, height: 3 },
+          shadowOpacity: 0.08,
+          shadowRadius: 12,
+          shadowOffset: { width: 0, height: 2 },
           alignSelf: 'center',
           alignItems: 'center',
         }}
@@ -240,17 +242,17 @@ export default function MoodCount() {
           style={{
             color: colors.primary,
             fontFamily: fonts.bold,
-            letterSpacing: 1,
-            fontSize: 24,
+            letterSpacing: 0.5,
+            fontSize: 22,
             textAlign: 'center',
-            marginBottom: 8,
+            marginBottom: 4,
           }}
         >
           Mood Analysis
         </Text>
 
-        {/* Toggle Buttons for Before/After (styled like SleepAnalysis) */}
-        <View style={{ flexDirection: 'row', justifyContent: 'center', marginBottom: 18 }}>
+        {/* Toggle Buttons for Before/After */}
+        <View style={{ flexDirection: 'row', justifyContent: 'center', marginBottom: 12 }}>
           <View style={{
             flexDirection: 'row',
             backgroundColor: '#f3f4f6',
@@ -264,8 +266,8 @@ export default function MoodCount() {
                 style={{
                   backgroundColor: type === opt ? '#6FC3B2' : 'transparent',
                   borderRadius: 999,
-                  paddingVertical: 8,
-                  paddingHorizontal: 24,
+                  paddingVertical: 6,
+                  paddingHorizontal: 20,
                   marginHorizontal: 2,
                   elevation: type === opt ? 2 : 0,
                 }}
@@ -273,7 +275,7 @@ export default function MoodCount() {
                 <Text style={{
                   color: type === opt ? '#fff' : colors.primary,
                   fontFamily: fonts.semiBold,
-                  fontSize: 16,
+                  fontSize: 13,
                   textAlign: 'center',
                 }}>
                   {opt === 'before' ? 'Before' : 'After'}
@@ -283,8 +285,8 @@ export default function MoodCount() {
           </View>
         </View>
 
-        {/* Toggle Buttons for Daily/Weekly/Monthly (styled like SleepAnalysis) */}
-        <View style={{ flexDirection: 'row', justifyContent: 'center', marginBottom: 18 }}>
+        {/* Toggle Buttons for Daily/Weekly/Monthly */}
+        <View style={{ flexDirection: 'row', justifyContent: 'center', marginBottom: 14 }}>
           <View style={{
             flexDirection: 'row',
             backgroundColor: '#f3f4f6',
@@ -298,8 +300,8 @@ export default function MoodCount() {
                 style={{
                   backgroundColor: period === opt ? '#6FC3B2' : 'transparent',
                   borderRadius: 999,
-                  paddingVertical: 8,
-                  paddingHorizontal: 24,
+                  paddingVertical: 6,
+                  paddingHorizontal: 16,
                   marginHorizontal: 2,
                   elevation: period === opt ? 2 : 0,
                 }}
@@ -307,7 +309,7 @@ export default function MoodCount() {
                 <Text style={{
                   color: period === opt ? '#fff' : colors.primary,
                   fontFamily: fonts.semiBold,
-                  fontSize: 16,
+                  fontSize: 13,
                   textAlign: 'center',
                 }}>
                   {opt === 'daily' ? 'Daily' : opt === 'week' ? 'Weekly' : 'Monthly'}
@@ -358,10 +360,10 @@ export default function MoodCount() {
             flexDirection: 'row',
             justifyContent: 'space-between',
             alignItems: 'center',
-            paddingHorizontal: 8,
+            paddingHorizontal: 12,
             paddingVertical: 12,
-            marginTop: 8,
-            marginBottom: 16,
+            marginTop: 10,
+            marginBottom: 14,
             backgroundColor: colors.secondary,
             borderRadius: 16,
             width: mainContainerWidth * 0.93,
@@ -373,34 +375,34 @@ export default function MoodCount() {
             <Text style={{ fontSize: 13, fontFamily: fonts.semiBold, color: colors.white, marginBottom: 2, textAlign: 'center' }}>
               {topMood || '—'}
             </Text>
-            <Text style={{ fontSize: 12, color: colors.text, fontFamily: fonts.regular, textAlign: 'center' }}>
+            <Text style={{ fontSize: 11, color: colors.text, fontFamily: fonts.regular, textAlign: 'center' }}>
               Top Mood
             </Text>
           </View>
           <View style={{ alignItems: 'center', flex: 1 }}>
-            <Text style={{ fontSize: 16, fontFamily: fonts.semiBold, color: colors.white, marginBottom: 2, textAlign: 'center' }}>
+            <Text style={{ fontSize: 15, fontFamily: fonts.semiBold, color: colors.white, marginBottom: 2, textAlign: 'center' }}>
               {total}
             </Text>
-            <Text style={{ fontSize: 12, color: colors.text, fontFamily: fonts.regular, textAlign: 'center' }}>
+            <Text style={{ fontSize: 11, color: colors.text, fontFamily: fonts.regular, textAlign: 'center' }}>
               Total Moods
             </Text>
           </View>
           <View style={{ alignItems: 'center', flex: 1 }}>
-            <Text style={{ fontSize: 16, fontFamily: fonts.semiBold, color: colors.white, marginBottom: 2, textAlign: 'center' }}>
+            <Text style={{ fontSize: 15, fontFamily: fonts.semiBold, color: colors.white, marginBottom: 2, textAlign: 'center' }}>
               {uniqueCount}
             </Text>
-            <Text style={{ fontSize: 12, color: colors.text, fontFamily: fonts.regular, textAlign: 'center' }}>
+            <Text style={{ fontSize: 11, color: colors.text, fontFamily: fonts.regular, textAlign: 'center' }}>
               Unique Moods
             </Text>
           </View>
         </View>
 
         {/* Mood Counts Grid */}
-        <View style={{ marginTop: 8, paddingHorizontal: 8, paddingBottom: 24, width: '100%' }}>
+        <View style={{ marginTop: 10, paddingHorizontal: 8, paddingBottom: 12, width: '100%' }}>
           {moodRows}
         </View>
         
-        {/* Info Text Above Mood Containers */}
+        {/* Info Text */}
         <Text
           style={{
             fontFamily: fonts.medium,
@@ -408,11 +410,11 @@ export default function MoodCount() {
             color: colors.text,
             opacity: 0.6,
             textAlign: 'center',
-            marginBottom: 8,
-            marginTop: 2,
+            marginBottom: 0,
+            marginTop: 0,
           }}
         >
-          Tap a mood container to view more details about each mood.
+          Tap a mood to view details
         </Text>
 
       </View>

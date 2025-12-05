@@ -519,42 +519,39 @@ const BreathingExercises = ({ navigation }) => {
         </View>
       </Modal>
 
-      <View style={{ paddingHorizontal: 20, paddingTop: 48, paddingBottom: 8, flexDirection: 'row', alignItems: 'center' }}>
+      <View style={{ paddingHorizontal: 16, paddingTop: 60, paddingBottom: 16, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
         <TouchableOpacity
           style={{
-            width: 42, height: 42, borderRadius: 24, backgroundColor: colors.surface,
+            width: 36, height: 36, borderRadius: 18, backgroundColor: colors.surface,
             justifyContent: 'center', alignItems: 'center', borderWidth: 1, borderColor: colors.border
           }}
           onPress={() => navigation.goBack()}
         >
-          <Ionicons name="arrow-back" size={24} color={colors.text} />
+          <Ionicons name="arrow-back" size={18} color={colors.text} />
         </TouchableOpacity>
-        <View style={{ flex: 1, alignItems: 'center' }}>
-          <Text style={{ fontSize: 27, fontFamily: fonts.bold, color: colors.text, textAlign: 'center', letterSpacing: 0.1 }}>
-            Breathing Exercises
-          </Text>
-          <View style={{ flexDirection: 'row', marginTop: 10, justifyContent: 'center' }}>
-            <TouchableOpacity
-              onPress={() => setShowInfo(true)}
-              style={{
-                width: 44, height: 44, borderRadius: 22, backgroundColor: colors.surface,
-                justifyContent: 'center', alignItems: 'center', marginHorizontal: 8, borderWidth: 1, borderColor: selectedTechnique.color + '66'
-              }}
-            >
-              <Ionicons name="information-circle" size={24} color={selectedTechnique.color} />
-            </TouchableOpacity>
-            <TouchableOpacity
-              onPress={() => setShowProgressModal(true)}
-              style={{
-                width: 44, height: 44, borderRadius: 22, backgroundColor: colors.surface,
-                justifyContent: 'center', alignItems: 'center', marginHorizontal: 8, borderWidth: 1, borderColor: colors.primary + '66'
-              }}
-            >
-              <Ionicons name="stats-chart" size={22} color={colors.primary} />
-            </TouchableOpacity>
-          </View>
+        <Text style={{ fontSize: 20, fontFamily: fonts.bold, color: colors.text, flex: 1, marginHorizontal: 12 }}>
+          Breathing Exercises
+        </Text>
+        <View style={{ flexDirection: 'row', gap: 6 }}>
+          <TouchableOpacity
+            onPress={() => setShowInfo(true)}
+            style={{
+              width: 36, height: 36, borderRadius: 24, backgroundColor: colors.surface,
+              justifyContent: 'center', alignItems: 'center', borderWidth: 1, borderColor: selectedTechnique.color + '66'
+            }}
+          >
+            <Ionicons name="information-circle" size={18} color={selectedTechnique.color} />
+          </TouchableOpacity>
+          <TouchableOpacity
+            onPress={() => setShowProgressModal(true)}
+            style={{
+              width: 36, height: 36, borderRadius: 18, backgroundColor: colors.surface,
+              justifyContent: 'center', alignItems: 'center', borderWidth: 1, borderColor: colors.primary + '66'
+            }}
+          >
+            <Ionicons name="stats-chart" size={18} color={colors.primary} />
+          </TouchableOpacity>
         </View>
-        <View style={{ width: 42 }} />
       </View>
 
       <ScrollView contentContainerStyle={{ padding: 20, paddingBottom: 50 }}>

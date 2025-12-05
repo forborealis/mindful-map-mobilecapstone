@@ -47,6 +47,12 @@ function formatWeekRange(start, end) {
   return `${start.toLocaleDateString('en-US', options)} - ${new Date(end - 1).toLocaleDateString('en-US', options)}, ${start.getFullYear()}`;
 }
 
+function getWeekdayRange(start, end) {
+  const startDay = start.toLocaleDateString(undefined, { weekday: 'short' });
+  const endDay = new Date(end - 1).toLocaleDateString(undefined, { weekday: 'short' });
+  return `${startDay} - ${endDay}`;
+}
+
 function formatText(text) {
   if (!text) return '';
   return text.replace(/[-_]/g, ' ').replace(/\b\w/g, (l) => l.toUpperCase());
@@ -299,21 +305,26 @@ const getComparisonInsights = () => {
 
   return (
     <View style={{ flex: 1, backgroundColor: colors.primary }}>
-
-      <ScrollView
-        style={{ flex: 1 }}
-        contentContainerStyle={{ paddingTop: 0 }}
-        keyboardShouldPersistTaps="handled"
-      >
+      {/* Fixed Header with Back Button */}
       <View
         style={{
           position: 'absolute',
-          top: 38,
-          left: 18,
-          zIndex: 100,
-          elevation: 10,
+          top: 0,
+          left: 0,
+          right: 0,
+          paddingTop: 30,
+          height: 56 + 18,
+          backgroundColor: colors.primary,
+          flexDirection: 'row',
+          alignItems: 'center',
+          paddingHorizontal: 12,
+          zIndex: 101,
+          elevation: 8,
+          shadowColor: '#000',
+          shadowOpacity: 0.1,
+          shadowRadius: 4,
+          shadowOffset: { width: 0, height: 2 },
         }}
-        pointerEvents="box-none"
       >
         <TouchableOpacity
           onPress={() => navigation.goBack()}
@@ -322,11 +333,18 @@ const getComparisonInsights = () => {
           <Ionicons name="arrow-back" size={26} color="#222" />
         </TouchableOpacity>
       </View>
+
+      <ScrollView
+        style={{ flex: 1, marginTop: 74 }}
+        contentContainerStyle={{ paddingTop: 0 }}
+        keyboardShouldPersistTaps="handled"
+      >
+      
         {/* Week Navigation */}
         <View
           style={{
             backgroundColor: '#fff',
-            marginTop: 74,
+            marginTop: 0,
             marginBottom: 24,
             paddingVertical: 18,
             paddingHorizontal: 12,
@@ -356,6 +374,46 @@ const getComparisonInsights = () => {
                 fontSize: 20,
                 color: colors.primary,
                 textAlign: 'center',
+              }}
+            >
+              {statistics?.weekStart && statistics?.weekEnd ? (() => {
+                const now = new Date();
+                const weekStart = new Date(statistics.weekStart);
+                const weekEnd = new Date(statistics.weekEnd);
+                
+                // Check if this week (Mon-Sun of current week)
+                const todayStart = new Date(now);
+                todayStart.setHours(0, 0, 0, 0);
+                const todayDay = todayStart.getDay();
+                const currentWeekStart = new Date(todayStart);
+                currentWeekStart.setDate(todayStart.getDate() - (todayDay === 0 ? 6 : todayDay - 1));
+                const currentWeekEnd = new Date(currentWeekStart);
+                currentWeekEnd.setDate(currentWeekStart.getDate() + 7);
+                
+                if (weekStart.getTime() === currentWeekStart.getTime()) {
+                  return 'This Week';
+                }
+                
+                // Check if last week
+                const lastWeekStart = new Date(currentWeekStart);
+                lastWeekStart.setDate(currentWeekStart.getDate() - 7);
+                const lastWeekEnd = new Date(lastWeekStart);
+                lastWeekEnd.setDate(lastWeekStart.getDate() + 7);
+                
+                if (weekStart.getTime() === lastWeekStart.getTime()) {
+                  return 'Last Week';
+                }
+                
+                return getWeekdayRange(new Date(statistics.weekStart), new Date(statistics.weekEnd));
+              })() : ''}
+            </Text>
+            <Text
+              style={{
+                fontFamily: fonts.medium,
+                fontSize: 15,
+                color: '#888',
+                textAlign: 'center',
+                marginTop: 2,
               }}
             >
               {statistics?.weekStart && statistics?.weekEnd

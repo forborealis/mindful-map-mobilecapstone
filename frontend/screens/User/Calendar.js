@@ -10,7 +10,7 @@ import {
   Image,
   Alert
 } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
+
 import { useNavigation, useFocusEffect } from '@react-navigation/native';
 import { fonts } from '../../utils/fonts/fonts';
 import { colors } from '../../utils/colors/colors';
@@ -477,7 +477,7 @@ export default function Calendar() {
 
   if (loading) {
     return (
-      <SafeAreaView style={{ flex: 1, backgroundColor: colors.background }}>
+      <View style={{ flex: 1, backgroundColor: colors.background }}>
         <StatusBar backgroundColor={colors.background} barStyle="dark-content" />
         <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
           <ActivityIndicator size="large" color={colors.primary} />
@@ -485,19 +485,19 @@ export default function Calendar() {
             Loading calendar...
           </Text>
         </View>
-      </SafeAreaView>
+      </View>
     );
   }
 
   return (
-    <SafeAreaView style={{ flex: 1, backgroundColor: colors.background }}>
+    <View style={{ flex: 1, backgroundColor: colors.background }}>
       <StatusBar backgroundColor={colors.background} barStyle="dark-content" />
       
       <ScrollView style={{ flex: 1 }} showsVerticalScrollIndicator={false}>
         {/* Header */}
         <View style={{ 
           backgroundColor: 'white', 
-          paddingVertical: 16, 
+          paddingVertical: 12, 
           shadowColor: '#000',
           shadowOffset: { width: 0, height: 2 },
           shadowOpacity: 0.1,
@@ -505,79 +505,82 @@ export default function Calendar() {
           elevation: 3
         }}>
           <View style={{ paddingHorizontal: 16 }}>
-            {/* Month navigation - centered */}
-            <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'center', marginBottom: 16 }}>
-              <TouchableOpacity 
-                onPress={handlePrevMonth}
-                style={{ padding: 12 }}
-              >
-                <Text style={{ fontSize: 24, color: colors.primary }}>‹</Text>
-              </TouchableOpacity>
-              <Text style={{ 
-                fontSize: 24, 
-                fontFamily: fonts.bold, 
-                color: colors.text,
-                marginHorizontal: 24,
-                textAlign: 'center'
-              }}>
-                {months[currentMonth]} {currentYear}
-              </Text>
-              <TouchableOpacity 
-                onPress={handleNextMonth}
-                style={{ padding: 12 }}
-              >
-                <Text style={{ fontSize: 24, color: colors.primary }}>›</Text>
-              </TouchableOpacity>
-            </View>
-
-            {/* Action buttons row */}
+            {/* Month navigation with streak and add button */}
             <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
-              {/* Quick entry button */}
+              {/* Quick entry button - plus icon */}
               <TouchableOpacity
                 onPress={() => navigation.navigate('ChooseCategory')}
                 style={{
                   backgroundColor: colors.primary,
-                  borderRadius: 16,
-                  paddingHorizontal: 16,
-                  paddingVertical: 8,
-                  shadowColor: colors.primary,
-                  shadowOffset: { width: 0, height: 2 },
-                  shadowOpacity: 0.3,
-                  shadowRadius: 4,
-                  elevation: 3
+                  borderRadius: 20,
+                  width: 32,
+                  height: 32,
+                  justifyContent: 'center',
+                  alignItems: 'center'
                 }}
               >
                 <Text style={{ 
                   color: 'white', 
-                  fontSize: 14, 
-                  fontFamily: fonts.semiBold 
+                  fontSize: 18, 
+                  fontFamily: fonts.bold,
+                  lineHeight: 20
                 }}>
-                  + Add Today
+                  +
                 </Text>
               </TouchableOpacity>
+              
+              {/* Month navigation section */}
+              <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'center', flex: 1 }}>
+                {/* Left arrow */}
+                <TouchableOpacity 
+                  onPress={handlePrevMonth}
+                  style={{ padding: 8 }}
+                >
+                  <Text style={{ fontSize: 20, color: colors.primary }}>‹</Text>
+                </TouchableOpacity>
+                
+                {/* Month text */}
+                <Text style={{ 
+                  fontSize: 18, 
+                  fontFamily: fonts.bold, 
+                  color: colors.text,
+                  textAlign: 'center',
+                  marginHorizontal: 8
+                }}>
+                  {months[currentMonth]} {currentYear}
+                </Text>
 
-              {/* Streak icon */}
+                {/* Right arrow */}
+                <TouchableOpacity 
+                  onPress={handleNextMonth}
+                  style={{ padding: 8 }}
+                >
+                  <Text style={{ fontSize: 20, color: colors.primary }}>›</Text>
+                </TouchableOpacity>
+              </View>
+
+              {/* Right side - streak */}
               <TouchableOpacity 
                 onPress={handleOpenStreakModal}
                 style={{ position: 'relative' }}
               >
-                <View style={{ width: 48, height: 48, position: 'relative', alignItems: 'center', justifyContent: 'center' }}>
-                  <Text style={{ fontSize: 32 }}>🔥</Text>
+                <View style={{ width: 36, height: 36, position: 'relative', alignItems: 'center', justifyContent: 'center' }}>
+                  <Text style={{ fontSize: 24 }}>🔥</Text>
                   {currentStreak > 0 && (
                     <View style={{
                       position: 'absolute',
-                      top: 2,
-                      right: 2,
+                      top: -2,
+                      right: -2,
                       backgroundColor: colors.primary,
-                      borderRadius: 10,
-                      width: 20,
-                      height: 20,
+                      borderRadius: 8,
+                      width: 16,
+                      height: 16,
                       justifyContent: 'center',
                       alignItems: 'center'
                     }}>
                       <Text style={{ 
                         color: 'white', 
-                        fontSize: 12, 
+                        fontSize: 10, 
                         fontFamily: fonts.bold 
                       }}>
                         {currentStreak}
@@ -591,40 +594,40 @@ export default function Calendar() {
             {/* Monthly progress */}
             <View style={{ 
               backgroundColor: colors.accent,
-              borderRadius: 20,
-              paddingHorizontal: 16,
-              paddingVertical: 8,
+              borderRadius: 12,
+              paddingHorizontal: 12,
+              paddingVertical: 6,
               flexDirection: 'row',
               alignItems: 'center',
               justifyContent: 'center'
             }}>
               <Text style={{ 
-                fontSize: 12, 
+                fontSize: 11, 
                 color: colors.text, 
                 fontFamily: fonts.medium,
-                marginRight: 12
+                marginRight: 8
               }}>
                 This month:
               </Text>
               <View style={{ 
-                width: 96, 
-                height: 10, 
+                width: 80, 
+                height: 8, 
                 backgroundColor: '#E5E5E5',
-                borderRadius: 5,
+                borderRadius: 4,
                 overflow: 'hidden'
               }}>
                 <View style={{
                   height: '100%',
                   width: `${monthlyCompletion}%`,
                   backgroundColor: colors.primary,
-                  borderRadius: 5
+                  borderRadius: 4
                 }} />
               </View>
               <Text style={{ 
-                fontSize: 12, 
+                fontSize: 11, 
                 fontFamily: fonts.bold, 
                 color: colors.primary,
-                marginLeft: 12
+                marginLeft: 8
               }}>
                 {monthlyCompletion}%
               </Text>
@@ -636,35 +639,35 @@ export default function Calendar() {
         <View style={{ 
           backgroundColor: 'white',
           marginHorizontal: 16,
-          marginTop: 32,
+          marginTop: 16,
           borderRadius: 12,
-          padding: 16,
+          padding: 12,
           shadowColor: '#000',
           shadowOffset: { width: 0, height: 1 },
           shadowOpacity: 0.1,
           shadowRadius: 3,
           elevation: 2
         }}>
-          <View style={{ alignItems: 'center', marginBottom: 24 }}>
+          <View style={{ alignItems: 'center', marginBottom: 12 }}>
             <Text style={{ 
-              fontSize: 18, 
+              fontSize: 14, 
               fontFamily: fonts.semiBold, 
               color: colors.text,
-              marginBottom: 8,
+              marginBottom: 6,
               textAlign: 'center'
             }}>
               📅 Your Mood Calendar
             </Text>
             <Text style={{ 
-              fontSize: 14, 
+              fontSize: 12, 
               color: colors.text, 
               fontFamily: fonts.regular,
               textAlign: 'center',
-              lineHeight: 20,
+              lineHeight: 18,
               opacity: 0.8
             }}>
-              Track your daily emotions and activities. {'\n'}
-              <Text style={{ fontFamily: fonts.semiBold }}>Click any circle in the current week</Text> to log multiple moods.
+              Track your daily emotions. 
+              <Text style={{ fontFamily: fonts.semiBold }}> Click any date</Text> of the current week to log multiple moods. Past weeks are view-only.
             </Text>
           </View>
 
@@ -672,46 +675,46 @@ export default function Calendar() {
           <View style={{ 
             backgroundColor: colors.accent,
             borderRadius: 8,
-            paddingVertical: 12,
-            paddingHorizontal: 16
+            paddingVertical: 8,
+            paddingHorizontal: 12
           }}>
             <View style={{ flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'space-around' }}>
-              <View style={{ alignItems: 'center', marginBottom: 8, width: '45%' }}>
+              <View style={{ alignItems: 'center', marginBottom: 6, width: '45%' }}>
                 <View style={{
-                  width: 24,
-                  height: 24,
-                  borderRadius: 12,
+                  width: 20,
+                  height: 20,
+                  borderRadius: 10,
                   backgroundColor: 'white',
                   justifyContent: 'center',
                   alignItems: 'center',
-                  marginBottom: 4
+                  marginBottom: 3
                 }}>
-                  <Text style={{ fontSize: 12 }}>😊</Text>
+                  <Text style={{ fontSize: 10 }}>😊</Text>
                 </View>
-                <Text style={{ fontSize: 10, color: colors.text, fontFamily: fonts.medium, textAlign: 'center' }}>
+                <Text style={{ fontSize: 9, color: colors.text, fontFamily: fonts.medium, textAlign: 'center' }}>
                   Dominant Mood
                 </Text>
               </View>
               
-              <View style={{ alignItems: 'center', marginBottom: 8, width: '45%' }}>
+              <View style={{ alignItems: 'center', marginBottom: 6, width: '45%' }}>
                 <View style={{
-                  width: 24,
-                  height: 24,
-                  borderRadius: 12,
+                  width: 20,
+                  height: 20,
+                  borderRadius: 10,
                   backgroundColor: '#4CAF50',
                   justifyContent: 'center',
                   alignItems: 'center',
-                  marginBottom: 4
+                  marginBottom: 3
                 }}>
                   <Text style={{ 
                     color: 'white', 
-                    fontSize: 10, 
+                    fontSize: 9, 
                     fontFamily: fonts.bold 
                   }}>
                     2
                   </Text>
                 </View>
-                <Text style={{ fontSize: 10, color: colors.text, fontFamily: fonts.medium, textAlign: 'center' }}>
+                <Text style={{ fontSize: 9, color: colors.text, fontFamily: fonts.medium, textAlign: 'center' }}>
                   Total Logs
                 </Text>
               </View>
@@ -1090,6 +1093,6 @@ export default function Calendar() {
           </View>
         </View>
       </Modal>
-    </SafeAreaView>
+    </View>
   );
 }

@@ -14,10 +14,9 @@ export default function Anova() {
   return (
     <View
       style={{
-        margin: 18,
-        marginTop: 24,
+        marginHorizontal: 16,
         backgroundColor: '#fff',
-        borderRadius: 26,
+        borderRadius: 24,
         borderWidth: 1,
         borderColor: '#f0f1f3',
         shadowColor: '#000',
@@ -25,32 +24,25 @@ export default function Anova() {
         shadowRadius: 12,
         shadowOffset: { width: 0, height: 4 },
         elevation: 5,
-        padding: 22,
+        padding: 20,
       }}
     >
-      {/* Info Icon Top Right */}
-      <TouchableOpacity
-        style={{
-          position: 'absolute',
-          top: 18,
-          right: 18,
-          zIndex: 10,
-          padding: 6,
-        }}
-        onPress={() => setModalVisible(true)}
-        hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
-      >
-        <MaterialIcons name="help-outline" size={26} color={colors.primary} />
-      </TouchableOpacity>
+      <View style={{ flex: 1, flexDirection: 'column' }}>
+        <TouchableOpacity
+          onPress={() => setModalVisible(true)}
+          hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+          style={{ alignSelf: 'flex-end' }}
+        >
+          <MaterialIcons name="help-outline" size={24} color={colors.primary} />
+        </TouchableOpacity>
 
-      <View style={{ flex: 1 }}>
         <Text
           style={{
             fontFamily: fonts.bold,
             fontSize: 22,
             color: colors.primary,
-            marginBottom: 2,
-            marginTop: 25,
+            marginBottom: 4,
+            marginTop: 0,
             textAlign: 'center',
           }}
         >
@@ -59,37 +51,25 @@ export default function Anova() {
         <Text
           style={{
             fontFamily: fonts.medium,
-            fontSize: 15,
+            fontSize: 14,
             color: colors.text,
-            marginBottom: 18,
+            marginBottom: 16,
             opacity: 0.8,
             textAlign: 'justify',
+            lineHeight: 20,
           }}
         >
           Advanced statistical insights into activity impact
         </Text>
       </View>
-      {/* <Text
-        style={{
-          fontFamily: fonts.medium,
-          fontSize: 15,
-          color: '#374151',
-          marginBottom: 18,
-          marginTop: 2,
-          lineHeight: 22,
-        }}
-      >
-        {infoText}
-      </Text> */}
-      <View style={{ flexDirection: 'column', gap: 12 }}>
+      <View style={{ flexDirection: 'column', gap: 10 }}>
         <TouchableOpacity
           style={{
             flexDirection: 'row',
             alignItems: 'center',
-            borderRadius: 18,
-            paddingVertical: 16,
-            paddingHorizontal: 18,
-            marginBottom: 10,
+            borderRadius: 16,
+            paddingVertical: 14,
+            paddingHorizontal: 16,
             backgroundColor: colors.primary,
             shadowColor: '#000',
             shadowOpacity: 0.09,
@@ -100,14 +80,14 @@ export default function Anova() {
           activeOpacity={0.85}
           onPress={() => navigation.navigate('DailyAnova')}
         >
-          <MaterialCommunityIcons name="calendar-today" size={24} color="#fff" style={{ marginRight: 10 }} />
-          <View>
+          <MaterialCommunityIcons name="calendar-today" size={22} color="#fff" style={{ marginRight: 12 }} />
+          <View style={{ flex: 1 }}>
             <Text
               style={{
                 fontFamily: fonts.semiBold,
-                fontSize: 16,
+                fontSize: 15,
                 color: '#fff',
-                marginBottom: 1,
+                marginBottom: 2,
               }}
             >
               Daily ANOVA
@@ -115,9 +95,10 @@ export default function Anova() {
             <Text
               style={{
                 fontFamily: fonts.medium,
-                fontSize: 13,
+                fontSize: 12,
                 color: '#f3f6fa',
-                opacity: 0.92,
+                opacity: 0.9,
+                lineHeight: 16,
               }}
             >
               Today's activity impact analysis
@@ -128,10 +109,9 @@ export default function Anova() {
           style={{
             flexDirection: 'row',
             alignItems: 'center',
-            borderRadius: 18,
-            paddingVertical: 16,
-            paddingHorizontal: 18,
-            marginBottom: 10,
+            borderRadius: 16,
+            paddingVertical: 14,
+            paddingHorizontal: 16,
             backgroundColor: colors.primary,
             shadowColor: '#000',
             shadowOpacity: 0.09,
@@ -142,14 +122,14 @@ export default function Anova() {
           activeOpacity={0.85}
           onPress={() => navigation.navigate('WeeklyAnova')}
         >
-          <FontAwesome5 name="chart-line" size={22} color="#fff" style={{ marginRight: 12 }} />
-          <View>
+          <FontAwesome5 name="chart-line" size={20} color="#fff" style={{ marginRight: 12 }} />
+          <View style={{ flex: 1 }}>
             <Text
               style={{
                 fontFamily: fonts.semiBold,
-                fontSize: 16,
+                fontSize: 15,
                 color: '#fff',
-                marginBottom: 1,
+                marginBottom: 2,
               }}
             >
               Weekly ANOVA
@@ -157,9 +137,10 @@ export default function Anova() {
             <Text
               style={{
                 fontFamily: fonts.medium,
-                fontSize: 13,
+                fontSize: 12,
                 color: '#f3f6fa',
-                opacity: 0.92,
+                opacity: 0.9,
+                lineHeight: 16,
               }}
             >
               Weekly patterns & trends analysis
@@ -184,19 +165,19 @@ export default function Anova() {
           <View style={{
             backgroundColor: '#fff',
             borderRadius: 18,
-            padding: 24,
+            padding: 22,
             marginHorizontal: 24,
             maxWidth: 340,
             alignItems: 'center',
             elevation: 6,
           }}>
-            <MaterialIcons name="help-outline" size={36} color={colors.primary} style={{ marginBottom: 10 }} />
+            <MaterialIcons name="help-outline" size={32} color={colors.primary} style={{ marginBottom: 12 }} />
             <Text
               style={{
                 fontFamily: fonts.bold,
                 fontSize: 18,
                 color: colors.primary,
-                marginBottom: 10,
+                marginBottom: 12,
                 textAlign: 'center',
               }}
             >
@@ -205,11 +186,11 @@ export default function Anova() {
             <Text
               style={{
                 fontFamily: fonts.medium,
-                fontSize: 15,
+                fontSize: 14,
                 color: '#374151',
                 marginBottom: 18,
                 textAlign: 'justify',
-                lineHeight: 22,
+                lineHeight: 20,
               }}
             >
               {infoText}
@@ -217,17 +198,17 @@ export default function Anova() {
             <Pressable
               onPress={() => setModalVisible(false)}
               style={{
-                marginTop: 6,
+                marginTop: 8,
                 backgroundColor: colors.primary,
                 borderRadius: 12,
-                paddingVertical: 8,
+                paddingVertical: 10,
                 paddingHorizontal: 24,
               }}
             >
               <Text style={{
                 color: '#fff',
                 fontFamily: fonts.semiBold,
-                fontSize: 16,
+                fontSize: 14,
               }}>
                 Close
               </Text>
