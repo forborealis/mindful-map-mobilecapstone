@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, ScrollView, Dimensions, Image, TouchableOpacity } from 'react-native';
+import { View, Text, ScrollView, Dimensions, Image, TouchableOpacity, Alert, ActivityIndicator, ToastAndroid } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { PieChart } from 'react-native-chart-kit';
 import { useNavigation } from '@react-navigation/native';
@@ -7,6 +7,7 @@ import { moodDataService } from '../../../services/moodDataService';
 import { colors } from '../../../utils/colors/colors';
 import { fonts } from '../../../utils/fonts/fonts';
 import activityImages from '../../../utils/images/activities';
+import { downloadActivitiesStatisticsPDF } from '../../../components/PDFTemplate/ActivitiesStatisticsPDF';
 
 const screenWidth = Dimensions.get('window').width;
 const chartWidth = screenWidth * 0.80;
@@ -360,6 +361,7 @@ export default function ActivitiesStatistics({ route }) {
     Health: [],
     Sleep: [],
   });
+  const [isDownloading, setIsDownloading] = useState(false);
 
   // For header subtitle
   function getTypeLabel(type) {
@@ -384,6 +386,19 @@ function getPeriodLabel(period) {
     }
     fetchBreakdown();
   }, [mood, type, period]);
+
+  const handleDownloadPDF = async () => {
+    try {
+      setIsDownloading(true);
+      const result = await downloadActivitiesStatisticsPDF(mood, type, period, breakdowns);
+      setIsDownloading(false);
+      ToastAndroid.show(`Report downloaded: ${result.filename}`, ToastAndroid.LONG);
+    } catch (error) {
+      console.error('Error downloading PDF:', error);
+      setIsDownloading(false);
+      ToastAndroid.show('Failed to download report: ' + error.message, ToastAndroid.LONG);
+    }
+  };
 
   return (
     <View style={{ flex: 1, backgroundColor: '#fcfcfcff' }}>
@@ -426,26 +441,24 @@ function getPeriodLabel(period) {
           <Ionicons name="arrow-back" size={22} color="#fff" />
         </TouchableOpacity>
         
-        <Text style={{
-          fontFamily: fonts.bold,
-          fontSize: 18,
-          color: colors.primary,
-          flex: 1,
-          marginLeft: 16,
-          textAlign: 'left',
-        }}>
-          {mood.charAt(0).toUpperCase() + mood.slice(1)}
-        </Text>
-
-        <Text style={{
-          fontFamily: fonts.medium,
-          fontSize: 12,
-          color: colors.text,
-          opacity: 0.8,
-          textAlign: 'right',
-        }}>
-          {getTypeLabel(type)} · {getPeriodLabel(period)}
-        </Text>
+        <View style={{ flex: 1, marginLeft: 16 }}>
+          <Text style={{
+            fontFamily: fonts.bold,
+            fontSize: 18,
+            color: colors.primary,
+            marginBottom: 4,
+          }}>
+            {mood.charAt(0).toUpperCase() + mood.slice(1)}
+          </Text>
+          <Text style={{
+            fontFamily: fonts.medium,
+            fontSize: 11,
+            color: colors.text,
+            opacity: 0.7,
+          }}>
+            {getTypeLabel(type)} · {getPeriodLabel(period)}
+          </Text>
+        </View>
       </View>
 
     <ScrollView style={{
@@ -455,6 +468,49 @@ function getPeriodLabel(period) {
       <View style={{
         alignItems: 'center',
         paddingTop: 120,
+        paddingBottom: 0,
+        paddingHorizontal: 16,
+      }}>
+        {/* Download PDF Button */}
+        <TouchableOpacity
+          onPress={handleDownloadPDF}
+          disabled={isDownloading}
+          style={{
+            alignSelf: 'flex-end',
+            marginBottom: 16,
+            backgroundColor: colors.primary,
+            borderRadius: 12,
+            paddingVertical: 12,
+            paddingHorizontal: 24,
+            flexDirection: 'row',
+            alignItems: 'center',
+            justifyContent: 'center',
+            opacity: isDownloading ? 0.6 : 1,
+            shadowColor: '#000',
+            shadowOpacity: 0.1,
+            shadowRadius: 4,
+            shadowOffset: { width: 0, height: 2 },
+            elevation: 3,
+          }}
+        >
+          {isDownloading ? (
+            <ActivityIndicator size="small" color="#fff" style={{ marginRight: 8 }} />
+          ) : (
+            <Ionicons name="download-outline" size={18} color="#fff" style={{ marginRight: 8 }} />
+          )}
+          <Text style={{
+            fontFamily: fonts.bold,
+            fontSize: 14,
+            color: '#fff',
+          }}>
+            {isDownloading ? 'Exporting...' : 'Export PDF'}
+          </Text>
+        </TouchableOpacity>
+      </View>
+      
+      <View style={{
+        alignItems: 'center',
+        paddingTop: 8,
         paddingBottom: 20,
       }}>
         <PieSection title="Activity" data={breakdowns.Activity} category="Activity" />

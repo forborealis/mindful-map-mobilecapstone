@@ -709,12 +709,25 @@
         }));
       };
 
-      return {
+      const breakdown = {
         Activity: formatBreakdown(groups.Activity),
         Social: formatBreakdown(groups.Social),
         Health: formatBreakdown(groups.Health),
         Sleep: formatBreakdown(groups.Sleep),
       };
+
+      // Debug logging to track data issues
+      // console.log('[Debug] Mood Breakdown:', {
+      //   mood,
+      //   type,
+      //   period,
+      //   filteredLogsCount: filtered.length,
+      //   sleepLogs: filtered.filter(l => l.category === 'sleep').map(l => ({ hrs: l.hrs, date: l.date, id: l._id })),
+      //   rawGroups: groups,
+      //   breakdown
+      // });
+
+      return breakdown;
     } catch (error) {
       console.error('Error in getMoodCategoryGroupBreakdown:', error);
       return { Activity: [], Social: [], Health: [], Sleep: [] };
