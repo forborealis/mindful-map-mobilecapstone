@@ -7,6 +7,7 @@ import { moodDataService } from '../../../services/moodDataService';
 import ContinueTrackingModal from './ContinueTrackingModal';
 import { Ionicons } from '@expo/vector-icons';
 import emotionImages from '../../../utils/images/emotions';
+import { validateReason } from '../../../utils/reasonValidator';
 
 const emotions = [
   { id: 'calm', title: 'Calm' },
@@ -30,6 +31,7 @@ const AfterPositive = ({ navigation, route }) => {
   const [selectedEmotion, setSelectedEmotion] = useState(null);
   const [selectedIntensity, setSelectedIntensity] = useState(null);
   const [reason, setReason] = useState('');
+  const [reasonError, setReasonError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [showModal, setShowModal] = useState(false);
 
@@ -47,12 +49,29 @@ const AfterPositive = ({ navigation, route }) => {
   } = route.params || {};
 
   const isInputEnabled = selectedEmotion && selectedIntensity;
-  const isButtonEnabled = isInputEnabled && reason.trim().length > 0;
+  const isButtonEnabled = isInputEnabled && reason.trim().length > 0 && !reasonError;
 
   const emotionRows = chunkArray(emotions, 3);
 
+  const handleReasonChange = (text) => {
+    setReason(text);
+    if (text.trim().length > 0) {
+      const validation = validateReason(text);
+      setReasonError(validation.isValid ? '' : validation.error);
+    } else {
+      setReasonError('');
+    }
+  };
+
   const handleSubmit = async () => {
     if (!isButtonEnabled || isLoading) return;
+
+    // Final validation before submit
+    const validation = validateReason(reason);
+    if (!validation.isValid) {
+      setReasonError(validation.error);
+      return;
+    }
 
     setIsLoading(true);
     
@@ -258,14 +277,14 @@ const AfterPositive = ({ navigation, route }) => {
             </Text>
             <TextInput
               value={reason}
-              onChangeText={setReason}
+              onChangeText={handleReasonChange}
               className="rounded-xl px-4 py-3 text-base"
               style={{
                 backgroundColor: colors.accent,
                 color: colors.text,
                 fontFamily: fonts.regular,
                 borderWidth: 1,
-                borderColor: colors.primary,
+                borderColor: reasonError ? '#dc2626' : colors.primary,
                 minHeight: 100,
                 textAlignVertical: 'top'
               }}
@@ -273,6 +292,18 @@ const AfterPositive = ({ navigation, route }) => {
               placeholderTextColor={colors.text}
               multiline
             />
+            {reasonError && (
+              <View className="mt-2 p-3 rounded-lg" style={{ backgroundColor: '#fee2e2' }}>
+                <Text className="text-sm" style={{ color: '#dc2626', fontFamily: fonts.regular }}>
+                  {reasonError}
+                </Text>
+              </View>
+            )}
+            <View className="mt-3 p-3 rounded-lg" style={{ backgroundColor: '#e0f2fe' }}>
+              <Text className="text-xs" style={{ color: '#1e40af', fontFamily: fonts.regular }}>
+                💬 <Text style={{ fontFamily: fonts.semiBold }}>Please avoid gibberish or unclear text for more accurate insights.</Text>
+              </Text>
+            </View>
           </View>
         )}
 

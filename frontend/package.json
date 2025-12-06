@@ -31,6 +31,7 @@
     "expo-status-bar": "~3.0.8",
     "firebase": "^12.4.0",
     "formik": "^2.4.6",
+    "leo-profanity": "^1.8.0",
     "nativewind": "^4.2.1",
     "react": "19.1.0",
     "react-native": "0.81.4",
