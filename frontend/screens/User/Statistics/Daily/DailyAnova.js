@@ -88,7 +88,7 @@ function getMoodIcon(score) {
   return <Entypo name="minus" size={20} color="#f7b801" />;
 }
 
-// Sleep message — EXACT same logic as web (uses hours and moodScore)
+// Sleep message — same logic as web
 function getSleepMessage(hours, moodScore) {
   if (hours == null || moodScore == null || typeof moodScore !== 'number') {
     return 'Your sleep had a neutral effect today.';
@@ -113,7 +113,6 @@ function addDays(date, days) {
   d.setDate(d.getDate() + days);
   return d.toISOString().split('T')[0];
 }
-// Message for top lists (simple, web-like)
 function getMoodMessage(activityKey, moodScore) {
   const label = ACTIVITY_LABELS[activityKey] || formatText(activityKey);
   if (moodScore > 0) return `${label} boosted your mood.`;
@@ -157,12 +156,12 @@ function explainPair(row, groupMeans) {
     if (bothNeg) return `${a2} lowered mood less than ${a1}.`;
     if (bothPos) return `${a2} lifted mood more than ${a1}.`;
     if (m2 > 0 && m1 < 0) return `${a2} lifted mood while ${a1} lowered it.`;
-    if (m2 < 0 && m1 > 0) return `${a1} lifted mood while ${a2} lowered it.`;
+    if (m2 < 0 && m1 > 0) return `${a1} lifted mood while ${m2} lowered it.`;
     return `${a2} had a higher average mood than ${a1}.`;
   }
 }
 
-// Activity differences section, web-like (ranked chain + significant/similar pairs)
+// Activity differences section
 function renderActivityComparisons(tukeyHSD = [], groupMeans = {}, groupCounts = {}, includedSet = new Set()) {
   if (!Array.isArray(tukeyHSD) || tukeyHSD.length === 0 || !groupMeans) return null;
 
@@ -195,7 +194,6 @@ function renderActivityComparisons(tukeyHSD = [], groupMeans = {}, groupCounts =
     const label1 = ACTIVITY_LABELS[g1] || formatText(g1);
     const label2 = ACTIVITY_LABELS[g2] || formatText(g2);
 
-    // Container content stacked vertically to prevent overflow
     const sentence = m1 === m2
       ? `Similar: ${label1} & ${label2}`
       : (m1 > m2
@@ -214,42 +212,7 @@ function renderActivityComparisons(tukeyHSD = [], groupMeans = {}, groupCounts =
     <View style={{ marginBottom: 8, padding: 10, borderRadius: 12, backgroundColor: '#F7FBF9', borderColor: '#D8EFD3', borderWidth: 1 }}>
       <Text style={{ fontFamily: fonts.semiBold, color: '#55AD9B', marginBottom: 6 }}>Activity Differences</Text>
 
-      {chain.length > 0 && (
-        <View style={{ marginBottom: 10 }}>
-          <Text style={{ fontFamily: fonts.medium, color: '#55AD9B', marginBottom: 4, fontSize: 12 }}>
-            Ranked chain (adjacent significant):
-          </Text>
-          {chain.map((c, i) => (
-            <View
-              key={i}
-              style={{
-                backgroundColor: '#fff',
-                borderWidth: 1,
-                borderColor: '#D8EFD3',
-                borderRadius: 10,
-                paddingVertical: 8,
-                paddingHorizontal: 8,
-                marginBottom: 6
-              }}
-            >
-              <Text style={{ fontFamily: fonts.regular, color: '#272829', fontSize: 12 }}>
-                {c.sentence}
-              </Text>
-              <View style={{ flexDirection: 'row', marginTop: 6 }}>
-                <View style={{ backgroundColor: '#55AD9B', borderRadius: 999, paddingHorizontal: 10, paddingVertical: 4, marginRight: 6 }}>
-                  <Text style={{ color: '#fff', fontFamily: fonts.semiBold, fontSize: 12 }}>Δ: {c.delta}</Text>
-                </View>
-                <View style={{ backgroundColor: '#f7b801', borderRadius: 999, paddingHorizontal: 10, paddingVertical: 4 }}>
-                  <Text style={{ color: '#fff', fontFamily: fonts.semiBold, fontSize: 12 }}>
-                    p: {c.p}
-                  </Text>
-                </View>
-              </View>
-            </View>
-          ))}
-        </View>
-      )}
-
+      
       {significantPairs.length > 0 ? (
         <View style={{ marginBottom: 6 }}>
           <Text style={{ fontFamily: fonts.medium, color: '#55AD9B', marginBottom: 6, fontSize: 12 }}>
@@ -503,37 +466,61 @@ export default function DailyAnova() {
                 Habits that boosted your mood
               </Text>
             </View>
-            {topPositive.map((item) => (
-              <View
-                key={`${item.activity}-pos`}
-                style={{
-                  flexDirection: 'row',
-                  alignItems: 'center',
-                  backgroundColor: '#F1F8E8',
-                  borderWidth: 2,
-                  borderColor: POSITIVE_COLOR,
-                  borderRadius: 16,
-                  paddingVertical: 12,
-                  paddingHorizontal: 14,
-                  marginBottom: 8,
-                  minHeight: 60,
-                }}
-              >
-                <View style={{ marginRight: 10 }}>{getMoodIcon(item.moodScore)}</View>
-                <View style={{ flex: 1 }}>
-                  <Text style={{
-                    fontSize: 14,
-                    color: '#272829',
-                    fontFamily: fonts.medium,
-                  }}>
-                    {getMoodMessage(item.activity, item.moodScore)}
-                  </Text>
-                  <Text style={{ color: '#555', fontFamily: fonts.medium, fontSize: 12, marginTop: 4 }}>
-                    avg {typeof item.moodScore === 'number' ? Number(item.moodScore).toFixed(2) : item.moodScore}
-                  </Text>
+            {topPositive.map((item) => {
+              const msId = data?.groupLastIds?.[item.activity];
+              const navParams = msId
+                ? { moodScoreId: msId }
+                : { date, category: categoryKey, activity: item.activity };
+              return (
+                <View
+                  key={`${item.activity}-pos`}
+                  style={{
+                    flexDirection: 'column',
+                    backgroundColor: '#F1F8E8',
+                    borderWidth: 2,
+                    borderColor: POSITIVE_COLOR,
+                    borderRadius: 16,
+                    paddingVertical: 12,
+                    paddingHorizontal: 14,
+                    marginBottom: 8,
+                  }}
+                >
+                  <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                    <View style={{ marginRight: 10 }}>{getMoodIcon(item.moodScore)}</View>
+                    <View style={{ flex: 1 }}>
+                      <Text style={{
+                        fontSize: 14,
+                        color: '#272829',
+                        fontFamily: fonts.medium,
+                      }}>
+                        {getMoodMessage(item.activity, item.moodScore)}
+                      </Text>
+                      <Text style={{ color: '#555', fontFamily: fonts.medium, fontSize: 12, marginTop: 4 }}>
+                        avg {typeof item.moodScore === 'number' ? Number(item.moodScore).toFixed(2) : item.moodScore}
+                      </Text>
+                    </View>
+                  </View>
+                  <View style={{ alignItems: 'flex-end', marginTop: 10 }}>
+                    <TouchableOpacity
+                      onPress={() => navigation.navigate('Recommendation', navParams)}
+                      style={{
+                        flexDirection: 'row',
+                        alignItems: 'center',
+                        backgroundColor: POSITIVE_COLOR,
+                        paddingVertical: 8,
+                        paddingHorizontal: 12,
+                        borderRadius: 999,
+                      }}
+                    >
+                      <MaterialIcons name="list" size={16} color="#fff" style={{ marginRight: 6 }} />
+                      <Text style={{ color: '#fff', fontFamily: fonts.semiBold, fontSize: 12 }}>
+                        View Recommendation
+                      </Text>
+                    </TouchableOpacity>
+                  </View>
                 </View>
-              </View>
-            ))}
+              );
+            })}
           </View>
         )}
 
@@ -550,37 +537,61 @@ export default function DailyAnova() {
                 Habits that lowered your mood
               </Text>
             </View>
-            {topNegative.map((item) => (
-              <View
-                key={`${item.activity}-neg`}
-                style={{
-                  flexDirection: 'row',
-                  alignItems: 'center',
-                  backgroundColor: '#FFF7E6',
-                  borderWidth: 2,
-                  borderColor: NEGATIVE_COLOR,
-                  borderRadius: 16,
-                  paddingVertical: 12,
-                  paddingHorizontal: 14,
-                  marginBottom: 8,
-                  minHeight: 60,
-                }}
-              >
-                <View style={{ marginRight: 10 }}>{getMoodIcon(item.moodScore)}</View>
-                <View style={{ flex: 1 }}>
-                  <Text style={{
-                    fontSize: 14,
-                    color: '#272829',
-                    fontFamily: fonts.medium,
-                  }}>
-                    {getMoodMessage(item.activity, item.moodScore)}
-                  </Text>
-                  <Text style={{ color: '#555', fontFamily: fonts.medium, fontSize: 12, marginTop: 4 }}>
-                    avg {typeof item.moodScore === 'number' ? Number(item.moodScore).toFixed(2) : item.moodScore}
-                  </Text>
+            {topNegative.map((item) => {
+              const msId = data?.groupLastIds?.[item.activity];
+              const navParams = msId
+                ? { moodScoreId: msId }
+                : { date, category: categoryKey, activity: item.activity };
+              return (
+                <View
+                  key={`${item.activity}-neg`}
+                  style={{
+                    flexDirection: 'column',
+                    backgroundColor: '#FFF7E6',
+                    borderWidth: 2,
+                    borderColor: NEGATIVE_COLOR,
+                    borderRadius: 16,
+                    paddingVertical: 12,
+                    paddingHorizontal: 14,
+                    marginBottom: 8,
+                  }}
+                >
+                  <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                    <View style={{ marginRight: 10 }}>{getMoodIcon(item.moodScore)}</View>
+                    <View style={{ flex: 1 }}>
+                      <Text style={{
+                        fontSize: 14,
+                        color: '#272829',
+                        fontFamily: fonts.medium,
+                      }}>
+                        {getMoodMessage(item.activity, item.moodScore)}
+                      </Text>
+                      <Text style={{ color: '#555', fontFamily: fonts.medium, fontSize: 12, marginTop: 4 }}>
+                        avg {typeof item.moodScore === 'number' ? Number(item.moodScore).toFixed(2) : item.moodScore}
+                      </Text>
+                    </View>
+                  </View>
+                  <View style={{ alignItems: 'flex-end', marginTop: 10 }}>
+                    <TouchableOpacity
+                      onPress={() => navigation.navigate('Recommendation', navParams)}
+                      style={{
+                        flexDirection: 'row',
+                        alignItems: 'center',
+                        backgroundColor: NEGATIVE_COLOR,
+                        paddingVertical: 8,
+                        paddingHorizontal: 12,
+                        borderRadius: 999,
+                      }}
+                    >
+                      <MaterialIcons name="list" size={16} color="#fff" style={{ marginRight: 6 }} />
+                      <Text style={{ color: '#fff', fontFamily: fonts.semiBold, fontSize: 12 }}>
+                        View Recommendation
+                      </Text>
+                    </TouchableOpacity>
+                  </View>
                 </View>
-              </View>
-            ))}
+              );
+            })}
           </View>
         )}
       </View>
@@ -610,7 +621,6 @@ export default function DailyAnova() {
                   marginBottom: 4,
                 }}
               >
-                {/* Badge with Quality if provided */}
                 {sleep?.quality && (
                   <View style={{ backgroundColor: sleepQualityColors[sleep.quality] || '#f7b801', borderRadius: 999, paddingHorizontal: 18, paddingVertical: 4, marginBottom: 10 }}>
                     <Text style={{ color: '#fff', fontFamily: fonts.semiBold, fontSize: 15 }}>
@@ -640,6 +650,27 @@ export default function DailyAnova() {
                     {getSleepMessage(sleep.hours, sleep.moodScore)}
                   </Text>
                 </View>
+
+                {sleep?._id ? (
+                  <View style={{ marginTop: 12 }}>
+                    <TouchableOpacity
+                      onPress={() => navigation.navigate('Recommendation', { moodScoreId: sleep._id })}
+                      style={{
+                        flexDirection: 'row',
+                        alignItems: 'center',
+                        backgroundColor: colors.primary,
+                        paddingVertical: 10,
+                        paddingHorizontal: 14,
+                        borderRadius: 999,
+                      }}
+                    >
+                      <MaterialIcons name="list" size={18} color="#fff" style={{ marginRight: 8 }} />
+                      <Text style={{ color: '#fff', fontFamily: fonts.semiBold, fontSize: 13 }}>
+                        View Recommendation
+                      </Text>
+                    </TouchableOpacity>
+                  </View>
+                ) : null}
               </View>
             </View>
           ) : (
@@ -693,7 +724,6 @@ export default function DailyAnova() {
 
   return (
     <View style={{ flex: 1, backgroundColor: colors.primary }}>
-      {/* Fixed Header with Back Button */}
       <View
         style={{
           position: 'absolute',
@@ -727,7 +757,6 @@ export default function DailyAnova() {
         contentContainerStyle={{ paddingTop: 0 }}
         keyboardShouldPersistTaps="handled"
       >
-        {/* Date Navigation */}
         <View
           style={{
             backgroundColor: '#fff',
@@ -771,7 +800,6 @@ export default function DailyAnova() {
           </TouchableOpacity>
         </View>
 
-        {/* Content */}
         <View style={{ paddingHorizontal: 10, marginBottom: 18 }}>
           {gridData.map((cat) => (
             <View

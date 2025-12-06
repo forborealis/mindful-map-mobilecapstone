@@ -23,6 +23,7 @@ const musicRoutes = require('./routes/musicRoutes');
 const activityRoutes = require('./routes/activityRoutes');
 const notificationRoutes = require('./routes/notificationRoutes');
 const anovaRoutes = require('./routes/anovaRoutes');
+const recommendationRoutes = require('./routes/recommendationRoutes');
 const { startMoodReminderJob } = require('./utils/moodReminder');
 const { startFrequentReminderJob } = require('./utils/frequentReminder');
 
@@ -34,7 +35,8 @@ app.use('/api', predictionRoutes);
 app.use('/api/music', musicRoutes);
 app.use('/api/activity', activityRoutes);
 app.use('/api/anova', anovaRoutes);
-
+app.use('/api/recommendations', recommendationRoutes);
+app.use
 app.get('/api/health', async (req, res) => {
   try {
     const dbState = mongoose.connection.readyState;
