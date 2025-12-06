@@ -160,7 +160,7 @@ exports.runAnovaForUser = async (req, res) => {
       category: { $ne: 'sleep' }
     });
 
-    // Sleep extraction
+    // Sleep extraction (compute hours and quality; moodScore optional)
     let sleepQuality = null;
     let sleepHours = null;
     let sleepMoodScore = null;
@@ -173,6 +173,7 @@ exports.runAnovaForUser = async (req, res) => {
         else if (sleepHours >= 6 && sleepHours <= 8) sleepQuality = 'Sufficient';
         else if (sleepHours > 8) sleepQuality = 'Good';
 
+        // Keep moodScore computation for historical continuity, but frontend may ignore it
         if (sleepHours >= 7 && sleepHours <= 9) {
           sleepMoodScore = Math.round(((sleepHours - 4) / 5) * 80);
         } else if (sleepHours < 7) {
@@ -193,7 +194,7 @@ exports.runAnovaForUser = async (req, res) => {
       sleepMoodScoreId = sleepScore ? sleepScore._id : null;
     }
 
-    // Compute per-log mood scores
+    // Compute per-log mood scores for non-sleep
     for (const log of logs) {
       if (
         log.category !== 'sleep' &&
@@ -354,9 +355,12 @@ exports.runAnovaForUser = async (req, res) => {
       };
     }
 
+    // Sleep payload (frontend can choose to ignore moodScore)
     const sleepData = (sleepHours !== null && sleepMoodScore !== null)
       ? { quality: sleepQuality, hours: sleepHours, moodScore: sleepMoodScore, _id: sleepMoodScoreId }
-      : null;
+      : (sleepHours !== null
+        ? { quality: sleepQuality, hours: sleepHours, _id: sleepMoodScoreId }
+        : null);
 
     // Final fallback: return saved payloads if recomputation produced none (RANGE)
     if (Object.keys(anovaResultsForFrontend).length === 0 && !sleepData) {
@@ -376,7 +380,7 @@ exports.runAnovaForUser = async (req, res) => {
 
       return res.json({
         success: false,
-        message: 'Logs are still insufficient to run a proper analysis. Come back later!',
+        message: 'No logs or saved results for this day.',
         sleep: null
       });
     }

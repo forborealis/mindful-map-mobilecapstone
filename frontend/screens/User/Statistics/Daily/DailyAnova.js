@@ -56,6 +56,28 @@ const sleepQualityColors = { Poor: '#ff6b6b', Sufficient: '#f7b801', Good: '#55A
 const POSITIVE_COLOR = '#55AD9B';
 const NEGATIVE_COLOR = '#FF9800';
 
+// Lightweight accordion for mobile
+function Accordion({ title, subtitle, children, initiallyOpen = false }) {
+  const [open, setOpen] = useState(initiallyOpen);
+  return (
+    <View style={{ marginBottom: 8, borderRadius: 12, borderWidth: 1, borderColor: '#D8EFD3', backgroundColor: '#fff' }}>
+      <TouchableOpacity
+        onPress={() => setOpen(!open)}
+        style={{ paddingVertical: 12, paddingHorizontal: 10, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}
+      >
+        <View style={{ flex: 1, paddingRight: 8 }}>
+          <Text style={{ fontFamily: fonts.semiBold, color: '#55AD9B', fontSize: 14 }}>{title}</Text>
+          {subtitle ? (
+            <Text style={{ fontFamily: fonts.regular, color: '#777', fontSize: 12, marginTop: 2 }}>{subtitle}</Text>
+          ) : null}
+        </View>
+        <MaterialIcons name={open ? 'expand-less' : 'expand-more'} size={22} color="#55AD9B" />
+      </TouchableOpacity>
+      {open && <View style={{ paddingHorizontal: 10, paddingBottom: 10 }}>{children}</View>}
+    </View>
+  );
+}
+
 function formatText(text) {
   if (!text) return '';
   return text.replace(/[-_]/g, ' ').replace(/\b\w/g, (l) => l.toUpperCase());
@@ -65,12 +87,23 @@ function getMoodIcon(score) {
   if (score < 0) return <MaterialIcons name="trending-down" size={20} color={NEGATIVE_COLOR} />;
   return <Entypo name="minus" size={20} color="#f7b801" />;
 }
+
+// Sleep message — EXACT same logic as web (uses hours and moodScore)
 function getSleepMessage(hours, moodScore) {
+  if (hours == null || moodScore == null || typeof moodScore !== 'number') {
+    return 'Your sleep had a neutral effect today.';
+  }
   const absScore = Math.abs(moodScore);
-  if (moodScore > 0) return `Sleeping for ${hours} hours improved your mood by ${absScore}%.`;
-  if (moodScore < 0) return `${hours} hours of sleep lowered your mood by ${absScore}%.`;
-  return `Your sleep had a neutral effect on your mood today.`;
+  let intensity;
+  if (absScore >= 40) intensity = 'strong';
+  else if (absScore >= 20) intensity = 'moderate';
+  else if (absScore > 0) intensity = 'slight';
+
+  if (moodScore > 0) return `Sleeping for ${hours} hours had a ${intensity} positive effect on your mood.`;
+  if (moodScore < 0) return `${hours} hours of sleep lowered your mood (${intensity} effect).`;
+  return 'Your sleep had a neutral effect today.';
 }
+
 function getDateString(date) {
   const d = new Date(date);
   return d.toLocaleDateString(undefined, { year: 'numeric', month: 'short', day: 'numeric' });
@@ -79,6 +112,232 @@ function addDays(date, days) {
   const d = new Date(date);
   d.setDate(d.getDate() + days);
   return d.toISOString().split('T')[0];
+}
+// Message for top lists (simple, web-like)
+function getMoodMessage(activityKey, moodScore) {
+  const label = ACTIVITY_LABELS[activityKey] || formatText(activityKey);
+  if (moodScore > 0) return `${label} boosted your mood.`;
+  if (moodScore < 0) return `${label} lowered your mood.`;
+  return `${label} had a neutral effect.`;
+}
+
+// Build includedSet like web: includedGroups ∩ (count ≥2). Fallback: all with count ≥2.
+function buildIncludedSet(data, groupCounts) {
+  const hasMinTwo = (a) => (groupCounts[a] ?? 0) >= 2;
+  const rawIncluded = Array.isArray(data?.includedGroups) ? data.includedGroups : [];
+  const includedSet = new Set(rawIncluded.filter(hasMinTwo));
+  if (includedSet.size === 0) {
+    Object.keys(groupCounts || {}).forEach(g => { if (hasMinTwo(g)) includedSet.add(g); });
+  }
+  return includedSet;
+}
+
+// Explain a Tukey pair like the web version
+function explainPair(row, groupMeans) {
+  const a1 = ACTIVITY_LABELS[row.group1] || formatText(row.group1);
+  const a2 = ACTIVITY_LABELS[row.group2] || formatText(row.group2);
+  const m1 = groupMeans[row.group1];
+  const m2 = groupMeans[row.group2];
+  if (typeof m1 !== 'number' || typeof m2 !== 'number') return `${a1} vs ${a2} (limited data).`;
+
+  const diff = m1 - m2;
+  const bothNeg = m1 < 0 && m2 < 0;
+  const bothPos = m1 > 0 && m2 > 0;
+  const equal = Number(m1.toFixed(2)) === Number(m2.toFixed(2));
+
+  if (!row.reject || equal) return `Similar effect: ${a1} & ${a2}.`;
+
+  if (diff > 0) {
+    if (bothNeg) return `${a1} lowered mood less than ${a2}.`;
+    if (bothPos) return `${a1} lifted mood more than ${a2}.`;
+    if (m1 > 0 && m2 < 0) return `${a1} lifted mood while ${a2} lowered it.`;
+    if (m1 < 0 && m2 > 0) return `${a2} lifted mood while ${a1} lowered it.`;
+    return `${a1} had a higher average mood than ${a2}.`;
+  } else {
+    if (bothNeg) return `${a2} lowered mood less than ${a1}.`;
+    if (bothPos) return `${a2} lifted mood more than ${a1}.`;
+    if (m2 > 0 && m1 < 0) return `${a2} lifted mood while ${a1} lowered it.`;
+    if (m2 < 0 && m1 > 0) return `${a1} lifted mood while ${a2} lowered it.`;
+    return `${a2} had a higher average mood than ${a1}.`;
+  }
+}
+
+// Activity differences section, web-like (ranked chain + significant/similar pairs)
+function renderActivityComparisons(tukeyHSD = [], groupMeans = {}, groupCounts = {}, includedSet = new Set()) {
+  if (!Array.isArray(tukeyHSD) || tukeyHSD.length === 0 || !groupMeans) return null;
+
+  const validGroups = Array.from(includedSet);
+  const filteredPairs = tukeyHSD.filter(r => validGroups.includes(r.group1) && validGroups.includes(r.group2));
+  if (filteredPairs.length === 0) return null;
+
+  const significantPairs = filteredPairs.filter(r => r.reject);
+  const nonSignificantPairs = filteredPairs.filter(r => !r.reject);
+  const fmt = v => (typeof v === 'number' && !isNaN(v) ? Number(v).toFixed(2) : 'n/a');
+
+  const ranked = [...validGroups]
+    .filter(g => typeof groupMeans[g] === 'number' && !isNaN(groupMeans[g]))
+    .sort((a, b) => groupMeans[b] - groupMeans[a]);
+
+  const sigMap = new Map();
+  significantPairs.forEach(r => {
+    sigMap.set(`${r.group1}||${r.group2}`, r);
+    sigMap.set(`${r.group2}||${r.group1}`, r);
+  });
+
+  const chain = [];
+  for (let i = 0; i < ranked.length - 1; i++) {
+    const g1 = ranked[i];
+    const g2 = ranked[i + 1];
+    const row = sigMap.get(`${g1}||${g2}`);
+    if (!row) continue;
+    const m1 = groupMeans[g1];
+    const m2 = groupMeans[g2];
+    const label1 = ACTIVITY_LABELS[g1] || formatText(g1);
+    const label2 = ACTIVITY_LABELS[g2] || formatText(g2);
+
+    // Container content stacked vertically to prevent overflow
+    const sentence = m1 === m2
+      ? `Similar: ${label1} & ${label2}`
+      : (m1 > m2
+          ? `${label1} improved mood more than ${label2}`
+          : `${label2} improved mood more than ${label1}`);
+    chain.push({
+      g1, g2, m1, m2,
+      p: row?.p_adj ?? row?.['p-adj'],
+      sentence,
+      delta: (Math.abs(m1 - m2)).toFixed(2)
+    });
+    if (chain.length === 3) break;
+  }
+
+  return (
+    <View style={{ marginBottom: 8, padding: 10, borderRadius: 12, backgroundColor: '#F7FBF9', borderColor: '#D8EFD3', borderWidth: 1 }}>
+      <Text style={{ fontFamily: fonts.semiBold, color: '#55AD9B', marginBottom: 6 }}>Activity Differences</Text>
+
+      {chain.length > 0 && (
+        <View style={{ marginBottom: 10 }}>
+          <Text style={{ fontFamily: fonts.medium, color: '#55AD9B', marginBottom: 4, fontSize: 12 }}>
+            Ranked chain (adjacent significant):
+          </Text>
+          {chain.map((c, i) => (
+            <View
+              key={i}
+              style={{
+                backgroundColor: '#fff',
+                borderWidth: 1,
+                borderColor: '#D8EFD3',
+                borderRadius: 10,
+                paddingVertical: 8,
+                paddingHorizontal: 8,
+                marginBottom: 6
+              }}
+            >
+              <Text style={{ fontFamily: fonts.regular, color: '#272829', fontSize: 12 }}>
+                {c.sentence}
+              </Text>
+              <View style={{ flexDirection: 'row', marginTop: 6 }}>
+                <View style={{ backgroundColor: '#55AD9B', borderRadius: 999, paddingHorizontal: 10, paddingVertical: 4, marginRight: 6 }}>
+                  <Text style={{ color: '#fff', fontFamily: fonts.semiBold, fontSize: 12 }}>Δ: {c.delta}</Text>
+                </View>
+                <View style={{ backgroundColor: '#f7b801', borderRadius: 999, paddingHorizontal: 10, paddingVertical: 4 }}>
+                  <Text style={{ color: '#fff', fontFamily: fonts.semiBold, fontSize: 12 }}>
+                    p: {c.p}
+                  </Text>
+                </View>
+              </View>
+            </View>
+          ))}
+        </View>
+      )}
+
+      {significantPairs.length > 0 ? (
+        <View style={{ marginBottom: 6 }}>
+          <Text style={{ fontFamily: fonts.medium, color: '#55AD9B', marginBottom: 6, fontSize: 12 }}>
+            Clear differences (≥2 logs each):
+          </Text>
+          {significantPairs.map((row, idx) => {
+            const m1 = groupMeans[row.group1];
+            const m2 = groupMeans[row.group2];
+            const a1 = ACTIVITY_LABELS[row.group1] || formatText(row.group1);
+            const a2 = ACTIVITY_LABELS[row.group2] || formatText(row.group2);
+            const diffVal = (Math.abs(m1 - m2)).toFixed(2);
+            return (
+              <View
+                key={idx}
+                style={{
+                  backgroundColor: '#F1F8E8',
+                  borderWidth: 2,
+                  borderColor: '#95D2B3',
+                  borderRadius: 12,
+                  paddingVertical: 10,
+                  paddingHorizontal: 10,
+                  marginBottom: 8
+                }}
+              >
+                <Text style={{ fontFamily: fonts.medium, color: '#272829', fontSize: 13 }}>
+                  {explainPair(row, groupMeans)}
+                </Text>
+                <Text style={{ fontFamily: fonts.regular, color: '#555', marginTop: 4, fontSize: 12 }}>
+                  {a1}: {fmt(m1)} | {a2}: {fmt(m2)}
+                </Text>
+                <View style={{ flexDirection: 'row', marginTop: 6 }}>
+                  <View style={{ backgroundColor: '#55AD9B', borderRadius: 999, paddingHorizontal: 10, paddingVertical: 4, marginRight: 6 }}>
+                    <Text style={{ color: '#fff', fontFamily: fonts.semiBold, fontSize: 12 }}>Δ: {diffVal}</Text>
+                  </View>
+                  <View style={{ backgroundColor: '#f7b801', borderRadius: 999, paddingHorizontal: 10, paddingVertical: 4 }}>
+                    <Text style={{ color: '#fff', fontFamily: fonts.semiBold, fontSize: 12 }}>
+                      p: {row.p_adj ?? row['p-adj']}
+                    </Text>
+                  </View>
+                </View>
+              </View>
+            );
+          })}
+        </View>
+      ) : (
+        <Text style={{ fontFamily: fonts.regular, color: '#555' }}>
+          No clear differences between activities with ≥2 logs.
+        </Text>
+      )}
+
+      {nonSignificantPairs.length > 0 && significantPairs.length > 0 && (
+        <View style={{ marginTop: 2 }}>
+          <Text style={{ fontFamily: fonts.medium, color: '#777', marginBottom: 4, fontSize: 12 }}>
+            Other similar pairs:
+          </Text>
+          <View style={{ flexDirection: 'row', flexWrap: 'wrap' }}>
+            {nonSignificantPairs.slice(0, 8).map((row, idx) => {
+              const a1 = ACTIVITY_LABELS[row.group1] || formatText(row.group1);
+              const a2 = ACTIVITY_LABELS[row.group2] || formatText(row.group2);
+              return (
+                <View
+                  key={idx}
+                  style={{
+                    backgroundColor: '#fff',
+                    borderWidth: 1,
+                    borderColor: '#EEE',
+                    borderRadius: 8,
+                    paddingHorizontal: 8,
+                    paddingVertical: 4,
+                    marginRight: 6,
+                    marginBottom: 6
+                  }}
+                >
+                  <Text style={{ fontFamily: fonts.regular, color: '#555', fontSize: 12 }}>
+                    {a1} & {a2}
+                  </Text>
+                </View>
+              );
+            })}
+          </View>
+        </View>
+      )}
+
+      <Text style={{ fontFamily: fonts.regular, color: '#777', marginTop: 8, fontSize: 12 }}>
+        Comparisons exclude activities with fewer than 2 logs for reliability.
+      </Text>
+    </View>
+  );
 }
 
 export default function DailyAnova() {
@@ -117,12 +376,14 @@ export default function DailyAnova() {
     return new Date(date).toLocaleDateString('en-US', { weekday: 'long' });
   };
 
-  // Build top lists from groupMeans/groupCounts (fallback to arrays if already present)
+  // Build top lists from includedSet like web; show avg values
   const buildTopLists = (data) => {
     const groupMeans = data?.groupMeans || {};
     const groupCounts = data?.groupCounts || {};
-    const entries = Object.entries(groupMeans).filter(([g, mean]) =>
-      typeof mean === 'number' && !isNaN(mean) && (groupCounts[g] ?? 0) >= 2
+    const includedSet = buildIncludedSet(data, groupCounts);
+
+    const entries = Object.entries(groupMeans).filter(
+      ([g, mean]) => includedSet.has(g) && typeof mean === 'number' && !isNaN(mean)
     );
     const positives = entries
       .filter(([, m]) => m > 0)
@@ -134,14 +395,14 @@ export default function DailyAnova() {
       .map(([activity, moodScore]) => ({ activity, moodScore }));
 
     const topPositive = Array.isArray(data?.topPositive) && data.topPositive.length > 0
-      ? data.topPositive
+      ? data.topPositive.filter(r => includedSet.has(r.activity))
       : positives;
 
     const topNegative = Array.isArray(data?.topNegative) && data.topNegative.length > 0
-      ? data.topNegative
+      ? data.topNegative.filter(r => includedSet.has(r.activity))
       : negatives;
 
-    return { topPositive, topNegative, groupMeans, groupCounts };
+    return { topPositive, topNegative, groupMeans, groupCounts, includedSet };
   };
 
   const renderFAndP = (F_value, p_value) => (
@@ -160,67 +421,30 @@ export default function DailyAnova() {
     </View>
   );
 
-  const renderIncludedIgnored = (included = [], ignored = []) => {
-    if ((!included || included.length === 0) && (!ignored || ignored.length === 0)) return null;
+  const renderIncludedIgnored = (includedSet = new Set(), groupCounts = {}, ignored = []) => {
+    const included = Array.from(includedSet);
+    const notEnoughGroups = Array.isArray(ignored) && ignored.length > 0
+      ? ignored
+      : Object.keys(groupCounts).filter(g => !includedSet.has(g));
+    if (included.length === 0 && notEnoughGroups.length === 0) return null;
+
     return (
       <View style={{ marginBottom: 8 }}>
-        {included?.length > 0 && (
+        {included.length > 0 && (
           <Text style={{ fontFamily: fonts.medium, color: '#555' }}>
             Activities considered: {included.map(g => ACTIVITY_LABELS[g] || formatText(g)).join(', ')}
           </Text>
         )}
-        {ignored?.length > 0 && (
+        {notEnoughGroups.length > 0 && (
           <Text style={{ fontFamily: fonts.medium, color: '#777', marginTop: 2 }}>
-            Not enough logs: {ignored.map(g => ACTIVITY_LABELS[g] || formatText(g)).join(', ')}
+            Not enough logs: {notEnoughGroups.map(g => ACTIVITY_LABELS[g] || formatText(g)).join(', ')}
           </Text>
         )}
       </View>
     );
   };
 
-  const renderTukeyPairs = (tukeyHSD = [], groupMeans = {}, groupCounts = {}) => {
-    if (!Array.isArray(tukeyHSD) || tukeyHSD.length === 0) return null;
-    const valid = Object.keys(groupCounts || {}).filter(g => (groupCounts[g] || 0) >= 2);
-    const pairs = tukeyHSD.filter(r => valid.includes(r.group1) && valid.includes(r.group2));
-    const significant = pairs.filter(r => r.reject);
-
-    if (pairs.length === 0) return null;
-
-    return (
-      <View style={{ marginBottom: 8, padding: 10, borderRadius: 12, backgroundColor: '#F7FBF9', borderColor: '#D8EFD3', borderWidth: 1 }}>
-        <Text style={{ fontFamily: fonts.semiBold, color: '#55AD9B', marginBottom: 6 }}>Activity Differences</Text>
-        {significant.length > 0 ? significant.slice(0, 5).map((row, idx) => {
-          const a1 = ACTIVITY_LABELS[row.group1] || formatText(row.group1);
-          const a2 = ACTIVITY_LABELS[row.group2] || formatText(row.group2);
-          const m1 = groupMeans[row.group1];
-          const m2 = groupMeans[row.group2];
-          const sentence = (() => {
-            if (typeof m1 !== 'number' || typeof m2 !== 'number') return `${a1} vs ${a2} (limited data).`;
-            const equal = Number(m1.toFixed(2)) === Number(m2.toFixed(2));
-            if (!row.reject || equal) return `Similar effect: ${a1} & ${a2}.`;
-            if (m1 > m2) return `${a1} improved mood more than ${a2}.`;
-            return `${a2} improved mood more than ${a1}.`;
-          })();
-          return (
-            <View key={idx} style={{ paddingVertical: 6 }}>
-              <Text style={{ fontFamily: fonts.medium, color: '#272829' }}>{sentence}</Text>
-              <Text style={{ fontFamily: fonts.regular, color: '#777', marginTop: 2 }}>
-                p: {row.p_adj ?? row['p-adj'] ?? 'n/a'}
-              </Text>
-            </View>
-          );
-        }) : (
-          <Text style={{ fontFamily: fonts.regular, color: '#555' }}>
-            No clear differences between activities with ≥2 logs.
-          </Text>
-        )}
-        <Text style={{ fontFamily: fonts.regular, color: '#777', marginTop: 6 }}>
-          Comparisons exclude activities with fewer than 2 logs.
-        </Text>
-      </View>
-    );
-  };
-
+  // Collapsible category content
   function renderCategoryResults(categoryKey, data) {
     if (!data) {
       return (
@@ -241,13 +465,27 @@ export default function DailyAnova() {
       );
     }
 
-    const { topPositive, topNegative, groupMeans, groupCounts } = buildTopLists(data);
+    const { topPositive, topNegative, groupMeans, groupCounts, includedSet } = buildTopLists(data);
 
     return (
       <View>
-        {renderFAndP(data.F_value, data.p_value)}
-        {renderIncludedIgnored(data.includedGroups, data.ignoredGroups)}
-        {renderTukeyPairs(data.tukeyHSD, groupMeans, groupCounts)}
+        <Accordion
+          title="Daily Activity Comparison (ANOVA)"
+          subtitle="Tap to show/hide"
+          initiallyOpen={false}
+        >
+          {renderFAndP(data.F_value, data.p_value)}
+          {renderIncludedIgnored(includedSet, groupCounts, data.ignoredGroups)}
+        </Accordion>
+
+        <Accordion
+          title="Activity Differences (Tukey HSD)"
+          subtitle="Tap to show/hide"
+          initiallyOpen={false}
+        >
+          {renderActivityComparisons(data.tukeyHSD, groupMeans, groupCounts, includedSet)}
+        </Accordion>
+
         <Text style={{ fontFamily: fonts.regular, color: '#777', marginBottom: 8 }}>
           Lists show average mood change per activity (only if ≥2 logs).
         </Text>
@@ -265,7 +503,7 @@ export default function DailyAnova() {
                 Habits that boosted your mood
               </Text>
             </View>
-            {topPositive.map((item, idx) => (
+            {topPositive.map((item) => (
               <View
                 key={`${item.activity}-pos`}
                 style={{
@@ -288,12 +526,10 @@ export default function DailyAnova() {
                     color: '#272829',
                     fontFamily: fonts.medium,
                   }}>
-                    {getMoodMessage(item.activity, item.moodScore, idx)}
+                    {getMoodMessage(item.activity, item.moodScore)}
                   </Text>
-                </View>
-                <View style={{ backgroundColor: POSITIVE_COLOR, borderRadius: 999, paddingHorizontal: 14, paddingVertical: 6, marginLeft: 8 }}>
-                  <Text style={{ color: '#fff', fontFamily: fonts.bold, fontSize: 15 }}>
-                    {`${Math.abs(Number(item.moodScore.toFixed ? item.moodScore.toFixed(2) : item.moodScore))}%`}
+                  <Text style={{ color: '#555', fontFamily: fonts.medium, fontSize: 12, marginTop: 4 }}>
+                    avg {typeof item.moodScore === 'number' ? Number(item.moodScore).toFixed(2) : item.moodScore}
                   </Text>
                 </View>
               </View>
@@ -314,7 +550,7 @@ export default function DailyAnova() {
                 Habits that lowered your mood
               </Text>
             </View>
-            {topNegative.map((item, idx) => (
+            {topNegative.map((item) => (
               <View
                 key={`${item.activity}-neg`}
                 style={{
@@ -337,12 +573,10 @@ export default function DailyAnova() {
                     color: '#272829',
                     fontFamily: fonts.medium,
                   }}>
-                    {getMoodMessage(item.activity, item.moodScore, idx)}
+                    {getMoodMessage(item.activity, item.moodScore)}
                   </Text>
-                </View>
-                <View style={{ backgroundColor: NEGATIVE_COLOR, borderRadius: 999, paddingHorizontal: 14, paddingVertical: 6, marginLeft: 8 }}>
-                  <Text style={{ color: '#fff', fontFamily: fonts.bold, fontSize: 15 }}>
-                    {`${Math.abs(Number(item.moodScore.toFixed ? item.moodScore.toFixed(2) : item.moodScore))}%`}
+                  <Text style={{ color: '#555', fontFamily: fonts.medium, fontSize: 12, marginTop: 4 }}>
+                    avg {typeof item.moodScore === 'number' ? Number(item.moodScore).toFixed(2) : item.moodScore}
                   </Text>
                 </View>
               </View>
@@ -361,66 +595,52 @@ export default function DailyAnova() {
       header: 'How your sleep affected your mood',
       content: (
         <View style={{ alignItems: 'center', width: '100%' }}>
-          {sleep?.quality && sleep?.hours != null ? (
+          {sleep?.hours != null ? (
             <View style={{ alignItems: 'center', width: '100%' }}>
-              {sleep?.moodScore != null && (
-                <View
-                  style={{
-                    alignItems: 'center',
-                    backgroundColor: '#FFF7E6',
-                    borderWidth: 2,
-                    borderColor: sleep.moodScore > 0 ? POSITIVE_COLOR : sleep.moodScore < 0 ? NEGATIVE_COLOR : '#f7b801',
-                    borderRadius: 16,
-                    paddingVertical: 18,
-                    paddingHorizontal: 12,
-                    width: '100%',
-                    marginBottom: 4,
-                  }}
-                >
-                  <View style={{ backgroundColor: sleepQualityColors[sleep.quality], borderRadius: 999, paddingHorizontal: 18, paddingVertical: 4, marginBottom: 10 }}>
+              <View
+                style={{
+                  alignItems: 'center',
+                  backgroundColor: '#FFF7E6',
+                  borderWidth: 2,
+                  borderColor: '#f7b801',
+                  borderRadius: 16,
+                  paddingVertical: 18,
+                  paddingHorizontal: 12,
+                  width: '100%',
+                  marginBottom: 4,
+                }}
+              >
+                {/* Badge with Quality if provided */}
+                {sleep?.quality && (
+                  <View style={{ backgroundColor: sleepQualityColors[sleep.quality] || '#f7b801', borderRadius: 999, paddingHorizontal: 18, paddingVertical: 4, marginBottom: 10 }}>
                     <Text style={{ color: '#fff', fontFamily: fonts.semiBold, fontSize: 15 }}>
                       {formatText(sleep.quality)}
                     </Text>
                   </View>
-                  <View style={{
-                    flexDirection: 'row',
-                    alignItems: 'center',
-                    width: '100%',
-                    justifyContent: 'flex-start',
-                  }}>
-                    <View style={{ marginRight: 8 }}>{getMoodIcon(sleepMoodScore)}</View>
-                    <Text style={{
-                      fontSize: 14,
-                      color: '#272829',
-                      flex: 1,
-                      textAlign: 'left',
-                      marginHorizontal: 0,
-                      fontFamily: fonts.medium,
-                    }}>
-                      {getSleepMessage(sleepHours, sleepMoodScore)}
-                    </Text>
-                    <View style={{
-                      backgroundColor: sleepMoodScore > 0
-                        ? POSITIVE_COLOR
-                        : sleepMoodScore < 0
-                          ? NEGATIVE_COLOR
-                          : '#f7b801',
-                      borderRadius: 999,
-                      paddingHorizontal: 12,
-                      paddingVertical: 6,
-                      marginLeft: 8,
-                    }}>
-                      <Text style={{
-                        color: '#fff',
-                        fontFamily: fonts.bold,
-                        fontSize: 13,
-                      }}>
-                        {`${Math.abs(sleepMoodScore)}%`}
-                      </Text>
-                    </View>
+                )}
+                <View style={{
+                  flexDirection: 'row',
+                  alignItems: 'center',
+                  width: '100%',
+                  justifyContent: 'flex-start',
+                }}>
+                  <View style={{ marginRight: 8 }}>
+                    {typeof sleep?.moodScore === 'number'
+                      ? getMoodIcon(sleep.moodScore)
+                      : <Entypo name="minus" size={20} color="#f7b801" />}
                   </View>
+                  <Text style={{
+                    fontSize: 14,
+                    color: '#272829',
+                    flex: 1,
+                    textAlign: 'left',
+                    marginHorizontal: 0,
+                    fontFamily: fonts.medium,
+                  }}>
+                    {getSleepMessage(sleep.hours, sleep.moodScore)}
+                  </Text>
                 </View>
-              )}
+              </View>
             </View>
           ) : (
             <View style={{ alignItems: 'center', justifyContent: 'center', minHeight: 80, width: '100%' }}>
