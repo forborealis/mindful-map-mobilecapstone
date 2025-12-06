@@ -258,6 +258,11 @@ const BeforePositive = ({ navigation, route }) => {
                 </Text>
               </View>
             )}
+            <View className="mt-3 p-3 rounded-lg" style={{ backgroundColor: '#e0f2fe' }}>
+              <Text className="text-xs" style={{ color: '#1e40af', fontFamily: fonts.regular }}>
+                💬 <Text style={{ fontFamily: fonts.semiBold }}>Please avoid gibberish or unclear text for more accurate insights.</Text>
+              </Text>
+            </View>
           </View>
         )}
 
