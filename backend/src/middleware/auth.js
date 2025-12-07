@@ -61,4 +61,40 @@ const checkUserAccess = (req, res, next) => {
   next();
 };
 
-module.exports = { verifyToken, checkUserAccess };
+// Middleware to check if user is a teacher
+const checkTeacherRole = (req, res, next) => {
+  try {
+    if (req.user.mongoUser.role !== 'teacher') {
+      return res.status(403).json({
+        success: false,
+        message: 'Access denied. Only teachers can access this resource.'
+      });
+    }
+    next();
+  } catch (error) {
+    return res.status(400).json({
+      success: false,
+      message: 'Error checking user role'
+    });
+  }
+};
+
+// Middleware to check if user is a regular user (student)
+const checkUserRole = (req, res, next) => {
+  try {
+    if (req.user.mongoUser.role !== 'user') {
+      return res.status(403).json({
+        success: false,
+        message: 'Access denied. This resource is for students only.'
+      });
+    }
+    next();
+  } catch (error) {
+    return res.status(400).json({
+      success: false,
+      message: 'Error checking user role'
+    });
+  }
+};
+
+module.exports = { verifyToken, checkUserAccess, checkTeacherRole, checkUserRole };

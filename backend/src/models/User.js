@@ -51,6 +51,15 @@ const UserSchema = new mongoose.Schema({
     type: String,
     default: 'user',
   },
+  // Teacher-specific fields
+  subject: {
+    type: String,
+    required: false,
+  },
+  assignedSections: {
+    type: [String],
+    default: [],
+  },
   provider: {
     type: String,
     enum: ['email', 'Google'],

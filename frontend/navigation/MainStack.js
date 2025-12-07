@@ -4,6 +4,11 @@ import LoginScreen from '../screens/Login';
 import SignupScreen from '../screens/Signup';
 import LandingScreen from '../screens/Landing';
 import DailyQuote from '../screens/User/DailyQuote';
+import TeacherDrawer from './TeacherDrawer';
+import TeacherDashboard from '../screens/Teacher/Dashboard';
+import SectionStudents from '../screens/Teacher/SectionStudents';
+import StudentLogs from '../screens/Teacher/StudentLogs';
+import TeacherProfile from '../screens/Teacher/Profile';
 import ChooseCategory from '../screens/User/MoodInput/ChooseCategory';
 import OverallActivities from '../screens/User/MoodInput/OverallActivities';
 import Social from '../screens/User/MoodInput/Social';
@@ -48,6 +53,31 @@ export default function MainStack({ initialRoute }) {
         <Stack.Screen 
         name="Landing" 
         component={LandingScreen}
+        options={{ headerShown: false }}
+      />
+      <Stack.Screen 
+        name="TeacherDrawer" 
+        component={TeacherDrawer}
+        options={{ headerShown: false }}
+      />
+      <Stack.Screen 
+        name="TeacherDashboard" 
+        component={TeacherDashboard}
+        options={{ headerShown: false }}
+      />
+      <Stack.Screen 
+        name="SectionStudents" 
+        component={SectionStudents}
+        options={{ headerShown: false }}
+      />
+      <Stack.Screen 
+        name="StudentLogs" 
+        component={StudentLogs}
+        options={{ headerShown: false }}
+      />
+      <Stack.Screen 
+        name="TeacherProfile" 
+        component={TeacherProfile}
         options={{ headerShown: false }}
       />
       <Stack.Screen 

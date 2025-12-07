@@ -138,6 +138,33 @@ export const authService = {
     }
   },
 
+  async getToken() {
+    try {
+      // First try to get a fresh token from Firebase if user is signed in
+      const currentUser = auth.currentUser;
+      if (currentUser) {
+        try {
+          console.log('Getting fresh ID token from Firebase...');
+          const freshToken = await currentUser.getIdToken(true); // Force refresh
+          console.log('Fresh token obtained, length:', freshToken.length);
+          await AsyncStorage.setItem('token', freshToken);
+          return freshToken;
+        } catch (firebaseError) {
+          console.log('Could not get fresh token from Firebase:', firebaseError.message);
+          // Fall through to stored token
+        }
+      }
+      
+      // Fall back to stored token if Firebase is not available
+      const token = await AsyncStorage.getItem('token');
+      console.log('Using stored token, length:', token ? token.length : 0);
+      return token;
+    } catch (error) {
+      console.error('Error getting token:', error);
+      return null;
+    }
+  },
+
   async login(email, password) {
     try {
       console.log('Attempting login for:', email);
@@ -437,5 +464,17 @@ export const authService = {
       console.error('Network error during profile update:', error);
       return { success: false, error: 'Network error. Please check your connection.' };
     }
+  },
+
+  // Subscribe to auth changes
+  subscribeToAuthChanges(callback) {
+    const unsubscribe = auth.onAuthStateChanged(async (firebaseUser) => {
+      console.log('Firebase auth state changed:', firebaseUser ? firebaseUser.email : 'No user');
+      if (callback) {
+        callback();
+      }
+    });
+    
+    return unsubscribe;
   }
 };
