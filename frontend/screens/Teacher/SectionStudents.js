@@ -18,6 +18,7 @@ import Toast from 'react-native-toast-message';
 import { fonts } from '../../utils/fonts/fonts';
 import { colors } from '../../utils/colors/colors';
 import { authService } from '../../services/authService';
+import { downloadStudentLogsPDF } from '../../components/PDFTemplate/StudentLogsPDF';
 
 const API_BASE_URL = process.env.EXPO_PUBLIC_API_URL || 'http://localhost:5001';
 const PAGE_SIZE = 10;
@@ -167,13 +168,43 @@ const SectionStudents = () => {
 
   const handleDownloadStudentLogs = async (student) => {
     try {
-      const token = await authService.getToken();
       Toast.show({
         type: 'info',
-        text1: 'PDF Download',
-        text2: 'PDF download feature coming soon',
+        text1: 'Generating PDF',
+        text2: 'Please wait...',
         position: 'top',
       });
+
+      const token = await authService.getToken();
+
+      // Fetch all student logs
+      const response = await fetch(`${API_BASE_URL}/api/teacher/student-mood-logs/${student._id}`, {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      const data = await response.json();
+
+      if (data.success) {
+        // Download PDF with logs
+        await downloadStudentLogsPDF(student, data.data || []);
+        Toast.show({
+          type: 'success',
+          text1: 'PDF Downloaded',
+          text2: 'Student logs downloaded successfully',
+          position: 'top',
+        });
+      } else {
+        Toast.show({
+          type: 'error',
+          text1: 'Error',
+          text2: data.error || 'Failed to load student logs',
+          position: 'top',
+        });
+      }
     } catch (error) {
       console.error('Error downloading logs:', error);
       Toast.show({
