@@ -44,6 +44,7 @@ import PomodoroTechnique from '../screens/User/Activities/PomodoroTechnique';
 import GuidedMeditation from '../screens/User/Activities/GuidedMeditation';
 import DailyAffirmation from '../screens/User/Activities/DailyAffirmation';
 import CalmingMusic from '../screens/User/Activities/CalmingMusic';
+import MentalHealthResources from '../screens/User/MentalHealthResources';
 
 const Stack = createStackNavigator();
 
@@ -258,6 +259,11 @@ export default function MainStack({ initialRoute }) {
       <Stack.Screen
         name="CalmingMusic"
         component={CalmingMusic}
+        options={{ headerShown: false }}
+      />
+      <Stack.Screen
+        name="MentalHealthResources"
+        component={MentalHealthResources}
         options={{ headerShown: false }}
       />
     </Stack.Navigator>

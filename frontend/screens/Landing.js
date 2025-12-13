@@ -273,6 +273,52 @@ export default function Landing() {
           </Text>
         </TouchableOpacity>
       </View>
+
+      {/* Mental Health Resources Section */}
+      <View 
+        className="py-12 px-6"
+        style={{ backgroundColor: colors.background }}
+      >
+        <View className="items-center mb-8">
+          <Text 
+            className="text-4xl text-center mb-2"
+            style={{ fontFamily: fonts.bold, color: colors.text }}
+          >
+            Need Support?
+          </Text>
+          <Text 
+            className="text-lg text-center mb-4 leading-relaxed"
+            style={{ fontFamily: fonts.regular, color: colors.text, opacity: 0.8 }}
+          >
+            Access mental health resources and professional support when you need it.
+          </Text>
+        </View>
+
+        <TouchableOpacity 
+          className="py-6 px-6 rounded-2xl items-center"
+          style={{ backgroundColor: colors.white + 'CC' }}
+          onPress={() => navigation.navigate('MentalHealthResources')}
+        >
+          <View 
+            className="w-16 h-16 rounded-2xl items-center justify-center mb-4"
+            style={{ backgroundColor: colors.accent }}
+          >
+            <Text className="text-4xl">💚</Text>
+          </View>
+          <Text 
+            className="text-2xl mb-2"
+            style={{ fontFamily: fonts.semiBold, color: colors.text }}
+          >
+            Mental Health Resources
+          </Text>
+          <Text 
+            className="text-base text-center leading-relaxed"
+            style={{ fontFamily: fonts.regular, color: colors.text, opacity: 0.8 }}
+          >
+            Explore crisis hotlines, clinics, counseling services, and support organizations.
+          </Text>
+        </TouchableOpacity>
+      </View>
     </ScrollView>
   );
 }
