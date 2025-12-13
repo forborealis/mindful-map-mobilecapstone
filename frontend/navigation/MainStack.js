@@ -5,6 +5,7 @@ import SignupScreen from '../screens/Signup';
 import LandingScreen from '../screens/Landing';
 import DailyQuote from '../screens/User/DailyQuote';
 import TeacherDrawer from './TeacherDrawer';
+import AdminDrawer from './AdminDrawer';
 import TeacherDashboard from '../screens/Teacher/Dashboard';
 import SectionStudents from '../screens/Teacher/SectionStudents';
 import StudentLogs from '../screens/Teacher/StudentLogs';
@@ -59,6 +60,11 @@ export default function MainStack({ initialRoute }) {
       <Stack.Screen 
         name="TeacherDrawer" 
         component={TeacherDrawer}
+        options={{ headerShown: false }}
+      />
+      <Stack.Screen 
+        name="AdminDrawer" 
+        component={AdminDrawer}
         options={{ headerShown: false }}
       />
       <Stack.Screen 

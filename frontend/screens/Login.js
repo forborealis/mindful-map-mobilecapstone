@@ -55,7 +55,13 @@ export default function Login() {
         console.log('User role after login:', userRole);
         
         // Use navigationRef to immediately reset without flashing screens
-        if (userRole === 'teacher') {
+        if (userRole === 'admin') {
+          console.log('Redirecting to AdminDrawer');
+          navigationRef.current?.reset({
+            index: 0,
+            routes: [{ name: 'AdminDrawer' }],
+          });
+        } else if (userRole === 'teacher') {
           console.log('Redirecting to TeacherDrawer');
           navigationRef.current?.reset({
             index: 0,
