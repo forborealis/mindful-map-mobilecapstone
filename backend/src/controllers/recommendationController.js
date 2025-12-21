@@ -285,7 +285,7 @@ exports.submitRecommendationFeedback = async (req, res) => {
       return res.status(400).json({ error: 'Rating period has ended for this recommendation (outside current week).' });
     }
 
-    const pythonApiUrl = process.env.PYTHON_API_URL || 'http://localhost:5003';
+    const pythonApiUrl = process.env.PYTHON_API_URL || 'http://localhost:5001';
     const token = req.headers.authorization;
 
     const hasComment = typeof comment === 'string' && comment.trim().length >= 10;

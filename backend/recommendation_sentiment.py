@@ -1,5 +1,4 @@
-from flask import Flask, request, jsonify
-from flask_cors import CORS
+from flask import Blueprint, request, jsonify
 from textblob import TextBlob
 from vaderSentiment.vaderSentiment import SentimentIntensityAnalyzer
 import re
@@ -8,12 +7,11 @@ import logging
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
-app = Flask(__name__)
-CORS(app)
+bp = Blueprint('recommendation_sentiment', __name__)
 
 analyzer = SentimentIntensityAnalyzer()
 
-MIN_COMMENT_LENGTH = 10 
+MIN_COMMENT_LENGTH = 10
 
 def normalize_filipino_shortcuts(text: str) -> str:
     t = f" {str(text)} ".lower()
@@ -94,7 +92,7 @@ def get_sentiment_score(text: str):
 def effective_hint(score: float) -> str:
     return 'positive' if score > 0.25 else ('negative' if score < -0.25 else 'neutral')
 
-@app.route('/api/sentiment', methods=['POST'])
+@bp.route('/api/sentiment', methods=['POST'])
 def api_sentiment():
     """Endpoint compatible with Node: returns sentimentScore and sentimentUsed."""
     try:
@@ -136,7 +134,7 @@ def api_sentiment():
         logger.error(f"/api/sentiment error: {str(e)}")
         return jsonify({'success': False, 'error': str(e)}), 500
 
-@app.route('/api/sentiment/batch', methods=['POST'])
+@bp.route('/api/sentiment/batch', methods=['POST'])
 def api_sentiment_batch():
     try:
         body = request.get_json(silent=True) or {}
@@ -169,10 +167,6 @@ def api_sentiment_batch():
         logger.error(f"/api/sentiment/batch error: {str(e)}")
         return jsonify({'success': False, 'error': str(e)}), 500
 
-@app.route('/health', methods=['GET'])
+@bp.route('/health', methods=['GET'])
 def health():
     return jsonify({'status': 'healthy', 'service': 'sentiment-analysis', 'minCommentLength': MIN_COMMENT_LENGTH})
-
-if __name__ == '__main__':
-    print("Starting Sentiment Analysis Service on port 5003...")
-    app.run(debug=True, host='0.0.0.0', port=5003)

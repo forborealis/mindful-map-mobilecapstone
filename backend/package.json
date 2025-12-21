@@ -3,13 +3,16 @@
   "version": "1.0.0",
   "description": "Backend for Mindful Map mobile app",
   "main": "src/app.js",
-  "scripts": {
-    "start": "node src/app.js",
-    "dev": "nodemon src/app.js",
-    "test:db": "node src/utils/db-test.js",
-    "test:firebase-simple": "node src/utils/firebase-simple-test.js",
-    "test:login": "node src/utils/test-login-simulation.js"
-  },
+"scripts": {
+  "start": "concurrently \"npm run node\" \"npm run python\"",
+  "dev": "concurrently \"npm run node:dev\" \"npm run python\"",
+  "node": "node src/app.js",
+  "node:dev": "nodemon src/app.js",
+  "python": "python main.py",
+  "test:db": "node src/utils/db-test.js",
+  "test:firebase-simple": "node src/utils/firebase-simple-test.js",
+  "test:login": "node src/utils/test-login-simulation.js"
+},
   "dependencies": {
     "bcryptjs": "^3.0.2",
     "cloudinary": "^1.41.3",
@@ -25,6 +28,7 @@
     "node-fetch": "^2.7.0"
   },
   "devDependencies": {
+    "concurrently": "^9.2.1",
     "nodemon": "^3.1.10"
   }
 }
