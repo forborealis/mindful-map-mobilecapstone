@@ -5,6 +5,7 @@ import { fonts } from '../../../utils/fonts/fonts';
 import { colors } from '../../../utils/colors/colors';
 import { moodDataService } from '../../../services/moodDataService';
 import ContinueTrackingModal from './ContinueTrackingModal';
+import ConsecutiveNegativeModal from './ConsecutiveNegativeModal';
 import { Ionicons } from '@expo/vector-icons';
 import emotionImages from '../../../utils/images/emotions';
 import { validateReason } from '../../../utils/reasonValidator';
@@ -34,6 +35,7 @@ const AfterNegative = ({ navigation, route }) => {
   const [reasonError, setReasonError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [showModal, setShowModal] = useState(false);
+  const [showConsecutiveNegativeModal, setShowConsecutiveNegativeModal] = useState(false);
 
   // Get all the data from previous screens
   const { 
@@ -61,6 +63,34 @@ const AfterNegative = ({ navigation, route }) => {
     } else {
       setReasonError('');
     }
+  };
+
+  const checkConsecutiveNegativeEmotions = async () => {
+    try {
+      // Fetch recent logs to check for consecutive negative emotions
+      const response = await moodDataService.getRecentMoodLogs(5);
+      
+      if (response && response.logs && response.logs.length >= 5) {
+        const lastFiveLogs = response.logs.slice(0, 5);
+        // console.log('Last 5 logs:', lastFiveLogs);
+        
+        // Check if all last 5 have negative afterValence
+        const allNegative = lastFiveLogs.every(log => log.afterValence === 'negative');
+        console.log('All 5 negative?', allNegative);
+        
+        if (allNegative) {
+          // Show the consecutive negative modal
+          setShowConsecutiveNegativeModal(true);
+          return true;
+        }
+      } else {
+        console.log('Not enough logs yet. Total logs:', response.logs?.length || 0);
+      }
+    } catch (error) {
+      console.error('Error checking consecutive negative emotions:', error);
+      // Silently fail - don't interrupt user experience
+    }
+    return false;
   };
 
   const handleSubmit = async () => {
@@ -99,7 +129,16 @@ const AfterNegative = ({ navigation, route }) => {
       
       if (result.success) {
         console.log('Mood log saved successfully');
-        setShowModal(true);
+        
+        // Check for consecutive negative emotions
+        const hasConsecutiveNegative = await checkConsecutiveNegativeEmotions();
+        
+        if (hasConsecutiveNegative) {
+          // Modal will be shown, don't set showModal yet
+        } else {
+          // Show regular continue modal
+          setShowModal(true);
+        }
       } else {
         Alert.alert('Error', result.error || 'Failed to save mood log');
       }
@@ -339,7 +378,28 @@ const AfterNegative = ({ navigation, route }) => {
         }}
         onDone={() => {
           setShowModal(false);
-          navigation.navigate('SideBar', { screen: 'MoodEntries' });
+          // Check if this was initiated from calendar (missed day logging)
+          const isFromCalendar = selectedDate !== null;
+          
+          if (isFromCalendar) {
+            // For missed days, redirect back to calendar
+            navigation.navigate('SideBar', { screen: 'Calendar' });
+          } else {
+            // For normal flow, go to mood entries
+            navigation.navigate('SideBar', { screen: 'MoodEntries' });
+          }
+        }}
+      />
+
+      <ConsecutiveNegativeModal
+        isOpen={showConsecutiveNegativeModal}
+        onClose={() => {
+          setShowConsecutiveNegativeModal(false);
+          setShowModal(true);
+        }}
+        onViewResources={() => {
+          setShowConsecutiveNegativeModal(false);
+          navigation.navigate('MentalHealthResources');
         }}
       />
     </SafeAreaView>

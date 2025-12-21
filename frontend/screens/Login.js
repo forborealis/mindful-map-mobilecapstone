@@ -21,6 +21,7 @@ import { colors } from '../utils/colors/colors';
 import { useNavigation } from '@react-navigation/native';
 import { authService } from '../services/authService';
 import { registerPushTokenIfLoggedIn } from '../AppNotifications';
+import { navigationRef } from '../App';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import 'expo-dev-client';
 
@@ -48,9 +49,31 @@ export default function Login() {
       const result = await authService.login(values.email.trim(), values.password);
       if (result.success) {
         await registerPushTokenIfLoggedIn();
-        setTimeout(() => {
-          navigation.replace('ChooseCategory');
-        }, 1000);
+        
+        // Check user role and redirect accordingly
+        const userRole = result.user?.role;
+        console.log('User role after login:', userRole);
+        
+        // Use navigationRef to immediately reset without flashing screens
+        if (userRole === 'admin') {
+          console.log('Redirecting to AdminDrawer');
+          navigationRef.current?.reset({
+            index: 0,
+            routes: [{ name: 'AdminDrawer' }],
+          });
+        } else if (userRole === 'teacher') {
+          console.log('Redirecting to TeacherDrawer');
+          navigationRef.current?.reset({
+            index: 0,
+            routes: [{ name: 'TeacherDrawer' }],
+          });
+        } else {
+          console.log('Redirecting to DailyQuote');
+          navigationRef.current?.reset({
+            index: 0,
+            routes: [{ name: 'DailyQuote' }],
+          });
+        }
 
       } else {
         const errorMessage = result.error || 'Login failed';
@@ -116,9 +139,24 @@ export default function Login() {
         await registerPushTokenIfLoggedIn();
         console.log('Google login successful:', result.user.email);
         
-        setTimeout(() => {
-          navigation.replace('ChooseCategory');
-        }, 1000);
+        // Check user role and redirect accordingly
+        const userRole = result.user?.role;
+        console.log('User role after Google login:', userRole);
+        
+        // Use navigationRef to immediately reset without flashing screens
+        if (userRole === 'teacher') {
+          console.log('Redirecting to TeacherDrawer');
+          navigationRef.current?.reset({
+            index: 0,
+            routes: [{ name: 'TeacherDrawer' }],
+          });
+        } else {
+          console.log('Redirecting to DailyQuote');
+          navigationRef.current?.reset({
+            index: 0,
+            routes: [{ name: 'DailyQuote' }],
+          });
+        }
         
       } else {
         console.log('❌ Google login failed:', result.error);

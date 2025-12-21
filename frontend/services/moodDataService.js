@@ -166,20 +166,32 @@
 
     async getRecentMoodLogs(limit = 10) {
       try {
-        const result = await this.getUserMoodLogs({ limit, page: 1 });
-        if (result.success) {
-          return {
-            success: true,
-            moodLogs: result.moodLogs.slice(0, limit)
-          };
+        const headers = await this.getAuthHeaders();
+        const url = `${API_BASE_URL}/api/mood-data/logs/recent?limit=${limit}`;
+
+        const response = await fetch(url, {
+          method: 'GET',
+          headers
+        });
+
+        if (!response.ok) {
+          const errorText = await response.text();
+          console.error('API Error Response:', errorText);
+          throw new Error(`API Error: ${response.status}`);
         }
-        return result;
+
+        const data = await response.json();
+        
+        return {
+          success: true,
+          logs: data.logs || []
+        };
       } catch (error) {
         console.error('Error fetching recent mood logs:', error);
         return {
           success: false,
           error: error.message,
-          moodLogs: []
+          logs: []
         };
       }
     },
@@ -197,15 +209,11 @@
     async makeAuthenticatedRequest(url, options = {}) {
       try {
         let headers = await this.getAuthHeaders();
-        console.log('Making authenticated request to:', url);
-        console.log('Auth headers:', headers);
-        
+
         const response = await fetch(url, {
           ...options,
           headers: { ...headers, ...(options.headers || {}) }
         });
-
-        console.log('Response status:', response.status);
 
         // If unauthorized, try to refresh token and retry once
         if (response.status === 401) {

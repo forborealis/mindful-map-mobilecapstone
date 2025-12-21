@@ -4,6 +4,12 @@ import LoginScreen from '../screens/Login';
 import SignupScreen from '../screens/Signup';
 import LandingScreen from '../screens/Landing';
 import DailyQuote from '../screens/User/DailyQuote';
+import TeacherDrawer from './TeacherDrawer';
+import AdminDrawer from './AdminDrawer';
+import TeacherDashboard from '../screens/Teacher/Dashboard';
+import SectionStudents from '../screens/Teacher/SectionStudents';
+import StudentLogs from '../screens/Teacher/StudentLogs';
+import TeacherProfile from '../screens/Teacher/Profile';
 import ChooseCategory from '../screens/User/MoodInput/ChooseCategory';
 import OverallActivities from '../screens/User/MoodInput/OverallActivities';
 import Social from '../screens/User/MoodInput/Social';
@@ -42,6 +48,7 @@ import PomodoroTechnique from '../screens/User/Activities/PomodoroTechnique';
 import GuidedMeditation from '../screens/User/Activities/GuidedMeditation';
 import DailyAffirmation from '../screens/User/Activities/DailyAffirmation';
 import CalmingMusic from '../screens/User/Activities/CalmingMusic';
+import MentalHealthResources from '../screens/User/MentalHealthResources';
 
 const Stack = createStackNavigator();
 
@@ -51,6 +58,36 @@ export default function MainStack({ initialRoute }) {
         <Stack.Screen 
         name="Landing" 
         component={LandingScreen}
+        options={{ headerShown: false }}
+      />
+      <Stack.Screen 
+        name="TeacherDrawer" 
+        component={TeacherDrawer}
+        options={{ headerShown: false }}
+      />
+      <Stack.Screen 
+        name="AdminDrawer" 
+        component={AdminDrawer}
+        options={{ headerShown: false }}
+      />
+      <Stack.Screen 
+        name="TeacherDashboard" 
+        component={TeacherDashboard}
+        options={{ headerShown: false }}
+      />
+      <Stack.Screen 
+        name="SectionStudents" 
+        component={SectionStudents}
+        options={{ headerShown: false }}
+      />
+      <Stack.Screen 
+        name="StudentLogs" 
+        component={StudentLogs}
+        options={{ headerShown: false }}
+      />
+      <Stack.Screen 
+        name="TeacherProfile" 
+        component={TeacherProfile}
         options={{ headerShown: false }}
       />
       <Stack.Screen 
@@ -246,6 +283,11 @@ export default function MainStack({ initialRoute }) {
       <Stack.Screen
         name="CalmingMusic"
         component={CalmingMusic}
+        options={{ headerShown: false }}
+      />
+      <Stack.Screen
+        name="MentalHealthResources"
+        component={MentalHealthResources}
         options={{ headerShown: false }}
       />
     </Stack.Navigator>

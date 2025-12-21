@@ -12,4 +12,9 @@ export const colors = {
   background: '#F1F8E8',
   text: '#181C14',
   white: '#FFFFFF',
+
+  activity: '#7BBE9C',
+  social: '#5DADE2',
+  health: '#FF9800',
+  sleep: '#9C27B0',
 };

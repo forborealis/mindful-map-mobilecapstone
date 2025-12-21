@@ -6,14 +6,18 @@ import Toast from 'react-native-toast-message';
 import * as Font from 'expo-font';
 import './global.css';
 import { initializeAuth } from './services/authInitializer';
+import { authService } from './services/authService';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import { subscribeNotificationResponses, registerPushTokenIfLoggedIn } from './AppNotifications';
 import MainStack from './navigation/MainStack';
 
+// Export ref so Login/Signup screens can use it for immediate navigation
+export const navigationRef = React.createRef();
+
 export default function App() {
   const [isLoading, setIsLoading] = useState(true);
   const [initialRoute, setInitialRoute] = useState('Landing');
-  const navRef = useRef(null);
+  
   useEffect(() => {
     async function prepare() {
       try {
@@ -27,8 +31,9 @@ export default function App() {
         });
         const authResult = await initializeAuth();
         setInitialRoute(authResult.initialRoute);
-       await registerPushTokenIfLoggedIn();
+        await registerPushTokenIfLoggedIn();
       } catch (error) {
+        console.error('Error in app preparation:', error);
         setInitialRoute('Landing');
       } finally {
         setIsLoading(false);
@@ -37,10 +42,25 @@ export default function App() {
     prepare();
   }, []);
 
-   useEffect(() => {
-    if (!navRef.current) return; // guard
-    const sub = subscribeNotificationResponses(navRef.current);
-    return () => sub?.remove();
+  // Listen for logout events only
+  useEffect(() => {
+    if (!navigationRef.current) return;
+    
+    const checkAndUpdateRoute = async () => {
+      const session = await authService.checkAuthStatus();
+      
+      if (!session.isAuthenticated) {
+        console.log('User logged out');
+        navigationRef.current?.reset({
+          index: 0,
+          routes: [{ name: 'Landing' }],
+        });
+      }
+    };
+
+    const unsubscribe = authService.subscribeToAuthChanges?.(checkAndUpdateRoute);
+    
+    return () => unsubscribe?.();
   }, []);
 
   if (isLoading) {
@@ -57,7 +77,7 @@ export default function App() {
   return (
     <>
       <PaperProvider>
-        <NavigationContainer>
+        <NavigationContainer ref={navigationRef}>
           <MainStack initialRoute={initialRoute} />
         </NavigationContainer>
       </PaperProvider>
