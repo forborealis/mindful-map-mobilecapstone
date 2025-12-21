@@ -5,5 +5,8 @@ const recommendationController = require('../controllers/recommendationControlle
 
 router.post('/generate', verifyToken, recommendationController.generateAndSaveRecommendation);
 router.get('/week', verifyToken, recommendationController.getCurrentWeekRecommendations);
+router.post('/resolve', verifyToken, recommendationController.resolveMoodScoreId);
+router.post('/feedback', verifyToken, recommendationController.submitRecommendationFeedback);
+router.get('/feedback/:recommendationId', verifyToken, recommendationController.getUserFeedbackForRecommendation);
 
 module.exports = router;

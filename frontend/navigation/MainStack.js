@@ -28,7 +28,10 @@ import ActivitiesStatistics from '../screens/User/Statistics/ActivitiesStatistic
 import SleepAnalysis from '../screens/User/Statistics/SleepAnalysis';
 import Anova from '../screens/User/Statistics/Anova';
 import DailyAnova from '../screens/User/Statistics/Daily/DailyAnova';
-import Recommendation from '../screens/User/Statistics/Daily/Recommendation';  
+import Recommendation from '../screens/User/Statistics/Daily/Recommendation'; 
+import RecommendationRating from '../screens/User/Statistics/Daily/RecommendationRating';
+import ViewRecommendation from '../screens/User/Statistics/Daily/ViewRecommendation'; 
+import EditRecommendation from '../screens/User/Statistics/Daily/EditRecommendation';
 import WeeklyAnova from '../screens/User/Statistics/Weekly/WeeklyAnova';
 import Prediction from '../screens/User/Prediction/Prediction';
 import CategoryPrediction from '../screens/User/Prediction/CategoryPrediction';
@@ -178,6 +181,21 @@ export default function MainStack({ initialRoute }) {
       <Stack.Screen
         name="Recommendation"
         component={Recommendation}
+        options={{ headerShown: false }}
+      />
+      <Stack.Screen
+        name="RecommendationRating"
+        component={RecommendationRating}
+        options={{ headerShown: false }}
+      />
+      <Stack.Screen
+        name="ViewRecommendation"
+        component={ViewRecommendation}
+        options={{ headerShown: false }}
+      />
+      <Stack.Screen
+        name="EditRecommendation"
+        component={EditRecommendation}
         options={{ headerShown: false }}
       />
       <Stack.Screen

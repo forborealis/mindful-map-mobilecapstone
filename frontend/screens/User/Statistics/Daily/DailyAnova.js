@@ -82,6 +82,7 @@ function formatText(text) {
   if (!text) return '';
   return text.replace(/[-_]/g, ' ').replace(/\b\w/g, (l) => l.toUpperCase());
 }
+
 function getMoodIcon(score) {
   if (score > 0) return <MaterialIcons name="trending-up" size={20} color={POSITIVE_COLOR} />;
   if (score < 0) return <MaterialIcons name="trending-down" size={20} color={NEGATIVE_COLOR} />;
@@ -108,11 +109,13 @@ function getDateString(date) {
   const d = new Date(date);
   return d.toLocaleDateString(undefined, { year: 'numeric', month: 'short', day: 'numeric' });
 }
+
 function addDays(date, days) {
   const d = new Date(date);
   d.setDate(d.getDate() + days);
   return d.toISOString().split('T')[0];
 }
+
 function getMoodMessage(activityKey, moodScore) {
   const label = ACTIVITY_LABELS[activityKey] || formatText(activityKey);
   if (moodScore > 0) return `${label} boosted your mood.`;
@@ -173,46 +176,10 @@ function renderActivityComparisons(tukeyHSD = [], groupMeans = {}, groupCounts =
   const nonSignificantPairs = filteredPairs.filter(r => !r.reject);
   const fmt = v => (typeof v === 'number' && !isNaN(v) ? Number(v).toFixed(2) : 'n/a');
 
-  const ranked = [...validGroups]
-    .filter(g => typeof groupMeans[g] === 'number' && !isNaN(groupMeans[g]))
-    .sort((a, b) => groupMeans[b] - groupMeans[a]);
-
-  const sigMap = new Map();
-  significantPairs.forEach(r => {
-    sigMap.set(`${r.group1}||${r.group2}`, r);
-    sigMap.set(`${r.group2}||${r.group1}`, r);
-  });
-
-  const chain = [];
-  for (let i = 0; i < ranked.length - 1; i++) {
-    const g1 = ranked[i];
-    const g2 = ranked[i + 1];
-    const row = sigMap.get(`${g1}||${g2}`);
-    if (!row) continue;
-    const m1 = groupMeans[g1];
-    const m2 = groupMeans[g2];
-    const label1 = ACTIVITY_LABELS[g1] || formatText(g1);
-    const label2 = ACTIVITY_LABELS[g2] || formatText(g2);
-
-    const sentence = m1 === m2
-      ? `Similar: ${label1} & ${label2}`
-      : (m1 > m2
-          ? `${label1} improved mood more than ${label2}`
-          : `${label2} improved mood more than ${label1}`);
-    chain.push({
-      g1, g2, m1, m2,
-      p: row?.p_adj ?? row?.['p-adj'],
-      sentence,
-      delta: (Math.abs(m1 - m2)).toFixed(2)
-    });
-    if (chain.length === 3) break;
-  }
-
   return (
     <View style={{ marginBottom: 8, padding: 10, borderRadius: 12, backgroundColor: '#F7FBF9', borderColor: '#D8EFD3', borderWidth: 1 }}>
       <Text style={{ fontFamily: fonts.semiBold, color: '#55AD9B', marginBottom: 6 }}>Activity Differences</Text>
 
-      
       {significantPairs.length > 0 ? (
         <View style={{ marginBottom: 6 }}>
           <Text style={{ fontFamily: fonts.medium, color: '#55AD9B', marginBottom: 6, fontSize: 12 }}>
@@ -329,6 +296,7 @@ export default function DailyAnova() {
 
   const handlePrev = () => setDate(addDays(date, -1));
   const handleNext = () => setDate(addDays(date, 1));
+  
   const getDayLabel = () => {
     const today = new Date().toISOString().split('T')[0];
     if (date === today) return 'Today';

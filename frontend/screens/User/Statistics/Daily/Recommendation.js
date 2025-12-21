@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, TouchableOpacity, ScrollView, ActivityIndicator } from 'react-native';
+import { View, Text, TouchableOpacity, ScrollView, ActivityIndicator, Alert } from 'react-native';
 import { useRoute, useNavigation } from '@react-navigation/native';
 import { Ionicons, MaterialIcons } from '@expo/vector-icons';
 import { colors } from '../../../../utils/colors/colors';
@@ -34,7 +34,6 @@ export default function Recommendation() {
       }
 
       try {
-        // Always send an object payload
         const payload = hasId ? { moodScoreId } : { date, category, activity: activity || null };
         const recs = await generateRecommendations(payload);
 
@@ -60,6 +59,18 @@ export default function Recommendation() {
     return () => { mounted = false; };
   }, [moodScoreId, date, category, activity]);
 
+  const handleRateRecommendation = (recommendationId, hasExistingFeedback) => {
+    // Navigate to full-page rating screen
+    navigation.navigate('RecommendationRating', {
+      recommendationId,
+      hasExistingFeedback,
+      moodScoreId,
+      date,
+      category,
+      activity
+    });
+  };
+
   const items = Array.isArray(recommendations) ? recommendations : [];
   const noParams = !moodScoreId && !(date && category);
 
@@ -73,7 +84,7 @@ export default function Recommendation() {
           left: 0,
           right: 0,
           paddingTop: 30,
-          height: 74, // 56 + 18
+          height: 74,
           backgroundColor: colors.primary,
           flexDirection: 'row',
           alignItems: 'center',
@@ -160,7 +171,7 @@ export default function Recommendation() {
                     style={{ fontFamily: fonts.medium, fontSize: 12, color: '#3e8e7e' }}
                     numberOfLines={2}
                   >
-                    “Small steps each day lead to big changes over time.”
+                    "Small steps each day lead to big changes over time."
                   </Text>
                 </View>
               </View>
@@ -227,7 +238,7 @@ export default function Recommendation() {
                   <MaterialIcons name="sentiment-satisfied-alt" size={28} color="#55AD9B" />
                 </View>
                 <Text style={{ color: '#2b3b36', fontFamily: fonts.medium, fontSize: 14, textAlign: 'center' }}>
-                  No selection provided. Use “View Recommendation” from Daily Analysis.
+                  No selection provided. Use "View Recommendation" from Daily Analysis.
                 </Text>
                 <TouchableOpacity
                   style={{
@@ -246,21 +257,60 @@ export default function Recommendation() {
               </View>
             ) : items.length > 0 ? (
               <View style={{ marginTop: 12 }}>
+                {/* Stats Banner */}
+                <View
+                  style={{
+                    backgroundColor: '#55AD9B',
+                    borderRadius: 16,
+                    padding: 14,
+                    marginBottom: 16,
+                    flexDirection: 'row',
+                    alignItems: 'center',
+                  }}
+                >
+                  <View
+                    style={{
+                      height: 48,
+                      width: 48,
+                      borderRadius: 999,
+                      backgroundColor: 'rgba(255,255,255,0.2)',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      marginRight: 12,
+                    }}
+                  >
+                    <MaterialIcons name="auto-awesome" size={24} color="#fff" />
+                  </View>
+                  <View style={{ flex: 1 }}>
+                    <Text style={{ fontFamily: fonts.bold, fontSize: 17, color: '#fff' }}>
+                      Your Growth Plan
+                    </Text>
+                    <Text style={{ fontFamily: fonts.medium, fontSize: 13, color: 'rgba(255,255,255,0.9)' }}>
+                      {items.length} personalized {items.length === 1 ? 'tip' : 'tips'} ready for you
+                    </Text>
+                  </View>
+                </View>
+
+                {/* Recommendations List */}
                 {items.map((item, idx) => {
                   const text = typeof item === 'string' ? item : item?.recommendation;
                   const key = (typeof item === 'object' && item?._id) || `rec-${idx}`;
+                  const recommendationId = typeof item === 'object' ? item?._id : null;
+                  const hasExistingFeedback =
+                    typeof item?.effectivenessCount === 'number' && item.effectivenessCount > 0;
+
+                  const isEffective = typeof item?.effective === 'boolean' ? item.effective : null;
+
                   return (
                     <View
                       key={key}
                       style={{
-                        flexDirection: 'row',
-                        alignItems: 'flex-start',
-                        borderWidth: 1,
+                        borderWidth: 2,
                         borderColor: '#E6F4EA',
                         backgroundColor: '#fff',
                         borderRadius: 16,
-                        padding: 12,
-                        marginBottom: 10,
+                        padding: 14,
+                        marginBottom: 12,
                         shadowColor: '#000',
                         shadowOpacity: 0.04,
                         shadowOffset: { width: 0, height: 2 },
@@ -268,48 +318,150 @@ export default function Recommendation() {
                         elevation: 2,
                       }}
                     >
+                      {/* Number Badge */}
                       <View
                         style={{
-                          height: 36,
-                          width: 36,
+                          position: 'absolute',
+                          top: 14,
+                          left: 14,
+                          height: 32,
+                          width: 32,
                           borderRadius: 999,
-                          backgroundColor: '#95D2B3',
+                          backgroundColor: '#55AD9B',
                           alignItems: 'center',
                           justifyContent: 'center',
-                          marginRight: 10,
-                          marginTop: 2,
+                          zIndex: 1,
                         }}
                       >
-                        <MaterialIcons name="check-circle" size={22} color="#fff" />
-                      </View>
-                      <View style={{ flex: 1 }}>
-                        <Text
-                          style={{ color: '#1f2a27', fontFamily: fonts.medium, fontSize: 14, lineHeight: 20 }}
-                        >
-                          {text}
+                        <Text style={{ color: '#fff', fontFamily: fonts.bold, fontSize: 14 }}>
+                          {idx + 1}
                         </Text>
+                      </View>
+
+                      <View style={{ paddingLeft: 44 }}>
+                        {/* Recommendation Text */}
+                        <View style={{ flexDirection: 'row', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: 8 }}>
+                          <Text
+                            style={{
+                              color: '#272829',
+                              fontFamily: fonts.medium,
+                              fontSize: 14,
+                              lineHeight: 20,
+                              flex: 1,
+                              paddingRight: 8,
+                            }}
+                          >
+                            {text}
+                          </Text>
+                          
+                          {/* Status Chip */}
+                          {hasExistingFeedback && isEffective !== null && (
+                            <View
+                              style={{
+                                flexDirection: 'row',
+                                alignItems: 'center',
+                                backgroundColor: isEffective ? '#55AD9B15' : '#FF980015',
+                                borderWidth: 1,
+                                borderColor: isEffective ? '#55AD9B40' : '#FF980040',
+                                borderRadius: 999,
+                                paddingHorizontal: 10,
+                                paddingVertical: 4,
+                              }}
+                            >
+                              <Text
+                                style={{
+                                  color: isEffective ? '#1b5f52' : '#92400e',
+                                  fontFamily: fonts.semiBold,
+                                  fontSize: 11,
+                                }}
+                              >
+                                {isEffective ? '✓ Effective' : '✗ Not effective'}
+                              </Text>
+                            </View>
+                          )}
+                        </View>
+
+                        {/* Rate/Update CTA */}
+                        {recommendationId && (
+                          <View
+                            style={{
+                              paddingTop: 10,
+                              borderTopWidth: 1,
+                              borderTopColor: '#F7FBF9',
+                            }}
+                          >
+                            <TouchableOpacity
+                              onPress={() => handleRateRecommendation(recommendationId, hasExistingFeedback)}
+                              style={{
+                                backgroundColor: colors.primary,
+                                borderRadius: 999,
+                                paddingVertical: 8,
+                                paddingHorizontal: 14,
+                                alignSelf: 'flex-start',
+                                shadowColor: '#000',
+                                shadowOpacity: 0.1,
+                                shadowOffset: { width: 0, height: 2 },
+                                shadowRadius: 4,
+                                elevation: 2,
+                              }}
+                            >
+                              <Text style={{ color: '#fff', fontFamily: fonts.semiBold, fontSize: 13 }}>
+                                {hasExistingFeedback ? 'Update Effectiveness' : 'Rate Effectiveness'}
+                              </Text>
+                            </TouchableOpacity>
+                            <Text
+                              style={{
+                                color: '#6b7280',
+                                fontFamily: fonts.regular,
+                                fontSize: 11,
+                                fontStyle: 'italic',
+                                marginTop: 6,
+                              }}
+                            >
+                              Help us improve your recommendations
+                            </Text>
+                          </View>
+                        )}
                       </View>
                     </View>
                   );
                 })}
 
-                {/* Footer CTA */}
+                {/* Motivational Card */}
                 <View
                   style={{
-                    marginTop: 8,
-                    backgroundColor: '#F7FBF4',
-                    borderWidth: 1,
-                    borderColor: '#E6F4EA',
+                    backgroundColor: '#FEF3C7',
+                    borderWidth: 2,
+                    borderColor: '#fbbf2440',
                     borderRadius: 16,
-                    padding: 12,
+                    padding: 14,
+                    marginTop: 8,
+                    flexDirection: 'row',
+                    alignItems: 'flex-start',
                   }}
                 >
-                  <Text style={{ color: '#2f6c60', fontFamily: fonts.semiBold, fontSize: 14, marginBottom: 4 }}>
-                    Stay consistent
-                  </Text>
-                  <Text style={{ color: '#2f6c60', fontFamily: fonts.regular, fontSize: 12 }}>
-                    Try one recommendation today and note how you feel after.
-                  </Text>
+                  <View
+                    style={{
+                      height: 48,
+                      width: 48,
+                      borderRadius: 999,
+                      backgroundColor: 'rgba(255,255,255,0.6)',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      marginRight: 12,
+                      flexShrink: 0,
+                    }}
+                  >
+                    <MaterialIcons name="celebration" size={24} color="#92400e" />
+                  </View>
+                  <View style={{ flex: 1 }}>
+                    <Text style={{ fontFamily: fonts.bold, fontSize: 16, color: '#92400e', marginBottom: 4 }}>
+                      Stay Consistent!
+                    </Text>
+                    <Text style={{ fontFamily: fonts.regular, fontSize: 13, color: '#78350f', lineHeight: 18 }}>
+                      Try one recommendation today and take note of how you feel afterward. Small, consistent actions create lasting change. You've got this! 🌟
+                    </Text>
+                  </View>
                 </View>
               </View>
             ) : (
