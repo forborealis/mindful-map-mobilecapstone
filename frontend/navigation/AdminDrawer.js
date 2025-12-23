@@ -15,6 +15,7 @@ import Toast from 'react-native-toast-message';
 import AdminDashboard from '../screens/Admin/Dashboard';
 import StudentsScreen from '../screens/Admin/Students';
 import TeachersScreen from '../screens/Admin/Teachers';
+import PredictionComparison from '../screens/Admin/PredictionComparison';
 import { authService } from '../services/authService';
 import { colors } from '../utils/colors/colors';
 import { fonts } from '../utils/fonts/fonts';
@@ -263,6 +264,47 @@ const CustomDrawerContent = ({ navigation, state }) => {
           </Text>
         </TouchableOpacity>
 
+        {/* Prediction Comparison */}
+        <TouchableOpacity
+          onPress={() => navigation.navigate('PredictionComparison')}
+          style={{
+            flexDirection: 'row',
+            alignItems: 'center',
+            paddingVertical: 12,
+            paddingHorizontal: 16,
+            marginVertical: 4,
+            marginHorizontal: 8,
+            borderRadius: 8,
+            backgroundColor:
+              state?.routeNames[state?.index] === 'PredictionComparison'
+                ? 'rgba(52, 152, 219, 0.1)'
+                : 'transparent',
+          }}
+        >
+          <MaterialCommunityIcons
+            name="chart-bar"
+            size={24}
+            color={
+              state?.routeNames[state?.index] === 'PredictionComparison'
+                ? colors.primary
+                : colors.text
+            }
+          />
+          <Text
+            style={{
+              marginLeft: 16,
+              fontSize: 16,
+              fontFamily: fonts.regular,
+              color:
+                state?.routeNames[state?.index] === 'PredictionComparison'
+                  ? colors.primary
+                  : colors.text,
+            }}
+          >
+            Mood Predictions
+          </Text>
+        </TouchableOpacity>
+
         {/* Divider */}
         <View
           style={{
@@ -334,6 +376,13 @@ export const AdminDrawer = () => {
         component={TeachersScreen}
         options={{
           title: 'Teachers',
+        }}
+      />
+      <Drawer.Screen
+        name="PredictionComparison"
+        component={PredictionComparison}
+        options={{
+          title: 'Prediction Comparison',
         }}
       />
     </Drawer.Navigator>

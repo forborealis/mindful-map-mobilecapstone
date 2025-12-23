@@ -40,8 +40,7 @@ class CategoryMoodPredictor:
             df = pd.DataFrame(mood_logs)
             if df.empty:
                 return None, f"No mood logs data received", None
-            if 'afterIntensity' in df.columns:
-                df['afterIntensity'] = pd.to_numeric(df['afterIntensity'], errors='coerce')
+            # No longer using afterIntensity
             if 'afterValence' in df.columns:
                 df['afterValence'] = df['afterValence'].astype(str)
             if 'afterEmotion' in df.columns:
@@ -62,7 +61,7 @@ class CategoryMoodPredictor:
                 return None, f"Insufficient data for {category}. Need at least 14 entries, found {len(category_df)}", None
             category_df['week_number'] = ((category_df['timestamp'] - four_weeks_ago).dt.days // 7).astype(int)
             category_df = category_df[category_df['week_number'] < 4]
-            required_fields = ['afterEmotion', 'afterValence', 'afterIntensity']
+            required_fields = ['afterEmotion', 'afterValence']  # Removed afterIntensity since we're using occurrence-based
             for field in required_fields:
                 if field not in category_df.columns:
                     return None, f"Missing required field '{field}' in {category} data", None
@@ -91,7 +90,7 @@ class CategoryMoodPredictor:
                 day_data = category_df[category_df['timestamp'].dt.day_name() == day]
                 if day_data.empty:
                     day_predictions[day] = {
-                        'prediction': 'No data available',
+                        'prediction': 'no data available',
                         'confidence': 0,
                         'emotion_breakdown': {},
                         'valence_avg': 0,
@@ -103,8 +102,7 @@ class CategoryMoodPredictor:
                 for _, entry in day_data.iterrows():
                     date_key = entry['timestamp'].date()
                     week_number = entry['week_number']
-                    after_emotion = str(entry['afterEmotion']).strip()
-                    after_intensity = float(entry['afterIntensity']) if pd.notna(entry['afterIntensity']) else 0
+                    after_emotion = str(entry['afterEmotion']).strip().lower()  # Convert to lowercase
                     after_valence = str(entry['afterValence']).strip().lower()
                     if category == 'sleep':
                         activity = str(entry.get('hrs', entry.get('activity', 'Unknown')))
@@ -116,29 +114,34 @@ class CategoryMoodPredictor:
                         continue
                     if date_key not in daily_data:
                         daily_data[date_key] = {
-                            'emotions': defaultdict(list),
+                            'emotions': defaultdict(int),  # Count occurrences instead of intensities
                             'week_number': week_number,
                             'activities': defaultdict(list)
                         }
-                    daily_data[date_key]['emotions'][after_emotion].append(after_intensity)
+                    daily_data[date_key]['emotions'][after_emotion] += 1  # Count occurrence
                     daily_data[date_key]['activities'][after_emotion].append({
                         'activity': activity,
                         'timestamp': entry['timestamp']
                     })
-                mood_week_weighted_intensities = defaultdict(lambda: [0, 0, 0, 0])
+                # Calculate weighted occurrence counts by week
+                mood_week_occurrences = defaultdict(lambda: [0, 0, 0, 0])
                 for date_key, data in daily_data.items():
                     week_number = data['week_number']
                     week_weight = self.week_weights[week_number]
-                    for emotion, intensities in data['emotions'].items():
-                        avg_daily_intensity = sum(intensities) / len(intensities)
-                        weighted_intensity = week_weight * avg_daily_intensity
-                        mood_week_weighted_intensities[emotion][week_number] += weighted_intensity
+                    for emotion, count in data['emotions'].items():
+                        # Each day contributes 1 occurrence per emotion (regardless of count per day)
+                        mood_week_occurrences[emotion][week_number] += 1
+                
+                # Calculate weighted sum for each emotion: sum(weight × occurrence)
                 total_weighted_sum = 0
-                for emotion, week_values in mood_week_weighted_intensities.items():
-                    total_weighted_sum += sum(week_values)
+                emotion_weighted_sums = {}
+                for emotion, week_values in mood_week_occurrences.items():
+                    weighted_sum = sum(self.week_weights[i] * week_values[i] for i in range(4))
+                    emotion_weighted_sums[emotion] = weighted_sum
+                    total_weighted_sum += weighted_sum
                 if total_weighted_sum == 0:
                     day_predictions[day] = {
-                        'prediction': 'No data available',
+                        'prediction': 'no data available',
                         'confidence': 0,
                         'emotion_breakdown': {},
                         'valence_avg': 0,
@@ -146,14 +149,20 @@ class CategoryMoodPredictor:
                         'date': 'No data available'
                     }
                     continue
+                
+                # Calculate probabilities and cap at 90%
                 emotion_probabilities = {}
                 max_probability = 0
                 predicted_emotion = None
-                for emotion, week_values in mood_week_weighted_intensities.items():
-                    emotion_sum = sum(week_values)
-                    probability = emotion_sum / total_weighted_sum
-                    capped_probability = min(probability * 100, 90.0)
-                    emotion_probabilities[emotion] = round(capped_probability / 100, 3)
+                for emotion, weighted_sum in emotion_weighted_sums.items():
+                    # Calculate probability: (weighted sum / total weighted sum) × 100
+                    probability = (weighted_sum / total_weighted_sum) * 100
+                    capped_probability = min(probability, 90.0)
+                    
+                    # Store as displayed (one decimal place, e.g., 57.1)
+                    if capped_probability > 0:  # Exclude zeros
+                        emotion_probabilities[emotion] = round(capped_probability, 1)
+                    
                     if capped_probability > max_probability:
                         max_probability = capped_probability
                         predicted_emotion = emotion
@@ -179,14 +188,19 @@ class CategoryMoodPredictor:
                 avg_valence = valence_total / valence_count if valence_count > 0 else 0
                 current_week_date = self.get_current_week_date(day)
                 formatted_date = current_week_date.strftime("%B %d, %Y")
+                
+                # Create emotion breakdown - only include non-zero probabilities, all lowercase
                 emotion_breakdown = {}
                 for emotion in self.all_emotions:
-                    emotion_breakdown[emotion] = emotion_probabilities.get(emotion, 0)
+                    prob = emotion_probabilities.get(emotion.lower(), 0)
+                    if prob > 0:  # Exclude zeros
+                        emotion_breakdown[emotion.lower()] = prob
+                
                 safe_activity = str(predicted_activity) if pd.notna(predicted_activity) else 'Unknown'
-                safe_confidence = round(max_probability / 100, 3) if pd.notna(max_probability) else 0
+                safe_confidence = round(max_probability, 1) if pd.notna(max_probability) else 0  # Store as displayed (e.g., 57.1)
                 safe_valence = round(avg_valence, 2) if pd.notna(avg_valence) else 0
                 day_predictions[day] = {
-                    'prediction': predicted_emotion or 'No prediction',
+                    'prediction': predicted_emotion or 'no prediction',  # lowercase
                     'confidence': safe_confidence,
                     'emotion_breakdown': emotion_breakdown,
                     'valence_avg': safe_valence,
@@ -308,6 +322,54 @@ def check_category_data():
         return jsonify({
             'success': False,
             'message': 'Internal server error'
+        }), 500
+
+@bp.route('/api/predict-mood-all-categories', methods=['POST'])
+def predict_mood_all_categories():
+    try:
+        data = request.get_json()
+        mood_logs = data.get('mood_logs', [])
+        
+        if not mood_logs:
+            return jsonify({
+                'success': False,
+                'message': 'Mood logs are required'
+            }), 400
+            
+        predictor = CategoryMoodPredictor()
+        all_predictions = {}
+        
+        for category in predictor.categories:
+            predictions, error, _ = predictor.prepare_category_data(mood_logs, category)
+            
+            category_preds = {}
+            if error:
+                # If error, fill with empty data
+                for day in predictor.days_of_week:
+                    category_preds[day] = {
+                        'predictedMood': 'no data available',  # lowercase
+                        'actualMood': None,
+                        'allMoodProbabilities': {}
+                    }
+            else:
+                for day, pred_data in predictions.items():
+                    category_preds[day] = {
+                        'predictedMood': pred_data['prediction'].lower() if pred_data['prediction'] else 'no data available',  # lowercase
+                        'actualMood': None,
+                        'allMoodProbabilities': pred_data['emotion_breakdown']  # Already has lowercase keys and proper values
+                    }
+            all_predictions[category] = category_preds
+            
+        return jsonify({
+            'success': True,
+            'predictions': all_predictions
+        })
+    except Exception as e:
+        logger.error(f"API Error: {str(e)}")
+        return jsonify({
+            'success': False,
+            'message': 'Internal server error',
+            'error': str(e)
         }), 500
 
 @bp.route('/api/predict-mood', methods=['GET'])

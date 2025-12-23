@@ -1,6 +1,10 @@
 const User = require('../models/User');
 const MoodLog = require('../models/MoodLog');
+const PredictedMood = require('../models/PredictedMood');
 const { getAuth } = require('../config/firebase');
+const moment = require('moment');
+const fetch = require('node-fetch');
+const mongoose = require('mongoose');
 
 // Get admin dashboard statistics
 exports.getDashboardStats = async (req, res) => {
@@ -456,5 +460,301 @@ exports.deleteTeacher = async (req, res) => {
       message: 'Error deleting teacher',
       error: error.message,
     });
+  }
+};
+
+// Mood Prediction and Comparison Functions
+
+exports.calculateWeeklyPredictions = async (req, res) => {
+  try {
+    // Check if user is admin
+    if (req.user.mongoUser.role !== 'admin') {
+      return res.status(403).json({
+        success: false,
+        message: 'Access denied. Only admins can access this resource.',
+      });
+    }
+
+    const users = await User.find({ role: 'user' });
+    const results = [];
+
+    for (const user of users) {
+      try {
+        const prediction = await calculateAndSavePredictionsForUser(user._id);
+        results.push({ userId: user._id, status: 'success', predictionId: prediction._id });
+      } catch (err) {
+        results.push({ userId: user._id, status: 'error', message: err.message });
+      }
+    }
+
+    res.status(200).json({
+      success: true,
+      message: `Processed predictions for ${users.length} users`,
+      results
+    });
+  } catch (error) {
+    console.error('Error calculating weekly predictions:', error);
+    res.status(500).json({ success: false, message: 'Server Error', error: error.message });
+  }
+};
+
+const calculateAndSavePredictionsForUser = async (userId) => {
+  try {
+    const moodLogs = await MoodLog.find({ 
+      user: userId,
+      date: { $gte: moment().subtract(30, 'days').toDate() }
+    }).sort({ date: 1 });
+
+    if (moodLogs.length < 7) {
+      throw new Error('Insufficient data for prediction');
+    }
+
+    const formattedLogs = moodLogs.map(log => ({
+      category: log.category,
+      afterEmotion: log.afterEmotion,
+      afterValence: log.afterValence,
+      afterIntensity: log.afterIntensity,
+      timestamp: log.date.toISOString()
+    }));
+
+    const pythonApiUrl = process.env.PYTHON_API_URL || 'http://localhost:5003';
+    const response = await fetch(`${pythonApiUrl}/api/predict-mood-all-categories`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ mood_logs: formattedLogs })
+    });
+
+    const pythonData = await response.json();
+    if (!pythonData.success) {
+      throw new Error(pythonData.message || 'Python service error');
+    }
+
+    const now = moment();
+    const weekStart = now.clone().startOf('isoWeek');
+    const weekEnd = now.clone().endOf('isoWeek');
+    const weekNumber = now.isoWeek();
+    const year = now.year();
+
+    const predictions = pythonData.predictions;
+
+    let existingPrediction = await PredictedMood.findOne({
+      user: userId,
+      year,
+      weekNumber
+    });
+
+    if (existingPrediction) {
+      existingPrediction.predictions = predictions;
+      existingPrediction.updatedAt = new Date();
+      await existingPrediction.save();
+      return existingPrediction;
+    } else {
+      const newPrediction = new PredictedMood({
+        user: userId,
+        weekStartDate: weekStart.toDate(),
+        weekEndDate: weekEnd.toDate(),
+        year,
+        weekNumber,
+        predictions
+      });
+      await newPrediction.save();
+      return newPrediction;
+    }
+  } catch (error) {
+    console.error(`Error for user ${userId}:`, error);
+    throw error;
+  }
+};
+
+const getActualMoodForDay = (actualMoodLogs, category, targetDay, weekStart) => {
+  const targetDate = moment(weekStart).add(['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'].indexOf(targetDay), 'days');
+  
+  const dayLogs = actualMoodLogs.filter(log => 
+    log.category === category && 
+    moment(log.date).isSame(targetDate, 'day')
+  );
+
+  if (dayLogs.length === 0) return null;
+
+  dayLogs.sort((a, b) => new Date(b.date) - new Date(a.date));
+
+  const moodCounts = {};
+  dayLogs.forEach(log => {
+    const mood = log.afterEmotion ? log.afterEmotion.toLowerCase() : '';  // Convert to lowercase
+    if (mood) {
+      moodCounts[mood] = (moodCounts[mood] || 0) + 1;
+    }
+  });
+
+  let maxCount = 0;
+  let dominantMoods = [];
+
+  Object.entries(moodCounts).forEach(([mood, count]) => {
+    if (count > maxCount) {
+      maxCount = count;
+      dominantMoods = [mood];
+    } else if (count === maxCount) {
+      dominantMoods.push(mood);
+    }
+  });
+
+  if (dominantMoods.length === 1) return dominantMoods[0];
+  if (dominantMoods.length > 1 || maxCount === 1) {
+    return dayLogs[0].afterEmotion ? dayLogs[0].afterEmotion.toLowerCase() : null;
+  }
+
+  return null;
+};
+
+exports.getPredictionComparisons = async (req, res) => {
+  try {
+    const { weekStartDate } = req.query;
+    if (!weekStartDate) {
+      return res.status(400).json({ message: 'weekStartDate is required' });
+    }
+
+    const start = moment(weekStartDate).startOf('day');
+    const predictions = await PredictedMood.find({
+      weekStartDate: { $gte: start.toDate(), $lt: moment(start).add(1, 'day').toDate() }
+    }).populate('user', 'firstName lastName email');
+
+    res.status(200).json(predictions);
+  } catch (error) {
+    console.error('Error fetching prediction comparisons:', error);
+    res.status(500).json({ success: false, message: 'Server Error', error: error.message });
+  }
+};
+
+exports.getDailyMoodComparison = async (req, res) => {
+  try {
+    const { weekStartDate } = req.query;
+    if (!weekStartDate) {
+      return res.status(400).json({ message: 'weekStartDate is required' });
+    }
+
+    const start = moment(weekStartDate).startOf('day');
+    const predictions = await PredictedMood.find({
+      weekStartDate: { $gte: start.toDate(), $lt: moment(start).add(1, 'day').toDate() }
+    });
+
+    const days = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
+    const categories = ['activity', 'social', 'health', 'sleep'];
+    
+    const dailyComparison = {};
+
+    days.forEach(day => {
+      dailyComparison[day] = { categories: {} };
+      categories.forEach(cat => {
+        dailyComparison[day].categories[cat] = {
+          top1Matches: 0,
+          top2Matches: 0,
+          top3Matches: 0,
+          missedPredictions: 0,
+          totalPredictions: 0
+        };
+      });
+    });
+
+    predictions.forEach(pred => {
+      categories.forEach(cat => {
+        days.forEach(day => {
+          const dayPred = pred.predictions[cat][day];
+          if (dayPred && dayPred.actualMood !== null && dayPred.actualMood !== undefined && 
+              dayPred.predictedMood !== 'no data available') {
+            dailyComparison[day].categories[cat].totalPredictions++;
+            
+            if (dayPred.predictedMood === dayPred.actualMood) {
+              dailyComparison[day].categories[cat].top1Matches++;
+            } else if (dayPred.allMoodProbabilities) {
+              const sortedMoods = Object.entries(dayPred.allMoodProbabilities)
+                .sort((a, b) => b[1] - a[1])
+                .map(entry => entry[0]);
+              
+              const actualIndex = sortedMoods.indexOf(dayPred.actualMood);
+              if (actualIndex === 1) dailyComparison[day].categories[cat].top2Matches++;
+              else if (actualIndex === 2) dailyComparison[day].categories[cat].top3Matches++;
+              else dailyComparison[day].categories[cat].missedPredictions++;
+            } else {
+              dailyComparison[day].categories[cat].missedPredictions++;
+            }
+          }
+        });
+      });
+    });
+
+    res.status(200).json({ dailyComparison });
+  } catch (error) {
+    console.error('Error fetching daily mood comparison:', error);
+    res.status(500).json({ success: false, message: 'Server Error', error: error.message });
+  }
+};
+
+exports.updateActualMoods = async (req, res) => {
+  try {
+    const { weekStartDate } = req.body;
+    if (!weekStartDate) {
+      return res.status(400).json({ message: 'weekStartDate is required' });
+    }
+
+    const start = moment(weekStartDate).startOf('day');
+    const end = moment(start).clone().endOf('isoWeek');
+
+    const predictions = await PredictedMood.find({
+      weekStartDate: { $gte: start.toDate(), $lt: moment(start).add(1, 'day').toDate() }
+    });
+
+    for (const pred of predictions) {
+      const actualLogs = await MoodLog.find({
+        user: pred.user,
+        date: { $gte: start.toDate(), $lte: end.toDate() }
+      });
+
+      const categories = ['activity', 'social', 'health', 'sleep'];
+      const days = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
+
+      categories.forEach(cat => {
+        days.forEach(day => {
+          const actualMood = getActualMoodForDay(actualLogs, cat, day, start.toDate());
+          pred.predictions[cat][day].actualMood = actualMood;
+        });
+      });
+
+      pred.markModified('predictions');
+      await pred.save();
+    }
+
+    res.status(200).json({ success: true, message: 'Actual moods updated successfully' });
+  } catch (error) {
+    console.error('Error updating actual moods:', error);
+    res.status(500).json({ success: false, message: 'Server Error', error: error.message });
+  }
+};
+
+exports.getAvailableWeeks = async (req, res) => {
+  try {
+    const weeks = await PredictedMood.aggregate([
+      {
+        $group: {
+          _id: "$weekStartDate",
+          weekNumber: { $first: "$weekNumber" },
+          year: { $first: "$year" },
+          userCount: { $sum: 1 }
+        }
+      },
+      { $sort: { _id: -1 } }
+    ]);
+
+    const formattedWeeks = weeks.map(w => ({
+      weekStartDate: w._id,
+      displayName: `Week ${w.weekNumber}, ${w.year} (${moment(w._id).format('MMM DD')})`,
+      weekNumber: w.weekNumber,
+      year: w.year,
+      userCount: w.userCount
+    }));
+
+    res.status(200).json(formattedWeeks);
+  } catch (error) {
+    console.error('Error fetching available weeks:', error);
+    res.status(500).json({ success: false, message: 'Server Error', error: error.message });
   }
 };

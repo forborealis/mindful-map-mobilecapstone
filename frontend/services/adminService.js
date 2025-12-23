@@ -142,4 +142,76 @@ export const adminService = {
       return { success: false, error: error.message };
     }
   },
-};
+  /**
+   * Get available weeks for prediction comparison
+   */
+  async getAvailableWeeks() {
+    try {
+      const token = await AsyncStorage.getItem('token');
+      const response = await fetch(`${API_BASE_URL}/api/admin/available-weeks`, {
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+      const data = await response.json();
+      return data;
+    } catch (error) {
+      console.error('Error fetching available weeks:', error);
+      return [];
+    }
+  },
+
+  /**
+   * Get daily mood comparison data
+   */
+  async getDailyMoodComparison(weekStartDate) {
+    try {
+      const token = await AsyncStorage.getItem('token');
+      const response = await fetch(`${API_BASE_URL}/api/admin/daily-mood-comparison?weekStartDate=${weekStartDate}`, {
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+      const data = await response.json();
+      return data;
+    } catch (error) {
+      console.error('Error fetching daily mood comparison:', error);
+      return null;
+    }
+  },
+
+  /**
+   * Calculate weekly predictions for all users
+   */
+  async calculatePredictions() {
+    try {
+      const token = await AsyncStorage.getItem('token');
+      const response = await fetch(`${API_BASE_URL}/api/admin/calculate-predictions`, {
+        method: 'POST',
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+      const data = await response.json();
+      return data;
+    } catch (error) {
+      console.error('Error calculating predictions:', error);
+      return { success: false, message: error.message };
+    }
+  },
+
+  /**
+   * Update actual moods for a specific week
+   */
+  async updateActualMoods(weekStartDate) {
+    try {
+      const token = await AsyncStorage.getItem('token');
+      const response = await fetch(`${API_BASE_URL}/api/admin/update-actual-moods`, {
+        method: 'POST',
+        headers: { 
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ weekStartDate })
+      });
+      const data = await response.json();
+      return data;
+    } catch (error) {
+      console.error('Error updating actual moods:', error);
+      return { success: false, message: error.message };
+    }
+  }};

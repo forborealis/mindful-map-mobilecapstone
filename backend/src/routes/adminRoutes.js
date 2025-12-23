@@ -17,4 +17,11 @@ router.post('/teachers', adminController.createTeacher);
 router.put('/teachers/:id', adminController.updateTeacher);
 router.delete('/teachers/:id', adminController.deleteTeacher);
 
+// Prediction Comparison Routes
+router.get('/available-weeks', adminController.getAvailableWeeks);
+router.get('/prediction-comparisons', adminController.getPredictionComparisons);
+router.get('/daily-mood-comparison', adminController.getDailyMoodComparison);
+router.post('/calculate-predictions', adminController.calculateWeeklyPredictions);
+router.post('/update-actual-moods', adminController.updateActualMoods);
+
 module.exports = router;

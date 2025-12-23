@@ -267,7 +267,7 @@ const CategoryPrediction = ({ navigation, route }) => {
             {dayData.prediction !== 'No data available' && (
               <View style={styles.confidenceBadge}>
                 <Text style={styles.confidenceText}>
-                  {(dayData.confidence * 100).toFixed(1)}%
+                  {dayData.confidence.toFixed(1)}%
                 </Text>
               </View>
             )}
@@ -324,7 +324,7 @@ const CategoryPrediction = ({ navigation, route }) => {
                         ]} />
                         <Text style={styles.emotionName}>{emotion}</Text>
                         <Text style={styles.emotionProbability}>
-                          {(probability * 100).toFixed(1)}%
+                          {probability.toFixed(1)}%
                         </Text>
                       </View>
                     ))
