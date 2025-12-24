@@ -93,16 +93,28 @@ const Prediction = ({ navigation }) => {
     <ScrollView style={styles.container} showsVerticalScrollIndicator={false}>
       <View style={styles.header}>
         <Text style={styles.headerTitle}>Mood Predictions</Text>
-        <Text style={styles.headerSubtitle}>
-          Discover how different activities might affect your mood throughout the week
+      </View>
+
+      {/* How This Works Section */}
+      <View style={styles.section}>
+        <Text style={styles.sectionTitle}>How does this work?</Text>
+        <Text style={styles.sectionDescription}>
+          The system analyzes your mood logs using a weighted mean algorithm that considers both the recency of data (recent weeks weighted more heavily: 4→3→2→1) and mood intensity levels. This creates predictions based on patterns in your data, helping you understand emotional trends and anticipate future moods with up to 90% confidence.
         </Text>
       </View>
 
-
+      {/* Disclaimer Section */}
+      <View style={styles.disclaimerSection}>
+        <View style={styles.disclaimerCard}>
+          <Text style={styles.disclaimerText}>
+            <Text style={styles.disclaimerBold}>Disclaimer:</Text> Predictions use a weighted mean algorithm (max 90% confidence) analyzing your mood intensity and recency patterns. They are meant for guidance only and may not reflect all real-life factors affecting your mood.
+          </Text>
+        </View>
+      </View>
 
       {/* Category Predictions Section */}
       <View style={styles.section}>
-        <Text style={styles.sectionTitle}>Mood Predictions by Category</Text>
+        <Text style={styles.sectionTitle}>Category-Based Weekly Predictions</Text>
         <Text style={styles.sectionSubtitle}>
           Get detailed predictions for different aspects of your life
         </Text>
@@ -117,7 +129,7 @@ const Prediction = ({ navigation }) => {
         <View style={styles.infoCard}>
           <Ionicons name="information-circle" size={24} color={colors.primary} />
           <Text style={styles.infoText}>
-            Predictions are based on your mood logging patterns and help you understand trends in your emotional well-being.
+            Understanding your patterns is the first step toward improving your emotional well-being.
           </Text>
         </View>
       </View>
@@ -138,16 +150,10 @@ const styles = StyleSheet.create({
     fontSize: 28,
     fontFamily: fonts.bold,
     color: colors.text,
-    marginBottom: 8,
-  },
-  headerSubtitle: {
-    fontSize: 16,
-    fontFamily: fonts.regular,
-    color: colors.textSecondary,
   },
   section: {
     padding: 20,
-    paddingTop: 10,
+    paddingTop: 0,
   },
   sectionTitle: {
     fontSize: 20,
@@ -201,6 +207,36 @@ const styles = StyleSheet.create({
     position: 'absolute',
     top: 12,
     right: 12,
+  },
+  infoSection: {
+    padding: 20,
+    paddingTop: 0,
+  },
+  disclaimerSection: {
+    padding: 20,
+    paddingTop: 0,
+  },
+  disclaimerCard: {
+    backgroundColor: '#fffbe6',
+    borderRadius: 12,
+    padding: 16,
+    borderWidth: 1,
+    borderColor: '#ffe58f',
+  },
+  disclaimerText: {
+    fontSize: 12,
+    fontFamily: fonts.regular,
+    color: '#b8860b',
+    lineHeight: 20,
+  },
+  disclaimerBold: {
+    fontFamily: fonts.semiBold,
+  },
+  sectionDescription: {
+    fontSize: 14,
+    fontFamily: fonts.regular,
+    color: colors.textSecondary,
+    lineHeight: 20,
   },
   infoSection: {
     padding: 20,
