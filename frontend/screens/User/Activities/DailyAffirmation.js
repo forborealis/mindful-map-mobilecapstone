@@ -8,14 +8,7 @@ const DailyAffirmation = ({ navigation }) => {
   return (
     <SafeAreaView style={styles.container}>
       <View style={styles.header}>
-        <TouchableOpacity
-          style={styles.backButton}
-          onPress={() => navigation.goBack()}
-        >
-          <Ionicons name="arrow-back" size={24} color={colors.text} />
-        </TouchableOpacity>
         <Text style={styles.headerTitle}>Daily Affirmation</Text>
-        <View style={styles.spacer} />
       </View>
       <View style={styles.content}>
         <Text style={styles.title}>Daily Affirmation</Text>
@@ -32,8 +25,8 @@ const styles = StyleSheet.create({
   },
   header: {
     paddingHorizontal: 20,
-    paddingTop: 60,
-    paddingBottom: 16,
+    paddingTop: 40,
+    paddingBottom: 8,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',

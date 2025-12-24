@@ -471,20 +471,14 @@ const BreathingExercises = ({ navigation }) => {
         width: 170,
         height: 170,
         borderRadius: 20,
-        borderWidth: 6,
-        borderColor: selectedTechnique.color,
         backgroundColor: selectedTechnique.color + '18',
         justifyContent: 'center',
         alignItems: 'center',
         transform: [{ scale: breathingAnim }],
-        shadowColor: selectedTechnique.color,
-        shadowOpacity: 0.25,
-        shadowRadius: 12,
-        elevation: 4
       }
     : {
-        width: 160,
-        height: 160,
+        width: 170,
+        height: 170,
         borderRadius: 80,
         backgroundColor: selectedTechnique.color + '33',
         justifyContent: 'center',
@@ -519,17 +513,8 @@ const BreathingExercises = ({ navigation }) => {
         </View>
       </Modal>
 
-      <View style={{ paddingHorizontal: 16, paddingTop: 60, paddingBottom: 16, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
-        <TouchableOpacity
-          style={{
-            width: 36, height: 36, borderRadius: 18, backgroundColor: colors.surface,
-            justifyContent: 'center', alignItems: 'center', borderWidth: 1, borderColor: colors.border
-          }}
-          onPress={() => navigation.goBack()}
-        >
-          <Ionicons name="arrow-back" size={18} color={colors.text} />
-        </TouchableOpacity>
-        <Text style={{ fontSize: 20, fontFamily: fonts.bold, color: colors.text, flex: 1, marginHorizontal: 12 }}>
+      <View style={{ paddingHorizontal: 16, paddingTop: 40, paddingBottom: 8, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
+        <Text style={{ fontSize: 20, fontFamily: fonts.bold, color: colors.text }}>
           Breathing Exercises
         </Text>
         <View style={{ flexDirection: 'row', gap: 6 }}>
@@ -555,7 +540,7 @@ const BreathingExercises = ({ navigation }) => {
       </View>
 
       <ScrollView contentContainerStyle={{ padding: 20, paddingBottom: 50 }}>
-        <Text style={{ color: colors.text, fontFamily: fonts.bold, fontSize: 18, marginBottom: 8, textAlign: 'center' }}>Session Duration</Text>
+        <Text style={{ color: colors.text, fontFamily: fonts.bold, fontSize: 16, marginBottom: 8, textAlign: 'center' }}>Session Duration</Text>
         <FlatList
           data={DURATION_OPTIONS}
           horizontal
@@ -572,7 +557,7 @@ const BreathingExercises = ({ navigation }) => {
                 paddingHorizontal: 18,
                 borderRadius: 18,
                 backgroundColor: selectedDuration.value === item.value ? selectedTechnique.color + '18' : colors.surface,
-                borderWidth: 2,
+                borderWidth: 1,
                 borderColor: selectedDuration.value === item.value ? selectedTechnique.color : colors.border,
                 minWidth: 88,
                 alignItems: 'center'
@@ -584,7 +569,7 @@ const BreathingExercises = ({ navigation }) => {
           )}
         />
 
-        <Text style={{ color: colors.text, fontFamily: fonts.bold, fontSize: 18, marginBottom: 10, textAlign: 'center' }}>Choose Your Technique</Text>
+        <Text style={{ color: colors.text, fontFamily: fonts.bold, fontSize: 16, marginBottom: 10, textAlign: 'center' }}>Choose Your Technique</Text>
         <View style={{ marginBottom: 24 }}>
           {BREATHING_TECHNIQUES.map(technique => {
             const active = selectedTechnique.id === technique.id;
@@ -617,11 +602,11 @@ const BreathingExercises = ({ navigation }) => {
                     marginRight: 16,
                   }}
                 >
-                  <Text style={{ fontSize: 28, fontFamily: fonts.bold }}>{technique.icon}</Text>
+                  <Text style={{ fontSize: 24, fontFamily: fonts.bold }}>{technique.icon}</Text>
                 </View>
                 <View style={{ flex: 1 }}>
-                  <Text style={{ fontFamily: fonts.bold, color: colors.text, fontSize: 17, marginBottom: 4 }}>{technique.name}</Text>
-                  <Text style={{ fontFamily: fonts.regular, color: colors.textSecondary, fontSize: 13 }}>{technique.description}</Text>
+                  <Text style={{ fontFamily: fonts.bold, color: colors.text, fontSize: 15, marginBottom: 4 }}>{technique.name}</Text>
+                  <Text style={{ fontFamily: fonts.regular, color: colors.textSecondary, fontSize: 12 }}>{technique.description}</Text>
                 </View>
                 {active && <Ionicons name="checkmark-circle" size={26} color={technique.color} />}
               </TouchableOpacity>
@@ -701,7 +686,7 @@ const BreathingExercises = ({ navigation }) => {
             padding: 18,
             marginBottom: 26,
           }}>
-            <View style={{ flexDirection: 'row', justifyContent: 'space-between', marginBottom: 14 }}>
+            <View style={{ flexDirection: 'row', justifyContent: 'space-between', marginBottom: 30 }}>
               <View style={{ alignItems: 'center', flex: 1 }}>
                 <Text style={{ fontSize: 20, fontFamily: fonts.bold, color: colors.text, textAlign: 'center' }}>{formatTime(elapsedTime)}</Text>
                 <Text style={{ fontSize: 12, color: colors.textSecondary, textAlign: 'center' }}>of {formatTime(totalSessionTime)}</Text>
@@ -711,7 +696,7 @@ const BreathingExercises = ({ navigation }) => {
                 <Text style={{ fontSize: 12, color: colors.textSecondary, textAlign: 'center' }}>Cycles</Text>
               </View>
               <View style={{ alignItems: 'center', flex: 1 }}>
-                <Text style={{ fontSize: 18, fontFamily: fonts.bold, color: selectedTechnique.color, textAlign: 'center' }}>{phase}</Text>
+                <Text style={{ fontSize: 16, fontFamily: fonts.bold, color: selectedTechnique.color, textAlign: 'center' }}>{phase}</Text>
                 <Text style={{ fontSize: 12, color: colors.textSecondary, textAlign: 'center' }}>Phase</Text>
               </View>
             </View>

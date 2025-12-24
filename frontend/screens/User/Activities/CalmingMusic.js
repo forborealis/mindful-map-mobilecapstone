@@ -724,19 +724,6 @@ const CalmingMusic = ({ navigation }) => {
     <SafeAreaView style={styles.container}>
       {/* Simplified Header */}
       <View style={styles.header}>
-        <TouchableOpacity
-          style={styles.backButton}
-          onPress={() => {
-            if (showFavorites) {
-              setShowFavorites(false);
-            } else {
-              navigation.goBack();
-            }
-          }}
-        >
-          <Ionicons name="arrow-back" size={24} color={colors.text} />
-        </TouchableOpacity>
-        
         <Text style={styles.headerTitle}>{showFavorites ? 'My Songs' : 'Calming Music'}</Text>
         
         {isAuthenticated && (
@@ -930,11 +917,11 @@ const styles = StyleSheet.create({
   },
   header: {
     paddingHorizontal: 20,
-    paddingTop: 60,
-    paddingBottom: 16,
+    paddingTop: 40,
+    paddingBottom: 8,
     flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'space-between',
+    justifyContent: 'flex-start',
     backgroundColor: colors.background,
   },
   backButton: {
