@@ -56,9 +56,7 @@ const MoodLogSchema = new mongoose.Schema({
     type: String,
     default: null,
     maxlength: 500,
-    required: function() {
-      return this.beforeValence !== 'can\'t remember';
-    }
+    required: false
   },
   // After valence tracking
   afterValence: {
@@ -78,7 +76,7 @@ const MoodLogSchema = new mongoose.Schema({
   },
   afterReason: {
     type: String,
-    required: true,
+    required: false,
     maxlength: 500
   }
 });

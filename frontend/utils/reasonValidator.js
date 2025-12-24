@@ -58,7 +58,7 @@ const normalizeLeetspeak = (text) => {
  */
 export const validateReason = (reason) => {
   if (!reason || !reason.trim()) {
-    return { isValid: false, error: 'Reason cannot be empty' };
+    return { isValid: true, error: null };
   }
 
   const trimmedReason = reason.trim();

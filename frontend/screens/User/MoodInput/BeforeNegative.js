@@ -34,7 +34,7 @@ const BeforeNegative = ({ navigation, route }) => {
   const { category, activity, hrs, selectedTime, selectedDate, beforeValence } = route.params || {};
 
   const isInputEnabled = selectedEmotion && selectedIntensity;
-  const isButtonEnabled = isInputEnabled && reason.trim().length > 0 && !reasonError;
+  const isButtonEnabled = isInputEnabled && !reasonError;
 
   const emotionRows = chunkArray(emotions, 3);
 

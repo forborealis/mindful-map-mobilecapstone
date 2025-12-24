@@ -228,8 +228,8 @@ const MoodDataController = {
         return res.status(400).json({ success: false, message: 'Before and after valence are required.' });
       }
 
-      if (!afterEmotion || !afterIntensity || !afterReason) {
-        return res.status(400).json({ success: false, message: 'After emotion, intensity, and reason are required.' });
+      if (!afterEmotion || !afterIntensity) {
+        return res.status(400).json({ success: false, message: 'After emotion and intensity are required.' });
       }
 
       // Validate category-specific fields
@@ -245,8 +245,8 @@ const MoodDataController = {
 
       // Validate before emotion and intensity if not "can't remember"
       if (beforeValence !== 'can\'t remember') {
-        if (!beforeEmotion || !beforeIntensity || !beforeReason) {
-          return res.status(400).json({ success: false, message: 'Before emotion, intensity, and reason are required when before valence is not "can\'t remember".' });
+        if (!beforeEmotion || !beforeIntensity) {
+          return res.status(400).json({ success: false, message: 'Before emotion and intensity are required when before valence is not "can\'t remember".' });
         }
       }
 
