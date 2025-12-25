@@ -5,16 +5,17 @@ import {
   ScrollView,
   ActivityIndicator,
   Alert,
-  StyleSheet,
   Dimensions,
   TouchableOpacity,
   Animated,
+  Image,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import Toast from 'react-native-toast-message';
 import { predictionService } from '../../../services/predictionService';
 import { colors } from '../../../utils/colors/colors';
 import { fonts } from '../../../utils/fonts/fonts';
+import emotionImages from '../../../utils/images/emotions';
 
 const { width } = Dimensions.get('window');
 
@@ -36,11 +37,9 @@ const CategoryPrediction = ({ navigation, route }) => {
   const dayCardRefs = useRef({});
   const scaleAnim = useRef(new Animated.Value(1)).current;
 
-  // Get today's day of week (0 = Sunday, 1 = Monday, etc.)
   const getTodayDayName = () => {
     const today = new Date();
     const dayIndex = today.getDay();
-    // Convert Sunday (0) to end of week format
     const adjustedIndex = dayIndex === 0 ? 6 : dayIndex - 1;
     return daysOfWeek[adjustedIndex];
   };
@@ -48,14 +47,11 @@ const CategoryPrediction = ({ navigation, route }) => {
   const [todayDayName] = useState(getTodayDayName());
 
   const emotionColors = {
-    // Negative emotions
     bored: '#95A5A6',
     sad: '#3498DB',
     disappointed: '#E67E22',
     angry: '#E74C3C',
     tense: '#9B59B6',
-    
-    // Positive emotions
     calm: '#27AE60',
     relaxed: '#1ABC9C',
     pleased: '#F39C12',
@@ -71,7 +67,7 @@ const CategoryPrediction = ({ navigation, route }) => {
     setLoading(true);
     try {
       const response = await predictionService.predictCategoryMood(category);
-      
+
       if (response.success) {
         setPredictions(response.predictions);
         setDateRange(response.dateRange);
@@ -81,8 +77,7 @@ const CategoryPrediction = ({ navigation, route }) => {
           text2: `${categoryInfo[category].name} prediction is ready!`,
           position: 'top',
         });
-        
-        // Schedule scroll and animation to happen after render
+
         setTimeout(() => {
           scrollToTodayAndAnimate();
         }, 300);
@@ -108,8 +103,7 @@ const CategoryPrediction = ({ navigation, route }) => {
             y: y - 100,
             animated: true,
           });
-          
-          // Trigger zoom animation
+
           Animated.sequence([
             Animated.timing(scaleAnim, {
               toValue: 1.05,
@@ -135,33 +129,16 @@ const CategoryPrediction = ({ navigation, route }) => {
   };
 
   const getValenceLabel = (valence) => {
-    // Since there are 5 negative and 5 positive emotions, valence > 0.5 means more positive
     return valence > 0.5 ? 'Positive' : 'Negative';
   };
 
-  const getEmotionEmoji = (emotion) => {
-    const emojiMap = {
-      // Negative emotions
-      'bored': '😑',
-      'sad': '😢',
-      'disappointed': '😞',
-      'angry': '😠',
-      'tense': '😰',
-      
-      // Positive emotions
-      'calm': '😌',
-      'relaxed': '😊',
-      'pleased': '🙂',
-      'happy': '😄',
-      'excited': '🤩'
-    };
-    
-    return emojiMap[emotion.toLowerCase()] || '😐';
+  const getEmotionImage = (emotion) => {
+    return emotionImages[emotion.toLowerCase()] || null;
   };
 
   const getShortMonthName = (dateString) => {
     if (!dateString || dateString === 'No data available') return dateString;
-    
+
     const monthMap = {
       'January': 'Jan',
       'February': 'Feb',
@@ -176,7 +153,7 @@ const CategoryPrediction = ({ navigation, route }) => {
       'November': 'Nov',
       'December': 'Dec'
     };
-    
+
     let result = dateString;
     Object.keys(monthMap).forEach(month => {
       result = result.replace(month, monthMap[month]);
@@ -186,54 +163,47 @@ const CategoryPrediction = ({ navigation, route }) => {
 
   const getActivityDisplayName = (activityId) => {
     const activityMap = {
-      // Activity category
-      'commute': 'Commute',
-      'exam': 'Exam',
-      'homework': 'Homework',
-      'study': 'Study',
-      'project': 'Project',
-      'read': 'Read',
-      'extracurricular': 'Extracurricular Activities',
+      commute: 'Commute',
+      exam: 'Exam',
+      homework: 'Homework',
+      study: 'Study',
+      project: 'Project',
+      read: 'Read',
+      extracurricular: 'Extracurricular Activities',
       'household-chores': 'Household Chores',
-      'relax': 'Relax',
+      relax: 'Relax',
       'watch-movie': 'Watch Movie',
       'listen-music': 'Listen to Music',
-      'gaming': 'Gaming',
+      gaming: 'Gaming',
       'browse-internet': 'Browse the Internet',
-      'shopping': 'Shopping',
-      'travel': 'Travel',
-      
-      // Social category
-      'alone': 'Alone',
-      'friends': 'Friend/s',
-      'family': 'Family',
-      'classmates': 'Classmate/s',
-      'relationship': 'Relationship',
-      'online': 'Online Interaction',
-      'pet': 'Pet',
-      
-      // Health category
-      'jog': 'Jog',
-      'walk': 'Walk',
-      'exercise': 'Exercise',
-      'sports': 'Sports',
-      'meditate': 'Meditate',
+      shopping: 'Shopping',
+      travel: 'Travel',
+      alone: 'Alone',
+      friends: 'Friend/s',
+      family: 'Family',
+      classmates: 'Classmate/s',
+      relationship: 'Relationship',
+      online: 'Online Interaction',
+      pet: 'Pet',
+      jog: 'Jog',
+      walk: 'Walk',
+      exercise: 'Exercise',
+      sports: 'Sports',
+      meditate: 'Meditate',
       'eat-healthy': 'Eat Healthy',
       'no-physical': 'No Physical Activity',
       'eat-unhealthy': 'Eat Unhealthy',
       'drink-alcohol': 'Drink Alcohol',
-      
-      // Sleep category (sleep uses hours, not activities like others)
-      'sleep': 'Sleep Hours'
+      sleep: 'Sleep Hours'
     };
-    
+
     return activityMap[activityId] || activityId || 'Unknown Activity';
   };
 
   const renderDayCard = (day) => {
     const dayData = predictions[day];
     const isToday = day === todayDayName;
-    
+
     if (!dayData) return null;
 
     return (
@@ -242,31 +212,71 @@ const CategoryPrediction = ({ navigation, route }) => {
         ref={(ref) => {
           if (ref) dayCardRefs.current[day] = ref;
         }}
-        style={[
-          isToday && { transform: [{ scale: scaleAnim }] }
-        ]}
+        style={isToday ? { transform: [{ scale: scaleAnim }] } : {}}
       >
-        <View style={[
-          styles.dayCard,
-          isToday && styles.todayCardHighlight,
-        ]}>
-          <View style={styles.dayHeader}>
-            <View style={styles.dayTitleContainer}>
-              <View style={styles.dayLabelRow}>
-                <Text style={styles.dayTitle}>{day}</Text>
+        <View style={{
+          backgroundColor: colors.white,
+          borderRadius: 12,
+          padding: 16,
+          marginBottom: 16,
+          shadowColor: '#000',
+          shadowOffset: { width: 0, height: 2 },
+          shadowOpacity: 0.1,
+          shadowRadius: 4,
+          elevation: isToday ? 8 : 3,
+          borderWidth: isToday ? 2 : 0,
+          borderColor: isToday ? colors.primary : 'transparent',
+        }}>
+          <View style={{
+            flexDirection: 'row',
+            justifyContent: 'space-between',
+            alignItems: 'center',
+            marginBottom: 16,
+          }}>
+            <View style={{ flex: 1 }}>
+              <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                <Text style={{
+                  fontSize: 18,
+                  fontFamily: fonts.semiBold,
+                  color: colors.text,
+                }}>{day}</Text>
                 {isToday && (
-                  <View style={styles.todayBadge}>
-                    <Text style={styles.todayBadgeText}>Today</Text>
+                  <View style={{
+                    backgroundColor: colors.primary,
+                    borderRadius: 8,
+                    paddingHorizontal: 8,
+                    paddingVertical: 2,
+                    marginLeft: 12,
+                  }}>
+                    <Text style={{
+                      fontSize: 11,
+                      fontFamily: fonts.bold,
+                      color: colors.white,
+                    }}>Today</Text>
                   </View>
                 )}
               </View>
               {dayData.date && dayData.date !== 'No data available' && (
-                <Text style={styles.dayDate}>{getShortMonthName(dayData.date)}</Text>
+                <Text style={{
+                  fontSize: 12,
+                  fontFamily: fonts.regular,
+                  color: colors.textSecondary,
+                  marginTop: 2,
+                }}>{getShortMonthName(dayData.date)}</Text>
               )}
             </View>
             {dayData.prediction !== 'No data available' && (
-              <View style={styles.confidenceBadge}>
-                <Text style={styles.confidenceText}>
+              <View style={{
+                backgroundColor: colors.primary,
+                borderRadius: 12,
+                paddingHorizontal: 8,
+                paddingVertical: 4,
+              }}>
+                <Text style={{
+                  fontSize: 12,
+                  fontFamily: fonts.medium,
+                  color: colors.white,
+                }}>
                   {dayData.confidence.toFixed(1)}%
                 </Text>
               </View>
@@ -274,30 +284,79 @@ const CategoryPrediction = ({ navigation, route }) => {
           </View>
 
           {dayData.prediction === 'No data available' ? (
-            <View style={styles.noDataContainer}>
+            <View style={{
+              flexDirection: 'row',
+              alignItems: 'center',
+              justifyContent: 'center',
+              paddingVertical: 20,
+            }}>
               <Ionicons name="information-circle" size={24} color={colors.textSecondary} />
-              <Text style={styles.noDataText}>No data for this day</Text>
+              <Text style={{
+                fontSize: 14,
+                fontFamily: fonts.regular,
+                color: colors.textSecondary,
+                marginLeft: 8,
+              }}>No data for this day</Text>
             </View>
           ) : (
-            <View style={styles.predictionContent}>
+            <View>
               {/* Main Prediction */}
-              <View style={styles.mainPrediction}>
-                <Text style={styles.emotionEmoji}>{getEmotionEmoji(dayData.prediction)}</Text>
-                <Text style={styles.emotionText}>{dayData.prediction}</Text>
+              <View style={{
+                flexDirection: 'row',
+                alignItems: 'center',
+                marginBottom: 16,
+              }}>
+                {getEmotionImage(dayData.prediction) ? (
+                  <Image
+                    source={getEmotionImage(dayData.prediction)}
+                    style={{ width: 32, height: 32, marginRight: 8 }}
+                    resizeMode="contain"
+                  />
+                ) : (
+                  <Text style={{ fontSize: 20, marginRight: 12 }}>😐</Text>
+                )}
+                <Text style={{
+                  fontSize: 16,
+                  fontFamily: fonts.semiBold,
+                  color: colors.text,
+                  textTransform: 'capitalize',
+                }}>{dayData.prediction}</Text>
               </View>
 
               {/* Valence and Activity */}
-              <View style={styles.metricsContainer}>
-                <View style={styles.metricItem}>
-                  <Text style={styles.metricLabel}>Valence:</Text>
-                  <Text style={styles.metricValue}>
+              <View style={{
+                flexDirection: 'row',
+                justifyContent: 'space-between',
+                marginBottom: 16,
+              }}>
+                <View style={{ flex: 1 }}>
+                  <Text style={{
+                    fontSize: 12,
+                    fontFamily: fonts.regular,
+                    color: colors.textSecondary,
+                    marginBottom: 4,
+                  }}>Valence:</Text>
+                  <Text style={{
+                    fontSize: 14,
+                    fontFamily: fonts.medium,
+                    color: colors.text,
+                  }}>
                     {getValenceLabel(dayData.valence_avg)}
                   </Text>
                 </View>
-                <View style={styles.metricItem}>
-                  <Text style={styles.metricLabel}>Likely Cause:</Text>
-                  <Text style={styles.metricValue}>
-                    {category === 'sleep' 
+                <View style={{ flex: 1 }}>
+                  <Text style={{
+                    fontSize: 12,
+                    fontFamily: fonts.regular,
+                    color: colors.textSecondary,
+                    marginBottom: 4,
+                  }}>Likely Cause:</Text>
+                  <Text style={{
+                    fontSize: 14,
+                    fontFamily: fonts.medium,
+                    color: colors.text,
+                  }}>
+                    {category === 'sleep'
                       ? `${dayData.activity || 'Unknown'} hours of sleep`
                       : getActivityDisplayName(dayData.activity)
                     }
@@ -306,24 +365,61 @@ const CategoryPrediction = ({ navigation, route }) => {
               </View>
 
               {/* Emotion Breakdown */}
-              <View style={styles.emotionBreakdown}>
-                <Text style={styles.breakdownTitle}>Emotion Probabilities:</Text>
-                <View style={styles.emotionsList}>
+              <View style={{
+                borderTopWidth: 1,
+                borderTopColor: colors.lightGray,
+                paddingTop: 16,
+              }}>
+                <Text style={{
+                  fontSize: 14,
+                  fontFamily: fonts.semiBold,
+                  color: colors.text,
+                  marginBottom: 12,
+                }}>Emotion Probabilities:</Text>
+                <View>
                   {Object.entries(dayData.emotion_breakdown || {})
                     .filter(([_, probability]) => probability > 0)
                     .sort(([_, a], [__, b]) => b - a)
                     .slice(0, 3)
                     .map(([emotion, probability]) => (
-                      <View key={emotion} style={styles.emotionItem}>
-                        <View style={[
-                          styles.emotionColorDot,
-                          { 
+                      <View key={emotion} style={{
+                        flexDirection: 'row',
+                        alignItems: 'center',
+                        marginBottom: 8,
+                      }}>
+                        {getEmotionImage(emotion) ? (
+                          <Image
+                            source={getEmotionImage(emotion)}
+                            style={{
+                              width: 22,
+                              height: 22,
+                              marginRight: 6,
+                              opacity: emotion.toLowerCase() === dayData.prediction.toLowerCase() ? 1 : 0.6
+                            }}
+                            resizeMode="contain"
+                          />
+                        ) : (
+                          <View style={{
+                            width: 12,
+                            height: 12,
+                            borderRadius: 6,
+                            marginRight: 8,
                             backgroundColor: categoryInfo[category].color,
                             opacity: emotion.toLowerCase() === dayData.prediction.toLowerCase() ? 1 : 0.6
-                          }
-                        ]} />
-                        <Text style={styles.emotionName}>{emotion}</Text>
-                        <Text style={styles.emotionProbability}>
+                          }} />
+                        )}
+                        <Text style={{
+                          flex: 1,
+                          fontSize: 13,
+                          fontFamily: fonts.regular,
+                          color: colors.text,
+                          textTransform: 'capitalize',
+                        }}>{emotion}</Text>
+                        <Text style={{
+                          fontSize: 13,
+                          fontFamily: fonts.medium,
+                          color: colors.textSecondary,
+                        }}>
                           {probability.toFixed(1)}%
                         </Text>
                       </View>
@@ -342,15 +438,48 @@ const CategoryPrediction = ({ navigation, route }) => {
     if (!dateRange) return null;
 
     return (
-      <View style={styles.dataRangeCard}>
-        <View style={styles.dataRangeHeader}>
+      <View style={{
+        backgroundColor: colors.white,
+        margin: 20,
+        marginBottom: 10,
+        padding: 16,
+        borderRadius: 12,
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.1,
+        shadowRadius: 4,
+        elevation: 3,
+      }}>
+        <View style={{
+          flexDirection: 'row',
+          alignItems: 'center',
+          justifyContent: 'center',
+          marginBottom: 8,
+        }}>
           <Ionicons name="calendar" size={20} color={colors.primary} />
-          <Text style={styles.dataRangeTitle}>Date Range</Text>
+          <Text style={{
+            fontSize: 16,
+            fontFamily: fonts.semiBold,
+            color: colors.text,
+            marginLeft: 8,
+          }}>Date Range</Text>
         </View>
-        <Text style={styles.dataRangeText}>
-          Based on {dateRange.total_entries} entries from <Text style={styles.dateHighlight}>{dateRange.formatted_range}</Text>
+        <Text style={{
+          fontSize: 14,
+          fontFamily: fonts.regular,
+          color: colors.text,
+          lineHeight: 20,
+          textAlign: 'center',
+        }}>
+          Based on {dateRange.total_entries} entries from <Text style={{ color: colors.primary, fontFamily: fonts.semiBold }}>{dateRange.formatted_range}</Text>
         </Text>
-        <Text style={styles.dataRangeSubtext}>
+        <Text style={{
+          fontSize: 12,
+          fontFamily: fonts.regular,
+          color: colors.textSecondary,
+          marginTop: 4,
+          textAlign: 'center',
+        }}>
           {dateRange.weeks_of_data} weeks of data analyzed
         </Text>
       </View>
@@ -359,46 +488,95 @@ const CategoryPrediction = ({ navigation, route }) => {
 
   if (loading) {
     return (
-      <View style={styles.loadingContainer}>
+      <View style={{
+        flex: 1,
+        justifyContent: 'center',
+        alignItems: 'center',
+        backgroundColor: colors.background,
+      }}>
         <ActivityIndicator size="large" color={colors.primary} />
-        <Text style={styles.loadingText}>Generating prediction...</Text>
+        <Text style={{
+          fontSize: 16,
+          fontFamily: fonts.regular,
+          color: colors.text,
+          marginTop: 16,
+        }}>Generating prediction...</Text>
       </View>
     );
   }
 
   return (
-    <View style={styles.container}>
+    <View style={{ flex: 1, backgroundColor: colors.background }}>
       {/* Header */}
-      <View style={[styles.header, { backgroundColor: categoryInfo[category].color }]}>
+      <View style={{
+        paddingTop: 50,
+        paddingBottom: 20,
+        paddingHorizontal: 20,
+        flexDirection: 'row',
+        alignItems: 'center',
+        backgroundColor: categoryInfo[category].color,
+      }}>
         <TouchableOpacity
-          style={styles.backButton}
+          style={{ padding: 8, marginRight: 16 }}
           onPress={() => navigation.goBack()}
         >
           <Ionicons name="arrow-back" size={24} color={colors.white} />
         </TouchableOpacity>
-        
-        <View style={styles.headerContent}>
+
+        <View style={{ flex: 1, flexDirection: 'row', alignItems: 'center' }}>
           <Ionicons name={categoryInfo[category].icon} size={32} color={colors.white} />
-          <Text style={styles.headerTitle}>{categoryInfo[category].name} Prediction</Text>
+          <Text style={{
+            fontSize: 20,
+            fontFamily: fonts.bold,
+            color: colors.white,
+            marginLeft: 12,
+          }}>{categoryInfo[category].name} Prediction</Text>
         </View>
       </View>
 
-      <ScrollView ref={scrollViewRef} style={styles.scrollContent} showsVerticalScrollIndicator={false}>
+      <ScrollView ref={scrollViewRef} style={{ flex: 1 }} showsVerticalScrollIndicator={false}>
         {renderDataRangeInfo()}
-        
-        <View style={styles.predictionSection}>
-          <Text style={styles.sectionTitle}>Weekly Mood Predictions</Text>
-          <Text style={styles.sectionSubtitle}>
+
+        <View style={{ padding: 20, paddingTop: 10 }}>
+          <Text style={{
+            fontSize: 22,
+            fontFamily: fonts.semiBold,
+            color: colors.text,
+            marginTop: 5,
+            marginBottom: 8,
+            textAlign: 'center',
+          }}>Weekly Mood Predictions</Text>
+          <Text style={{
+            fontSize: 14,
+            fontFamily: fonts.regular,
+            color: colors.textSecondary,
+            marginBottom: 20,
+            textAlign: 'center',
+          }}>
             How you might feel during {categoryInfo[category].name.toLowerCase()} activities
           </Text>
-          
+
           {predictions && daysOfWeek.map(renderDayCard)}
         </View>
 
-        <View style={styles.infoSection}>
-          <View style={styles.infoCard}>
+        <View style={{ padding: 20, paddingTop: 0 }}>
+          <View style={{
+            backgroundColor: colors.lightBlue,
+            borderRadius: 12,
+            padding: 16,
+            flexDirection: 'row',
+            alignItems: 'flex-start',
+          }}>
             <Ionicons name="information-circle" size={24} color={colors.primary} />
-            <Text style={styles.infoText}>
+            <Text style={{
+              fontSize: 12,
+              fontFamily: fonts.regular,
+              color: colors.text,
+              marginLeft: 12,
+              flex: 1,
+              lineHeight: 10,
+              textAlign: 'justify',
+            }}>
               Predictions are based on your historical mood patterns during {categoryInfo[category].name.toLowerCase()} activities. 
               The confidence percentage indicates how reliable the prediction is based on your data patterns.
             </Text>
@@ -408,279 +586,5 @@ const CategoryPrediction = ({ navigation, route }) => {
     </View>
   );
 };
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: colors.background,
-  },
-  loadingContainer: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    backgroundColor: colors.background,
-  },
-  loadingText: {
-    fontSize: 16,
-    fontFamily: fonts.regular,
-    color: colors.text,
-    marginTop: 16,
-  },
-  header: {
-    paddingTop: 50,
-    paddingBottom: 20,
-    paddingHorizontal: 20,
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  backButton: {
-    padding: 8,
-    marginRight: 16,
-  },
-  headerContent: {
-    flex: 1,
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  headerTitle: {
-    fontSize: 20,
-    fontFamily: fonts.bold,
-    color: colors.white,
-    marginLeft: 12,
-  },
-  scrollContent: {
-    flex: 1,
-  },
-  dataRangeCard: {
-    backgroundColor: colors.white,
-    margin: 20,
-    marginBottom: 10,
-    padding: 16,
-    borderRadius: 12,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 3,
-  },
-  dataRangeHeader: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginBottom: 8,
-  },
-  dataRangeTitle: {
-    fontSize: 16,
-    fontFamily: fonts.semiBold,
-    color: colors.text,
-    marginLeft: 8,
-  },
-  dataRangeText: {
-    fontSize: 14,
-    fontFamily: fonts.regular,
-    color: colors.text,
-    lineHeight: 20,
-    textAlign: 'center',
-  },
-  dateHighlight: {
-    color: colors.primary,
-    fontFamily: fonts.semiBold,
-  },
-  dataRangeSubtext: {
-    fontSize: 12,
-    fontFamily: fonts.regular,
-    color: colors.textSecondary,
-    marginTop: 4,
-    textAlign: 'center',
-  },
-  predictionSection: {
-    padding: 20,
-    paddingTop: 10,
-  },
-  sectionTitle: {
-    fontSize: 20,
-    fontFamily: fonts.semiBold,
-    color: colors.text,
-    marginBottom: 8,
-  },
-  sectionSubtitle: {
-    fontSize: 14,
-    fontFamily: fonts.regular,
-    color: colors.textSecondary,
-    marginBottom: 20,
-  },
-  dayCard: {
-    backgroundColor: colors.white,
-    borderRadius: 12,
-    padding: 16,
-    marginBottom: 16,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 3,
-  },
-  todayCardHighlight: {
-    borderWidth: 2,
-    borderColor: colors.primary,
-    shadowColor: colors.primary,
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.3,
-    shadowRadius: 8,
-    elevation: 8,
-  },
-  dayLabelRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  todayBadge: {
-    backgroundColor: colors.primary,
-    borderRadius: 8,
-    paddingHorizontal: 8,
-    paddingVertical: 2,
-    marginLeft: 12,
-  },
-  todayBadgeText: {
-    fontSize: 11,
-    fontFamily: fonts.bold,
-    color: colors.white,
-  },
-  dayHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: 16,
-  },
-  dayTitleContainer: {
-    flex: 1,
-  },
-  dayTitle: {
-    fontSize: 18,
-    fontFamily: fonts.semiBold,
-    color: colors.text,
-  },
-  dayDate: {
-    fontSize: 12,
-    fontFamily: fonts.regular,
-    color: colors.textSecondary,
-    marginTop: 2,
-  },
-  confidenceBadge: {
-    backgroundColor: colors.primary,
-    borderRadius: 12,
-    paddingHorizontal: 8,
-    paddingVertical: 4,
-  },
-  confidenceText: {
-    fontSize: 12,
-    fontFamily: fonts.medium,
-    color: colors.white,
-  },
-  noDataContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    paddingVertical: 20,
-  },
-  noDataText: {
-    fontSize: 14,
-    fontFamily: fonts.regular,
-    color: colors.textSecondary,
-    marginLeft: 8,
-  },
-  predictionContent: {
-    // Content styling
-  },
-  mainPrediction: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginBottom: 16,
-  },
-  emotionEmoji: {
-    fontSize: 20,
-    marginRight: 12,
-  },
-  emotionText: {
-    fontSize: 16,
-    fontFamily: fonts.semiBold,
-    color: colors.text,
-    textTransform: 'capitalize',
-  },
-  metricsContainer: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    marginBottom: 16,
-  },
-  metricItem: {
-    flex: 1,
-  },
-  metricLabel: {
-    fontSize: 12,
-    fontFamily: fonts.regular,
-    color: colors.textSecondary,
-    marginBottom: 4,
-  },
-  metricValue: {
-    fontSize: 14,
-    fontFamily: fonts.medium,
-    color: colors.text,
-  },
-  emotionBreakdown: {
-    borderTopWidth: 1,
-    borderTopColor: colors.lightGray,
-    paddingTop: 16,
-  },
-  breakdownTitle: {
-    fontSize: 14,
-    fontFamily: fonts.semiBold,
-    color: colors.text,
-    marginBottom: 12,
-  },
-  emotionsList: {
-    // Emotion list styling
-  },
-  emotionItem: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginBottom: 8,
-  },
-  emotionColorDot: {
-    width: 12,
-    height: 12,
-    borderRadius: 6,
-    marginRight: 8,
-  },
-  emotionName: {
-    flex: 1,
-    fontSize: 13,
-    fontFamily: fonts.regular,
-    color: colors.text,
-    textTransform: 'capitalize',
-  },
-  emotionProbability: {
-    fontSize: 13,
-    fontFamily: fonts.medium,
-    color: colors.textSecondary,
-  },
-  infoSection: {
-    padding: 20,
-    paddingTop: 0,
-  },
-  infoCard: {
-    backgroundColor: colors.lightBlue,
-    borderRadius: 12,
-    padding: 16,
-    flexDirection: 'row',
-    alignItems: 'flex-start',
-  },
-  infoText: {
-    fontSize: 14,
-    fontFamily: fonts.regular,
-    color: colors.text,
-    marginLeft: 12,
-    flex: 1,
-    lineHeight: 20,
-  },
-});
 
 export default CategoryPrediction;
