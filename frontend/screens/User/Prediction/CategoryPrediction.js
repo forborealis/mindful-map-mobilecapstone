@@ -524,7 +524,6 @@ const CategoryPrediction = ({ navigation, route }) => {
         </TouchableOpacity>
 
         <View style={{ flex: 1, flexDirection: 'row', alignItems: 'center' }}>
-          <Ionicons name={categoryInfo[category].icon} size={32} color={colors.white} />
           <Text style={{
             fontSize: 20,
             fontFamily: fonts.bold,

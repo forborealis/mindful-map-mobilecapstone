@@ -8,13 +8,16 @@ import {
   ActivityIndicator,
   Modal,
   Image,
-  Alert
+  Alert,
+  KeyboardAvoidingView,
+  Platform
 } from 'react-native';
 
 import { useNavigation, useFocusEffect } from '@react-navigation/native';
 import { fonts } from '../../utils/fonts/fonts';
 import { colors } from '../../utils/colors/colors';
 import { moodDataService } from '../../services/moodDataService';
+import emotionImages from '../../utils/images/emotions';
 
 export default function Calendar() {
   const [moodLogs, setMoodLogs] = useState([]);
@@ -77,21 +80,12 @@ export default function Calendar() {
         page: 1
       });
       if (result.success) {
-        console.log('Fetched mood logs count:', result.moodLogs.length);
-        if (result.moodLogs.length > 0) {
-          console.log('Date range:', {
-            earliest: new Date(Math.min(...result.moodLogs.map(log => new Date(log.date)))),
-            latest: new Date(Math.max(...result.moodLogs.map(log => new Date(log.date))))
-          });
-        }
         setMoodLogs(result.moodLogs);
         calculateStreaks(result.moodLogs);
       } else {
-        console.error('Error fetching mood logs:', result.error);
         Alert.alert('Error', 'Failed to load mood data. Please try again.');
       }
     } catch (error) {
-      console.error('Error fetching mood logs:', error);
       Alert.alert('Error', 'Failed to load mood data. Please try again.');
     } finally {
       setLoading(false);
@@ -155,38 +149,27 @@ export default function Calendar() {
     for (let i = 0; i < 7; i++) {
       const day = new Date(startOfWeek);
       day.setDate(startOfWeek.getDate() + i);
-      
-      // Only include days up to today (don't mark future days)
       const isPastOrToday = day <= today;
       const hasLog = hasLogForDate(day, logs);
-      
-      // Day is only completed if it has a log and is not a future day
       weekProgress.push(isPastOrToday && hasLog);
     }
     
     // Calculate longest streak
     let currentLongestStreak = 0;
     let tempStreak = 0;
-    
-    // Create an array of dates with entries
     const datesWithEntries = logs.map(log => {
       const logDate = new Date(log.date);
       return logDate.toISOString().split('T')[0];
     }).sort();
-    
-    // Remove duplicates
     const uniqueDates = [...new Set(datesWithEntries)];
-    
     for (let i = 0; i < uniqueDates.length; i++) {
       const currentDate = new Date(uniqueDates[i]);
-      
       if (i === 0) {
         tempStreak = 1;
       } else {
         const prevDate = new Date(uniqueDates[i-1]);
         const diffTime = Math.abs(currentDate - prevDate);
         const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-        
         if (diffDays === 1) {
           tempStreak++;
         } else {
@@ -197,24 +180,15 @@ export default function Calendar() {
         }
       }
     }
-    
-    // Check if the last streak is the longest
     if (tempStreak > currentLongestStreak) {
       currentLongestStreak = tempStreak;
     }
-    
-    // Get end date of this week (Sunday)
     const endOfWeek = new Date(startOfWeek);
     endOfWeek.setDate(startOfWeek.getDate() + 6);
-    
-    // Previous week date range
     const startOfPrevWeek = new Date(startOfWeek);
     startOfPrevWeek.setDate(startOfPrevWeek.getDate() - 7);
-    
     const endOfPrevWeek = new Date(endOfWeek);
-    endOfPrevWeek.setDate(endOfPrevWeek.getDate() - 7);
-    
-    // Count unique days with logs for current and previous weeks
+    endOfPrevWeek.setDate(endOfWeek.getDate() - 7);
     const uniqueDaysCurrentWeek = logs.filter(log => {
       const logDate = new Date(log.date);
       logDate.setHours(0, 0, 0, 0);
@@ -223,7 +197,6 @@ export default function Calendar() {
       acc.add(new Date(log.date).toDateString());
       return acc;
     }, new Set()).size;
-    
     const uniqueDaysPrevWeek = logs.filter(log => {
       const logDate = new Date(log.date);
       logDate.setHours(0, 0, 0, 0);
@@ -232,11 +205,8 @@ export default function Calendar() {
       acc.add(new Date(log.date).toDateString());
       return acc;
     }, new Set()).size;
-    
-    // Calculate monthly completion percentage
     const daysInMonth = new Date(currentYear, currentMonth + 1, 0).getDate();
     const daysPassedInMonth = Math.min(new Date().getDate(), daysInMonth);
-    
     const logsThisMonth = logs.filter(log => {
       const logDate = new Date(log.date);
       return (
@@ -244,16 +214,12 @@ export default function Calendar() {
         logDate.getMonth() === currentMonth
       );
     });
-    
     const uniqueDaysThisMonth = new Set(
       logsThisMonth.map(log => new Date(log.date).getDate())
     ).size;
-    
     const monthlyCompletionRate = Math.round(
       (uniqueDaysThisMonth / daysPassedInMonth) * 100
     );
-    
-    // Update state with all calculated streak info
     setCurrentStreak(streak);
     setWeeklyStreak(uniqueDaysCurrentWeek);
     setPreviousWeekStreak(uniqueDaysPrevWeek);
@@ -266,47 +232,31 @@ export default function Calendar() {
   const getMoodForDate = (day) => {
     const dateToCheck = new Date(currentYear, currentMonth, day);
     dateToCheck.setHours(0, 0, 0, 0);
-    
-    // Get all logs for this specific date
     const logsForDate = moodLogs.filter(log => {
       const logDate = new Date(log.date);
       logDate.setHours(0, 0, 0, 0);
       return logDate.getTime() === dateToCheck.getTime();
     });
-
     if (logsForDate.length === 0) {
-      // Check if this is a day where we should show the + icon
       const today = new Date();
       today.setHours(0, 0, 0, 0);
-      
-      // Get the Monday of current week
       const currentWeekStart = new Date(today);
-      const dayOfWeek = today.getDay(); // 0 (Sunday) to 6 (Saturday)
-      const offset = dayOfWeek === 0 ? -6 : 1 - dayOfWeek; // Move back to Monday
+      const dayOfWeek = today.getDay();
+      const offset = dayOfWeek === 0 ? -6 : 1 - dayOfWeek;
       currentWeekStart.setDate(today.getDate() + offset);
       currentWeekStart.setHours(0, 0, 0, 0);
-
       const currentWeekEnd = new Date(currentWeekStart);
       currentWeekEnd.setDate(currentWeekStart.getDate() + 6);
       currentWeekEnd.setHours(23, 59, 59, 999);
-      
-      // Only show plus if:
-      // 1. It's today or a past date (not future)
-      // 2. It's in the current week
       const isPastOrToday = dateToCheck <= today;
       const isInCurrentWeek = dateToCheck >= currentWeekStart && dateToCheck <= currentWeekEnd;
-      
       if (isPastOrToday && isInCurrentWeek) {
         return { type: 'plus' };
       }
-      
       return { type: 'empty' };
     }
-
-    // Collect all emotions from all logs for this date (both before and after emotions)
     const allEmotions = [];
     logsForDate.forEach(log => {
-      // Add afterEmotion (always present and more recent)
       if (log.afterEmotion) {
         allEmotions.push({
           emotion: log.afterEmotion,
@@ -314,8 +264,6 @@ export default function Calendar() {
           type: 'after'
         });
       }
-      
-      // Add beforeEmotion if it exists (not "can't remember")
       if (log.beforeEmotion && log.beforeValence !== "can't remember") {
         allEmotions.push({
           emotion: log.beforeEmotion,
@@ -324,34 +272,22 @@ export default function Calendar() {
         });
       }
     });
-
     if (allEmotions.length === 0) {
       return { type: 'empty' };
     }
-
-    // Count frequency of each emotion and track latest occurrence
     const emotionCounts = {};
     const emotionLatestOccurrence = {};
-    
     allEmotions.forEach(emotionData => {
       const emotion = emotionData.emotion;
       emotionCounts[emotion] = (emotionCounts[emotion] || 0) + 1;
-      
-      // Track the latest occurrence of each emotion
       if (!emotionLatestOccurrence[emotion] || emotionData.date > emotionLatestOccurrence[emotion]) {
         emotionLatestOccurrence[emotion] = emotionData.date;
       }
     });
-
-    // Find the maximum frequency
     const maxCount = Math.max(...Object.values(emotionCounts));
-    
-    // Get all emotions that have the maximum frequency
     const emotionsWithMaxCount = Object.entries(emotionCounts)
       .filter(([emotion, count]) => count === maxCount)
       .map(([emotion, count]) => emotion);
-
-    // If there's only one emotion with max count and it appears more than once, it's clearly frequent
     if (emotionsWithMaxCount.length === 1 && maxCount > 1) {
       const dominantEmotion = emotionsWithMaxCount[0];
       return {
@@ -362,20 +298,15 @@ export default function Calendar() {
         count: logsForDate.length
       };
     }
-
-    // If multiple emotions have the same max count and that count is > 1 (tied for most frequent)
     if (emotionsWithMaxCount.length > 1 && maxCount > 1) {
-      // Find the emotion with the most recent occurrence among the tied emotions
       let mostRecentEmotion = emotionsWithMaxCount[0];
       let mostRecentDate = emotionLatestOccurrence[mostRecentEmotion];
-      
       emotionsWithMaxCount.forEach(emotion => {
         if (emotionLatestOccurrence[emotion] > mostRecentDate) {
           mostRecentEmotion = emotion;
           mostRecentDate = emotionLatestOccurrence[emotion];
         }
       });
-
       return {
         type: 'frequent',
         emotion: mostRecentEmotion,
@@ -384,12 +315,8 @@ export default function Calendar() {
         count: logsForDate.length
       };
     }
-
-    // If all emotions appear only once (maxCount === 1), 
-    // return the most recent afterEmotion (since it's more recent than beforeEmotion)
     const afterEmotions = allEmotions.filter(e => e.type === 'after');
     if (afterEmotions.length > 0) {
-      // Sort by date descending to get the most recent
       const mostRecentAfterEmotion = afterEmotions.sort((a, b) => b.date - a.date)[0];
       return {
         type: 'last',
@@ -399,8 +326,6 @@ export default function Calendar() {
         count: logsForDate.length
       };
     }
-
-    // Fallback to most recent emotion if no afterEmotions (shouldn't happen normally)
     const mostRecentEmotion = allEmotions.sort((a, b) => b.date - a.date)[0];
     return {
       type: 'last',
@@ -434,34 +359,25 @@ export default function Calendar() {
     dateToCheck.setHours(0, 0, 0, 0);
     const today = new Date();
     today.setHours(0, 0, 0, 0);
-
-    // Get the Monday of current week
     const currentWeekStart = new Date(today);
-    const dayOfWeek = today.getDay(); // 0 (Sunday) to 6 (Saturday)
-    const offset = dayOfWeek === 0 ? -6 : 1 - dayOfWeek; // Move back to Monday
+    const dayOfWeek = today.getDay();
+    const offset = dayOfWeek === 0 ? -6 : 1 - dayOfWeek;
     currentWeekStart.setDate(today.getDate() + offset);
     currentWeekStart.setHours(0, 0, 0, 0);
-
     const currentWeekEnd = new Date(currentWeekStart);
     currentWeekEnd.setDate(currentWeekStart.getDate() + 6);
     currentWeekEnd.setHours(23, 59, 59, 999);
-
     const isInCurrentWeek = dateToCheck >= currentWeekStart && dateToCheck <= currentWeekEnd;
     const isPastOrToday = dateToCheck <= today;
-
-    // Only allow logging for current week and past/today dates
     if (isPastOrToday && isInCurrentWeek) {
       const formattedMonth = (currentMonth + 1).toString().padStart(2, '0');
       const formattedDay = day.toString().padStart(2, '0');
       const formattedDate = `${currentYear}-${formattedMonth}-${formattedDay}`;
-      
-      // Navigate to category selection with the selected date
       navigation.navigate('ChooseCategory', { selectedDate: formattedDate });
     }
   };
 
   const handleOpenStreakModal = () => {
-    // Recalculate streaks when opening modal to ensure fresh data
     calculateStreaks(moodLogs);
     setStreakModalOpen(true);
   };
@@ -612,7 +528,7 @@ export default function Calendar() {
               <View style={{ 
                 width: 80, 
                 height: 8, 
-                backgroundColor: '#E5E5E5',
+                backgroundColor: '#fffbfbff',
                 borderRadius: 4,
                 overflow: 'hidden'
               }}>
@@ -650,13 +566,13 @@ export default function Calendar() {
         }}>
           <View style={{ alignItems: 'center', marginBottom: 12 }}>
             <Text style={{ 
-              fontSize: 14, 
+              fontSize: 20, 
               fontFamily: fonts.semiBold, 
               color: colors.text,
               marginBottom: 6,
               textAlign: 'center'
             }}>
-              📅 Your Mood Calendar
+              Your Mood Calendar
             </Text>
             <Text style={{ 
               fontSize: 12, 
@@ -668,6 +584,8 @@ export default function Calendar() {
             }}>
               Track your daily emotions. 
               <Text style={{ fontFamily: fonts.semiBold }}> Click any date</Text> of the current week to log multiple moods. Past weeks are view-only.
+              
+              <Text style={{ fontFamily: fonts.semiBold }}> The emotion shown for each day is the most prominent emotion for the day.</Text>
             </Text>
           </View>
 
@@ -679,52 +597,35 @@ export default function Calendar() {
             paddingHorizontal: 12
           }}>
             <View style={{ flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'space-around' }}>
-              <View style={{ alignItems: 'center', marginBottom: 6, width: '45%' }}>
-                <View style={{
-                  width: 20,
-                  height: 20,
-                  borderRadius: 10,
-                  backgroundColor: 'white',
-                  justifyContent: 'center',
-                  alignItems: 'center',
-                  marginBottom: 3
-                }}>
-                  <Text style={{ fontSize: 10 }}>😊</Text>
-                </View>
-                <Text style={{ fontSize: 9, color: colors.text, fontFamily: fonts.medium, textAlign: 'center' }}>
-                  Dominant Mood
-                </Text>
-              </View>
-              
-              <View style={{ alignItems: 'center', marginBottom: 6, width: '45%' }}>
-                <View style={{
-                  width: 20,
-                  height: 20,
-                  borderRadius: 10,
-                  backgroundColor: '#4CAF50',
-                  justifyContent: 'center',
-                  alignItems: 'center',
-                  marginBottom: 3
-                }}>
-                  <Text style={{ 
-                    color: 'white', 
-                    fontSize: 9, 
-                    fontFamily: fonts.bold 
+              {Object.keys(emotionMap).map((key) => (
+                <View key={key} style={{ alignItems: 'center', marginBottom: 6, width: '45%' }}>
+                  <View style={{
+                    width: 20,
+                    height: 20,
+                    borderRadius: 10,
+                    backgroundColor: 'white',
+                    justifyContent: 'center',
+                    alignItems: 'center',
+                    marginBottom: 3
                   }}>
-                    2
+                    {emotionImages[key] ? (
+                      <Image source={emotionImages[key]} style={{ width: 16, height: 16 }} resizeMode="contain" />
+                    ) : (
+                      <Text style={{ fontSize: 10 }}>{emotionMap[key].emoji}</Text>
+                    )}
+                  </View>
+                  <Text style={{ fontSize: 9, color: colors.text, fontFamily: fonts.medium, textAlign: 'center' }}>
+                    {emotionMap[key].label}
                   </Text>
                 </View>
-                <Text style={{ fontSize: 9, color: colors.text, fontFamily: fonts.medium, textAlign: 'center' }}>
-                  Total Logs
-                </Text>
-              </View>
+              ))}
             </View>
           </View>
         </View>
 
         {/* Calendar */}
         <View style={{ 
-          backgroundColor: 'white',
+          backgroundColor: colors.background,
           marginHorizontal: 16,
           marginTop: 16,
           borderRadius: 16,
@@ -821,9 +722,17 @@ export default function Calendar() {
                         {moodData.type === 'plus' ? (
                           <Text style={{ fontSize: 16, color: '#999', fontFamily: fonts.bold }}>+</Text>
                         ) : moodData.type === 'empty' ? null : (
-                          <Text style={{ fontSize: 20 }}>
-                            {emotionMap[moodData.emotion]?.emoji || '😊'}
-                          </Text>
+                          emotionImages[moodData.emotion] ? (
+                            <Image
+                              source={emotionImages[moodData.emotion]}
+                              style={{ width: 22, height: 22 }}
+                              resizeMode="contain"
+                            />
+                          ) : (
+                            <Text style={{ fontSize: 20 }}>
+                              {emotionMap[moodData.emotion]?.emoji || '😊'}
+                            </Text>
+                          )
                         )}
                         
                         {/* Count badge */}
@@ -881,217 +790,223 @@ export default function Calendar() {
         animationType="slide"
         onRequestClose={handleCloseStreakModal}
       >
-        <View style={{ 
-          flex: 1, 
-          backgroundColor: 'rgba(0,0,0,0.5)', 
-          justifyContent: 'center', 
-          alignItems: 'center',
-          paddingHorizontal: 20
-        }}>
+        <KeyboardAvoidingView
+          style={{ flex: 1 }}
+          behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+        >
           <View style={{ 
-            backgroundColor: 'white', 
-            borderRadius: 16, 
-            padding: 24, 
-            width: '100%',
-            maxWidth: 400,
-            maxHeight: '90%'
+            flex: 1, 
+            backgroundColor: 'rgba(0,0,0,0.5)', 
+            justifyContent: 'center', 
+            alignItems: 'center',
+            paddingHorizontal: 20
           }}>
-            <ScrollView showsVerticalScrollIndicator={false}>
-              {/* Header */}
-              <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 20 }}>
-                <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-                  <Text style={{ fontSize: 32, marginRight: 8 }}>🔥</Text>
-                  <Text style={{ 
-                    fontSize: 24, 
-                    fontFamily: fonts.bold, 
-                    color: colors.text 
-                  }}>
-                    Your Streak Stats
-                  </Text>
-                </View>
-                <TouchableOpacity onPress={handleCloseStreakModal}>
-                  <Text style={{ fontSize: 24, color: '#999' }}>×</Text>
-                </TouchableOpacity>
-              </View>
-              
-              {/* Current Streak */}
-              <View style={{ marginBottom: 24 }}>
-                <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: 8 }}>
-                  <Text style={{ fontSize: 18, fontFamily: fonts.medium, color: colors.text }}>
-                    Current Streak
-                  </Text>
-                  <View style={{ flexDirection: 'row', alignItems: 'baseline' }}>
-                    <Text style={{ fontSize: 32, fontFamily: fonts.bold, color: '#FF8C00', marginRight: 4 }}>
-                      {currentStreak}
-                    </Text>
-                    <Text style={{ fontSize: 14, color: '#999' }}>days</Text>
-                  </View>
-                </View>
-                <View style={{ height: 12, backgroundColor: '#E5E5E5', borderRadius: 6, overflow: 'hidden' }}>
-                  <View style={{
-                    height: '100%',
-                    width: `${Math.min(100, (currentStreak / 7) * 100)}%`,
-                    backgroundColor: '#FF8C00',
-                    borderRadius: 6
-                  }} />
-                </View>
-                <Text style={{ 
-                  fontSize: 12, 
-                  color: '#999', 
-                  fontStyle: 'italic', 
-                  textAlign: 'right',
-                  marginTop: 4
-                }}>
-                  {currentStreak === 0 ? "Start your streak today!" :
-                   currentStreak < 3 ? "Keep going!" :
-                   currentStreak < 7 ? "Great progress!" :
-                   "Impressive streak!"}
-                </Text>
-              </View>
-              
-              {/* Weekly Progress */}
-              <View style={{ 
-                backgroundColor: colors.accent, 
-                borderRadius: 12, 
-                padding: 16, 
-                marginBottom: 24 
-              }}>
-                <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 12 }}>
-                  <Text style={{ fontSize: 20, marginRight: 8 }}>📅</Text>
-                  <Text style={{ fontSize: 16, fontFamily: fonts.semiBold, color: colors.text }}>
-                    This Week (Mon-Sun)
-                  </Text>
-                </View>
-                <View style={{ flexDirection: 'row', justifyContent: 'space-between', marginBottom: 12 }}>
-                  {['M', 'T', 'W', 'T', 'F', 'S', 'S'].map((day, index) => (
-                    <Text key={`label-${index}`} style={{ 
-                      fontSize: 12, 
-                      fontFamily: fonts.medium, 
-                      color: '#999',
-                      textAlign: 'center',
-                      width: 32
-                    }}>
-                      {day}
-                    </Text>
-                  ))}
-                </View>
-                <View style={{ flexDirection: 'row', justifyContent: 'space-between', marginBottom: 12 }}>
-                  {weeklyProgress.map((completed, index) => (
-                    <View
-                      key={`day-${index}`}
-                      style={{
-                        width: 32,
-                        height: 32,
-                        borderRadius: 16,
-                        justifyContent: 'center',
-                        alignItems: 'center',
-                        backgroundColor: completed ? colors.primary : '#E5E5E5'
-                      }}
-                    >
-                      {completed && (
-                        <Text style={{ color: 'white', fontSize: 12, fontFamily: fonts.bold }}>✓</Text>
-                      )}
-                    </View>
-                  ))}
-                </View>
-                <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
-                  <Text style={{ fontSize: 14, color: colors.text }}>Days logged</Text>
+            <View style={{ 
+              backgroundColor: 'white', 
+              borderRadius: 16, 
+              padding: 24, 
+              width: '100%',
+              maxWidth: 400,
+              maxHeight: '90%'
+            }}>
+              <ScrollView
+                showsVerticalScrollIndicator={true}
+                contentContainerStyle={{ paddingBottom: 40 }}
+                bounces={false}
+              >
+                {/* Header */}
+                <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 20 }}>
                   <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-                    <Text style={{ fontSize: 18, fontFamily: fonts.bold, color: colors.primary }}>
-                      {weeklyStreak}
+                    <Text style={{ 
+                      fontSize: 21, 
+                      fontFamily: fonts.bold, 
+                      color: colors.text 
+                    }}>
+                      Your Streak Stats
                     </Text>
-                    <Text style={{ fontSize: 14, color: '#999', marginLeft: 4 }}>/ 7</Text>
                   </View>
+                  <TouchableOpacity onPress={handleCloseStreakModal}>
+                    <Text style={{ fontSize: 24, color: '#999', marginBottom: 10 }}>×</Text>
+                  </TouchableOpacity>
                 </View>
-              </View>
-              
-              {/* Stats Grid */}
-              <View style={{ flexDirection: 'row', marginBottom: 20 }}>
-                <View style={{ 
-                  flex: 1, 
-                  backgroundColor: colors.accent, 
-                  padding: 12, 
-                  borderRadius: 12,
-                  marginRight: 8
-                }}>
-                  <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 4 }}>
-                    <Text style={{ fontSize: 20, marginRight: 4 }}>🏆</Text>
-                    <Text style={{ fontSize: 14, fontFamily: fonts.semiBold, color: colors.text }}>
-                      Longest Streak
+                
+                {/* Current Streak */}
+                <View style={{ marginBottom: 24 }}>
+                  <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: 8 }}>
+                    <Text style={{ fontSize: 16, fontFamily: fonts.medium, color: colors.text }}>
+                      Current Streak
                     </Text>
+                    <View style={{ flexDirection: 'row', alignItems: 'baseline' }}>
+                      <Text style={{ fontSize: 28, fontFamily: fonts.bold, color: '#FF8C00', marginRight: 4 }}>
+                        {currentStreak}
+                      </Text>
+                      <Text style={{ fontSize: 14, color: '#585555ff' }}>days</Text>
+                    </View>
                   </View>
-                  <Text style={{ fontSize: 20, fontFamily: fonts.bold, color: colors.text }}>
-                    {longestStreak} <Text style={{ fontSize: 14, fontFamily: fonts.regular, color: '#999' }}>days</Text>
+                  <View style={{ height: 12, backgroundColor: '#E5E5E5', borderRadius: 6, overflow: 'hidden' }}>
+                    <View style={{
+                      height: '100%',
+                      width: `${Math.min(100, (currentStreak / 7) * 100)}%`,
+                      backgroundColor: '#FF8C00',
+                      borderRadius: 6
+                    }} />
+                  </View>
+                  <Text style={{ 
+                    fontSize: 12, 
+                    color: '#413e3eff', 
+                    fontStyle: 'italic', 
+                    textAlign: 'right',
+                    marginTop: 4
+                  }}>
+                    {currentStreak === 0 ? "Start your streak today!" :
+                     currentStreak < 3 ? "Keep going!" :
+                     currentStreak < 7 ? "Great progress!" :
+                     "Impressive streak!"}
                   </Text>
                 </View>
                 
+                {/* Weekly Progress */}
                 <View style={{ 
-                  flex: 1, 
                   backgroundColor: colors.accent, 
-                  padding: 12, 
-                  borderRadius: 12,
-                  marginLeft: 8
+                  borderRadius: 12, 
+                  padding: 16, 
+                  marginBottom: 24 
                 }}>
-                  <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 4 }}>
-                    <Text style={{ fontSize: 20, marginRight: 4 }}>📊</Text>
-                    <Text style={{ fontSize: 14, fontFamily: fonts.semiBold, color: colors.text }}>
-                      Last Week
+                  <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 12 }}>
+                    <Text style={{ fontSize: 16, fontFamily: fonts.semiBold, color: colors.text }}>
+                      This Week (Mon-Sun)
                     </Text>
                   </View>
-                  <Text style={{ fontSize: 20, fontFamily: fonts.bold, color: colors.text }}>
-                    {previousWeekStreak} <Text style={{ fontSize: 14, fontFamily: fonts.regular, color: '#999' }}>/ 7 days</Text>
+                  <View style={{ flexDirection: 'row', justifyContent: 'space-between', marginBottom: 12 }}>
+                    {['M', 'T', 'W', 'T', 'F', 'S', 'S'].map((day, index) => (
+                      <Text key={`label-${index}`} style={{ 
+                        fontSize: 12, 
+                        fontFamily: fonts.medium, 
+                        color: '#4d4c4cff',
+                        textAlign: 'center',
+                        width: 32
+                      }}>
+                        {day}
+                      </Text>
+                    ))}
+                  </View>
+                  <View style={{ flexDirection: 'row', justifyContent: 'space-between', marginBottom: 12 }}>
+                    {weeklyProgress.map((completed, index) => (
+                      <View
+                        key={`day-${index}`}
+                        style={{
+                          width: 28,
+                          height: 28,
+                          borderRadius: 14,
+                          justifyContent: 'center',
+                          alignItems: 'center',
+                          backgroundColor: completed ? colors.primary : colors.white
+                        }}
+                      >
+                        {completed && (
+                          <Text style={{ color: 'white', fontSize: 12, fontFamily: fonts.bold }}>✓</Text>
+                        )}
+                      </View>
+                    ))}
+                  </View>
+                  <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
+                    <Text style={{ fontSize: 14, color: colors.text }}>Days logged</Text>
+                    <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                      <Text style={{ fontSize: 18, fontFamily: fonts.bold, color: colors.primary }}>
+                        {weeklyStreak}
+                      </Text>
+                      <Text style={{ fontSize: 14, color: '#999', marginLeft: 4 }}>/ 7</Text>
+                    </View>
+                  </View>
+                </View>
+                
+                {/* Stats Grid */}
+                <View style={{ flexDirection: 'row', marginBottom: 20 }}>
+                  <View style={{ 
+                    flex: 1, 
+                    backgroundColor: colors.accent, 
+                    padding: 12, 
+                    borderRadius: 12,
+                    marginRight: 8
+                  }}>
+                    <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 4 }}>
+                      <Text style={{ fontSize: 20, marginRight: 4 }}>🏆</Text>
+                      <Text style={{ fontSize: 14, fontFamily: fonts.semiBold, color: colors.text }}>
+                        Longest Streak
+                      </Text>
+                    </View>
+                    <Text style={{ fontSize: 20, fontFamily: fonts.bold, color: colors.text }}>
+                      {longestStreak} <Text style={{ fontSize: 14, fontFamily: fonts.regular, color: '#999' }}>days</Text>
+                    </Text>
+                  </View>
+                  
+                  <View style={{ 
+                    flex: 1, 
+                    backgroundColor: colors.accent, 
+                    padding: 12, 
+                    borderRadius: 12,
+                    marginLeft: 8
+                  }}>
+                    <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 4 }}>
+                      <Text style={{ fontSize: 14, fontFamily: fonts.semiBold, color: colors.text }}>
+                        Last Week
+                      </Text>
+                    </View>
+                    <Text style={{ fontSize: 20, fontFamily: fonts.bold, color: colors.text }}>
+                      {previousWeekStreak} <Text style={{ fontSize: 14, fontFamily: fonts.regular, color: '#999' }}>/ 7 days</Text>
+                    </Text>
+                  </View>
+                </View>
+                
+                {/* Motivational Message */}
+                <View style={{ 
+                  padding: 16, 
+                  borderRadius: 12, 
+                  alignItems: 'center',
+                  marginBottom: 16
+                }}>
+                  <Text style={{ 
+                    fontSize: 14, 
+                    fontFamily: fonts.medium,
+                    color: colors.text,
+                    textAlign: 'center',
+                    lineHeight: 20
+                  }}>
+                    {currentStreak === 0 ? (
+                      "Log your mood today to start your streak!"
+                    ) : currentStreak < 3 ? (
+                      "You're building a great habit! Keep going each day."
+                    ) : currentStreak < 7 ? (
+                      "Amazing consistency! You're on your way to a full week."
+                    ) : (
+                      "Incredible dedication! Your consistency is impressive."
+                    )}
                   </Text>
                 </View>
-              </View>
-              
-              {/* Motivational Message */}
-              <View style={{ 
-                backgroundColor: colors.accent,
-                padding: 16, 
-                borderRadius: 12, 
-                alignItems: 'center',
-                marginBottom: 16
-              }}>
-                <Text style={{ 
-                  fontSize: 14, 
-                  color: colors.text,
-                  textAlign: 'center',
-                  lineHeight: 20
-                }}>
-                  {currentStreak === 0 ? (
-                    "Log your mood today to start your streak!"
-                  ) : currentStreak < 3 ? (
-                    "You're building a great habit! Keep going each day."
-                  ) : currentStreak < 7 ? (
-                    "Amazing consistency! You're on your way to a full week."
-                  ) : (
-                    "Incredible dedication! Your consistency is impressive."
-                  )}
-                </Text>
-              </View>
-              
-              {/* Close Button */}
-              <TouchableOpacity 
-                style={{ 
-                  backgroundColor: colors.primary,
-                  paddingVertical: 12,
-                  paddingHorizontal: 24,
-                  borderRadius: 24,
-                  alignItems: 'center'
-                }}
-                onPress={handleCloseStreakModal}
-              >
-                <Text style={{ 
-                  color: 'white',
-                  fontSize: 16,
-                  fontFamily: fonts.medium
-                }}>
-                  Continue Tracking
-                </Text>
-              </TouchableOpacity>
-            </ScrollView>
+                
+                {/* Close Button */}
+                <TouchableOpacity 
+                  style={{ 
+                    backgroundColor: colors.primary,
+                    paddingVertical: 12,
+                    paddingHorizontal: 24,
+                    borderRadius: 24,
+                    alignItems: 'center'
+                  }}
+                  onPress={handleCloseStreakModal}
+                >
+                  <Text style={{ 
+                    color: 'white',
+                    fontSize: 16,
+                    fontFamily: fonts.medium
+                  }}>
+                    Continue Tracking
+                  </Text>
+                </TouchableOpacity>
+              </ScrollView>
+            </View>
           </View>
-        </View>
+        </KeyboardAvoidingView>
       </Modal>
     </View>
   );
