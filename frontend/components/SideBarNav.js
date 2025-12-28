@@ -5,6 +5,7 @@ import MoodEntries from '../screens/User/MoodEntries';
 import Activities from '../screens/User/Activities/Activities';
 import Calendar from '../screens/User/Calendar';
 import StatisticsDashboard from '../screens/User/Statistics/StatisticsDashboard';
+import JournalLogs from '../screens/User/Journal/JournalLogs';
 import Prediction from '../screens/User/Prediction/Prediction';
 import Profile from '../screens/User/Profile';
 
@@ -164,6 +165,15 @@ export default function SideBarNav() {
         options={{
           drawerIcon: ({ color, size }) => (
             <Ionicons name="bar-chart" size={size} color={color} />
+          ),
+        }}
+      />
+      <Drawer.Screen
+        name="Journal"
+        component={JournalLogs}
+        options={{
+          drawerIcon: ({ color, size }) => (
+            <Ionicons name="book" size={size} color={color} />
           ),
         }}
       />

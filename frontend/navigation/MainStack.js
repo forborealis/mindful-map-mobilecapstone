@@ -49,7 +49,11 @@ import GuidedMeditation from '../screens/User/Activities/GuidedMeditation';
 import DailyAffirmation from '../screens/User/Activities/DailyAffirmation';
 import CalmingMusic from '../screens/User/Activities/CalmingMusic';
 import MentalHealthResources from '../screens/User/MentalHealthResources';
-
+import JournalChallenge from '../screens/User/Journal/JournalChallenge';
+import CreateJournalEntry from '../screens/User/Journal/CreateJournalEntry';
+import EditJournal from '../screens/User/Journal/EditJournal';
+import ViewJournal from '../screens/User/Journal/ViewJournal';
+import JournalLogs from '../screens/User/Journal/JournalLogs';
 const Stack = createStackNavigator();
 
 export default function MainStack({ initialRoute }) {
@@ -239,6 +243,31 @@ export default function MainStack({ initialRoute }) {
         name="WeeklyAnova"
         component={WeeklyAnova}
         options={{ headerShown: false }}
+      />
+      <Stack.Screen
+        name="JournalChallenge"
+        component={JournalChallenge}
+        options={{ headerShown: false }}
+      />
+       <Stack.Screen
+        name="CreateJournalEntry"
+        component={CreateJournalEntry}
+        options={{ headerShown: false }}
+      />
+      <Stack.Screen
+        name="EditJournal"
+        component={EditJournal}
+        options={{ headerShown: false }}
+      />
+      <Stack.Screen
+        name="ViewJournal"
+        component={ViewJournal}
+        options={{ headerShown: false }}
+      />
+      <Stack.Screen
+        name="JournalLogs"
+        component={JournalLogs}
+        options={{ headerShown: true }}
       />
       <Stack.Screen
         name="Prediction"
