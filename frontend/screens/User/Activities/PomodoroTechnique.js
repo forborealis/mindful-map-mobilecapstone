@@ -275,7 +275,16 @@ const PomodoroTechnique = () => {
               fontFamily: fonts.bold,
               color: colors.primary,
               marginBottom: 14,
-            }}>Choose Your Plant</Text>
+            }}>Choose a Plant to Grow</Text>
+            <Text style={{
+              fontFamily: fonts.regular,
+              color: colors.primary,
+              fontSize: 13,
+              marginBottom: 12,
+              textAlign: 'center',
+            }}>
+              Watch your plant grow as you stay focused! The longer you work, the more your plant blossoms. Complete your Pomodoro to see it fully bloom!
+            </Text>
             <View style={{
               flexDirection: 'row',
               justifyContent: 'center',
