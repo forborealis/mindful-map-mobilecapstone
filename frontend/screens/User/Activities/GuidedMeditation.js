@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, SafeAreaView, ScrollView, Dimensions } from 'react-native';
+import { View, Text, TouchableOpacity, SafeAreaView, ScrollView, Dimensions } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import YoutubePlayer from 'react-native-youtube-iframe';
 import { colors } from '../../../utils/colors/colors';
@@ -7,24 +7,54 @@ import { fonts } from '../../../utils/fonts/fonts';
 
 const meditationData = {
   mindfulness: {
-    '5': 'ssss7V1_eyA',
-    '10': 'Evgx9yX2Vw8',
+    '5': {
+      id: 'ssss7V1_eyA',
+      description: 'A gentle 5-minute mindfulness meditation to help you become present and aware of your thoughts and sensations.',
+    },
+    '10': {
+      id: 'Evgx9yX2Vw8',
+      description: 'A 10-minute guided mindfulness session to cultivate calm and clarity by focusing on the breath and present moment.',
+    },
   },
   'body-scan': {
-    '5': 'z8zX-QbXIT4',
-    '10': 'nnVCadMo3qI',
+    '5': {
+      id: 'z8zX-QbXIT4',
+      description: 'A short body scan to help you relax and connect with your body, releasing tension from head to toe.',
+    },
+    '10': {
+      id: 'nnVCadMo3qI',
+      description: 'A deeper 10-minute body scan meditation for full-body relaxation and stress relief.',
+    },
   },
   visualization: {
-    '5': '_YAgCAhVtss',
-    '10': 'Tvs7JNV8NDA',
+    '5': {
+      id: '_YAgCAhVtss',
+      description: 'A quick visualization to help you imagine a peaceful place and boost your mood.',
+    },
+    '10': {
+      id: 'Tvs7JNV8NDA',
+      description: 'A 10-minute visualization journey to inspire positivity and inner peace.',
+    },
   },
   sound: {
-    '5': '1AQs9vLcr3Q',
-    '10': 'YlOUww60Q5M',
+    '5': {
+      id: '1AQs9vLcr3Q',
+      description: 'A 5-minute sound bath using soothing tones to calm your mind and body.',
+    },
+    '10': {
+      id: 'YlOUww60Q5M',
+      description: 'A longer sound bath experience for deep relaxation and mental clarity.',
+    },
   },
   chakra: {
-    '5': 'v0r2zCMcRsA',
-    '10': 'P_ri2uy9Hgs',
+    '5': {
+      id: 'v0r2zCMcRsA',
+      description: 'A brief chakra meditation to balance your energy centers and promote well-being.',
+    },
+    '10': {
+      id: 'P_ri2uy9Hgs',
+      description: 'A 10-minute chakra alignment meditation for harmony and inner balance.',
+    },
   },
 };
 
@@ -42,18 +72,17 @@ const VIDEO_HEIGHT = (width - 40) * (9 / 16);
 const GuidedMeditation = ({ navigation }) => {
   const [meditationType, setMeditationType] = useState('mindfulness');
   const [duration, setDuration] = useState('5');
-  const [video, setVideo] = useState(meditationData.mindfulness['5']);
   const [playing, setPlaying] = useState(false);
+
+  const currentMeditation = meditationData[meditationType][duration];
 
   const handleMeditationTypeChange = (type) => {
     setMeditationType(type);
-    setVideo(meditationData[type][duration]);
     setPlaying(false);
   };
 
   const handleDurationChange = (newDuration) => {
     setDuration(newDuration);
-    setVideo(meditationData[meditationType][newDuration]);
     setPlaying(false);
   };
 
@@ -64,49 +93,157 @@ const GuidedMeditation = ({ navigation }) => {
   };
 
   return (
-    <SafeAreaView style={styles.container}>
-      <View style={styles.header}>
-        <Text style={styles.headerTitle}>Guided Meditation</Text>
+    <SafeAreaView style={{
+      flex: 1,
+      backgroundColor: colors.background,
+    }}>
+      {/* Header styled like PomodoroTechnique */}
+      <View
+        style={{
+          paddingTop: 36,
+          paddingBottom: 18,
+          backgroundColor: '#fff',
+          borderBottomWidth: 2,
+          borderBottomColor: '#CBE7DC',
+          shadowColor: '#000',
+          shadowOpacity: 0.06,
+          shadowOffset: { width: 0, height: 2 },
+          shadowRadius: 6,
+          elevation: 3,
+        }}
+      >
+        <View style={{ flexDirection: 'row', alignItems: 'center', paddingHorizontal: 12 }}>
+          <TouchableOpacity
+            onPress={() => navigation.goBack()}
+            style={{
+              padding: 10,
+              borderRadius: 999,
+              backgroundColor: 'rgba(255,255,255,0.8)',
+            }}
+          >
+            <Ionicons name="arrow-back" size={24} color="#55AD9B" />
+          </TouchableOpacity>
+          <View style={{ flex: 1, alignItems: 'center', paddingHorizontal: 20 }}>
+            <Text style={{
+              fontFamily: fonts.bold,
+              fontSize: 21,
+              color: '#1b5f52',
+              letterSpacing: 0,
+              alignSelf: 'center'
+            }}>
+              Guided Meditation
+            </Text>
+          </View>
+          <View style={{ width: 36, height: 36 }} />
+        </View>
       </View>
 
-      <ScrollView contentContainerStyle={styles.scrollContent}>
-        <View style={styles.videoContainer}>
-          {video ? (
+      <ScrollView contentContainerStyle={{
+        paddingBottom: 40,
+        paddingTop: 10,
+      }}>
+        <View style={{
+          width: width - 40,
+          height: VIDEO_HEIGHT,
+          marginHorizontal: 20,
+          borderRadius: 16,
+          overflow: 'hidden',
+          backgroundColor: colors.white,
+          marginTop: 10,
+          elevation: 5,
+          shadowColor: '#000',
+          shadowOffset: { width: 0, height: 2 },
+          shadowOpacity: 0.12,
+          shadowRadius: 6,
+        }}>
+          {currentMeditation ? (
             <YoutubePlayer
               height={VIDEO_HEIGHT}
               play={playing}
-              videoId={video}
+              videoId={currentMeditation.id}
               onChangeState={onStateChange}
-              webViewStyle={styles.youtubeWebView}
+              webViewStyle={{ borderRadius: 16 }}
             />
           ) : (
-            <View style={styles.placeholderContainer}>
-              <Text style={styles.placeholderText}>Select a meditation to begin</Text>
+            <View style={{
+              flex: 1,
+              justifyContent: 'center',
+              alignItems: 'center',
+            }}>
+              <Text style={{
+                fontFamily: fonts.regular,
+                color: colors.secondary,
+              }}>Select a meditation to begin</Text>
             </View>
           )}
         </View>
 
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Choose Your Path</Text>
-          <View style={styles.typeGrid}>
+        {/* Description */}
+        <View style={{
+          flexDirection: 'row',
+          alignItems: 'flex-start',
+          backgroundColor: colors.mintGreen + '22',
+          borderRadius: 10,
+          marginHorizontal: 22,
+          marginTop: 18,
+          marginBottom: 8,
+          padding: 12,
+          minHeight: 54,
+        }}>
+          <Ionicons name="information-circle-outline" size={20} color={colors.primary} style={{ marginRight: 6 }} />
+          <Text style={{
+            fontFamily: fonts.medium,
+            color: colors.text,
+            fontSize: 15,
+            flex: 1,
+            lineHeight: 21,
+          }}>
+            {currentMeditation ? currentMeditation.description : 'Choose a meditation type and duration to see an overview.'}
+          </Text>
+        </View>
+
+        <View style={{ marginTop: 22, paddingHorizontal: 20 }}>
+          <Text style={{
+            fontSize: 15,
+            fontFamily: fonts.bold,
+            color: colors.primary,
+            marginBottom: 12,
+            letterSpacing: 0.2,
+          }}>Choose Your Path</Text>
+          <View style={{ flexDirection: 'column' }}>
             {meditationTypes.map((type) => (
               <TouchableOpacity
                 key={type.id}
                 onPress={() => handleMeditationTypeChange(type.id)}
-                style={[
-                  styles.typeButton,
-                  meditationType === type.id && styles.activeTypeButton
-                ]}
+                style={{
+                  flexDirection: 'row',
+                  alignItems: 'center',
+                  backgroundColor: meditationType === type.id ? colors.primary : colors.white,
+                  paddingVertical: 18,
+                  paddingHorizontal: 18,
+                  borderRadius: 14,
+                  marginBottom: 14,
+                  borderWidth: 1.5,
+                  borderColor: meditationType === type.id ? colors.primary : colors.mintGreen,
+                  elevation: 2,
+                  shadowColor: '#000',
+                  shadowOffset: { width: 0, height: 1 },
+                  shadowOpacity: 0.08,
+                  shadowRadius: 3,
+                }}
               >
-                <Ionicons 
-                  name={type.icon} 
-                  size={24} 
-                  color={meditationType === type.id ? colors.white : colors.primary} 
+                <Ionicons
+                  name={type.icon}
+                  size={26}
+                  color={meditationType === type.id ? colors.white : colors.primary}
+                  style={{ marginRight: 12 }}
                 />
-                <Text style={[
-                  styles.typeButtonText,
-                  meditationType === type.id && styles.activeTypeButtonText
-                ]}>
+                <Text style={{
+                  fontSize: 16,
+                  fontFamily: fonts.medium,
+                  color: meditationType === type.id ? colors.white : colors.text,
+                  letterSpacing: 0.1,
+                }}>
                   {type.name}
                 </Text>
               </TouchableOpacity>
@@ -114,32 +251,65 @@ const GuidedMeditation = ({ navigation }) => {
           </View>
         </View>
 
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Select Duration</Text>
-          <View style={styles.durationContainer}>
+        <View style={{ marginTop: 22, paddingHorizontal: 20 }}>
+          <Text style={{
+            fontSize: 15,
+            fontFamily: fonts.bold,
+            color: colors.primary,
+            marginBottom: 12,
+            letterSpacing: 0.2,
+          }}>Select Duration</Text>
+          <View style={{
+            flexDirection: 'row',
+            justifyContent: 'space-between',
+          }}>
             <TouchableOpacity
               onPress={() => handleDurationChange('5')}
-              style={[
-                styles.durationButton,
-                duration === '5' && styles.activeDurationButton
-              ]}
+              style={{
+                width: '48%',
+                backgroundColor: duration === '5' ? colors.primary : colors.white,
+                padding: 14,
+                borderRadius: 12,
+                alignItems: 'center',
+                borderWidth: 1.5,
+                borderColor: duration === '5' ? colors.primary : colors.mintGreen,
+                elevation: 1,
+                shadowColor: '#000',
+                shadowOffset: { width: 0, height: 1 },
+                shadowOpacity: 0.06,
+                shadowRadius: 2,
+              }}
             >
-              <Text style={[
-                styles.durationButtonText,
-                duration === '5' && styles.activeDurationButtonText
-              ]}>5 Minutes</Text>
+              <Text style={{
+                fontSize: 15,
+                fontFamily: fonts.medium,
+                color: duration === '5' ? colors.white : colors.text,
+                letterSpacing: 0.1,
+              }}>5 Minutes</Text>
             </TouchableOpacity>
             <TouchableOpacity
               onPress={() => handleDurationChange('10')}
-              style={[
-                styles.durationButton,
-                duration === '10' && styles.activeDurationButton
-              ]}
+              style={{
+                width: '48%',
+                backgroundColor: duration === '10' ? colors.primary : colors.white,
+                padding: 14,
+                borderRadius: 12,
+                alignItems: 'center',
+                borderWidth: 1.5,
+                borderColor: duration === '10' ? colors.primary : colors.mintGreen,
+                elevation: 1,
+                shadowColor: '#000',
+                shadowOffset: { width: 0, height: 1 },
+                shadowOpacity: 0.06,
+                shadowRadius: 2,
+              }}
             >
-              <Text style={[
-                styles.durationButtonText,
-                duration === '10' && styles.activeDurationButtonText
-              ]}>10 Minutes</Text>
+              <Text style={{
+                fontSize: 15,
+                fontFamily: fonts.medium,
+                color: duration === '10' ? colors.white : colors.text,
+                letterSpacing: 0.1,
+              }}>10 Minutes</Text>
             </TouchableOpacity>
           </View>
         </View>
@@ -147,118 +317,5 @@ const GuidedMeditation = ({ navigation }) => {
     </SafeAreaView>
   );
 };
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: colors.background,
-  },
-  header: {
-    paddingHorizontal: 20,
-    paddingTop: 40,
-    paddingBottom: 8,
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'flex-start',
-    backgroundColor: colors.background,
-  },
-  headerTitle: {
-    fontSize: 20,
-    fontFamily: fonts.bold,
-    color: colors.text,
-  },
-  scrollContent: {
-    paddingBottom: 40,
-  },
-  videoContainer: {
-    width: width - 40,
-    height: VIDEO_HEIGHT,
-    marginHorizontal: 20,
-    borderRadius: 12,
-    overflow: 'hidden',
-    backgroundColor: colors.white,
-    marginTop: 10,
-    elevation: 4,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-  },
-  youtubeWebView: {
-    borderRadius: 12,
-  },
-  placeholderContainer: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  placeholderText: {
-    fontFamily: fonts.regular,
-    color: colors.secondary,
-  },
-  section: {
-    marginTop: 24,
-    paddingHorizontal: 20,
-  },
-  sectionTitle: {
-    fontSize: 14,
-    fontFamily: fonts.bold,
-    color: colors.text,
-    marginBottom: 12,
-  },
-  typeGrid: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    justifyContent: 'space-between',
-  },
-  typeButton: {
-    width: '48%',
-    backgroundColor: colors.white,
-    padding: 16,
-    borderRadius: 12,
-    alignItems: 'center',
-    marginBottom: 12,
-    borderWidth: 1,
-    borderColor: colors.mintGreen,
-  },
-  activeTypeButton: {
-    backgroundColor: colors.primary,
-    borderColor: colors.primary,
-  },
-  typeButtonText: {
-    marginTop: 8,
-    fontSize: 14,
-    fontFamily: fonts.medium,
-    color: colors.text,
-  },
-  activeTypeButtonText: {
-    color: colors.white,
-  },
-  durationContainer: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-  },
-  durationButton: {
-    width: '48%',
-    backgroundColor: colors.white,
-    padding: 12,
-    borderRadius: 12,
-    alignItems: 'center',
-    borderWidth: 1,
-    borderColor: colors.mintGreen,
-  },
-  activeDurationButton: {
-    backgroundColor: colors.primary,
-    borderColor: colors.primary,
-  },
-  durationButtonText: {
-    fontSize: 14,
-    fontFamily: fonts.medium,
-    color: colors.text,
-  },
-  activeDurationButtonText: {
-    color: colors.white,
-  },
-});
 
 export default GuidedMeditation;
