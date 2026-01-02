@@ -17,8 +17,8 @@ exports.getDashboardStats = async (req, res) => {
       });
     }
 
-    // Get total users
-    const totalUsers = await User.countDocuments();
+    // Get total users (excluding admins)
+    const totalUsers = await User.countDocuments({ role: { $ne: 'admin' } });
 
     // Get total teachers
     const totalTeachers = await User.countDocuments({ role: 'teacher' });
@@ -54,6 +54,7 @@ exports.getDashboardStats = async (req, res) => {
       {
         $match: {
           createdAt: { $gte: twelveMonthsAgo },
+          role: { $ne: 'admin' },
         },
       },
       {
@@ -758,3 +759,163 @@ exports.getAvailableWeeks = async (req, res) => {
     res.status(500).json({ success: false, message: 'Server Error', error: error.message });
   }
 };
+
+// Get logs by category for admin dashboard with filtering (weekly, daily, monthly)
+exports.getAdminLogsByCategory = async (req, res) => {
+  try {
+    const { viewType = 'weekly' } = req.query;
+    
+    let startDate, endDate, labels = [], dateRanges = [];
+    const categories = ['activity', 'social', 'health', 'sleep'];
+
+    if (viewType === 'daily') {
+      // Past 30 days from today
+      const end = moment().endOf('day');
+      startDate = moment(end).subtract(29, 'days').startOf('day');
+      endDate = moment(end).endOf('day');
+      
+      for (let i = 0; i < 30; i++) {
+        const date = moment(startDate).add(i, 'days');
+        labels.push(date.format('MMM D'));
+        dateRanges.push({
+          start: moment(date).startOf('day'),
+          end: moment(date).endOf('day')
+        });
+      }
+    } else if (viewType === 'weekly') {
+      // Last 8 weeks - Monday to Sunday (isoWeek)
+      const end = moment().endOf('isoWeek');
+      startDate = moment(end).subtract(7, 'weeks').startOf('isoWeek');
+      endDate = moment(end).endOf('isoWeek');
+      
+      for (let i = 0; i < 8; i++) {
+        const weekStart = moment(startDate).add(i, 'weeks').startOf('isoWeek');
+        const weekEnd = moment(weekStart).endOf('isoWeek');
+        labels.push(`${weekStart.format('MMM D')} - ${weekEnd.format('MMM D')}`);
+        dateRanges.push({
+          start: weekStart,
+          end: weekEnd
+        });
+      }
+    } else if (viewType === 'monthly') {
+      // Last 12 months from today
+      const end = moment().endOf('month');
+      startDate = moment(end).subtract(11, 'months').startOf('month');
+      endDate = moment(end).endOf('month');
+      
+      for (let i = 0; i < 12; i++) {
+        const monthStart = moment(startDate).add(i, 'months').startOf('month');
+        const monthEnd = moment(monthStart).endOf('month');
+        labels.push(monthStart.format('MMM YYYY'));
+        dateRanges.push({
+          start: monthStart,
+          end: monthEnd
+        });
+      }
+    }
+
+    // Use MongoDB aggregation to group by category and time bucket
+    let groupIdExpr, timeLabels = labels;
+    if (viewType === 'weekly') {
+      groupIdExpr = {
+        year: { $isoWeekYear: "$date" },
+        week: { $isoWeek: "$date" },
+        category: "$category"
+      };
+    } else if (viewType === 'monthly') {
+      groupIdExpr = {
+        year: { $year: "$date" },
+        month: { $month: "$date" },
+        category: "$category"
+      };
+    } else {
+      // daily
+      groupIdExpr = {
+        year: { $year: "$date" },
+        month: { $month: "$date" },
+        day: { $dayOfMonth: "$date" },
+        category: "$category"
+      };
+    }
+
+    const logs = await MoodLog.aggregate([
+      {
+        $match: {
+          date: { $gte: startDate.toDate(), $lte: endDate.toDate() }
+        }
+      },
+      {
+        $lookup: {
+          from: 'users',
+          localField: 'user',
+          foreignField: '_id',
+          as: 'userInfo'
+        }
+      },
+      {
+        $match: {
+          'userInfo.role': 'user'
+        }
+      },
+      {
+        $group: {
+          _id: groupIdExpr,
+          count: { $sum: 1 }
+        }
+      }
+    ]);
+
+    // Build a map for quick lookup
+    const bucketMap = {};
+    logs.forEach(item => {
+      let key;
+      if (viewType === 'weekly') {
+        key = `${item._id.year}-W${item._id.week}`;
+      } else if (viewType === 'monthly') {
+        key = `${item._id.year}-${item._id.month}`;
+      } else {
+        key = `${item._id.year}-${item._id.month}-${item._id.day}`;
+      }
+      if (!bucketMap[key]) bucketMap[key] = {};
+      bucketMap[key][item._id.category] = item.count;
+    });
+
+    // Fill arrays for each category
+    const result = {
+      labels,
+      activity: [],
+      social: [],
+      health: [],
+      sleep: [],
+      weekStart: startDate.format('MMM D'),
+      weekEnd: endDate.format('MMM D, YYYY')
+    };
+
+    for (let i = 0; i < labels.length; i++) {
+      let key;
+      if (viewType === 'weekly') {
+        const weekStart = moment(dateRanges[i].start);
+        key = `${weekStart.isoWeekYear()}-W${weekStart.isoWeek()}`;
+      } else if (viewType === 'monthly') {
+        const monthStart = moment(dateRanges[i].start);
+        key = `${monthStart.year()}-${monthStart.month() + 1}`;
+      } else {
+        const day = moment(dateRanges[i].start);
+        key = `${day.year()}-${day.month() + 1}-${day.date()}`;
+      }
+      const bucket = bucketMap[key] || {};
+      result.activity.push(bucket.activity || 0);
+      result.social.push(bucket.social || 0);
+      result.health.push(bucket.health || 0);
+      result.sleep.push(bucket.sleep || 0);
+    }
+
+    res.status(200).json({ success: true, data: result });
+  } catch (error) {
+    console.error('Error fetching admin logs by category:', error);
+    res.status(500).json({ success: false, message: 'Server Error', error: error.message });
+  }
+};
+
+// Keep the old function name for compatibility
+exports.getWeeklyLogsByCategory = exports.getAdminLogsByCategory;
