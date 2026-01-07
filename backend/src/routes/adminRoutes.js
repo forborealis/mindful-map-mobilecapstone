@@ -21,6 +21,7 @@ router.delete('/teachers/:id', adminController.deleteTeacher);
 router.get('/available-weeks', adminController.getAvailableWeeks);
 router.get('/prediction-comparisons', adminController.getPredictionComparisons);
 router.get('/daily-mood-comparison', adminController.getDailyMoodComparison);
+router.get('/weekly-logs-by-category', adminController.getWeeklyLogsByCategory);
 router.post('/calculate-predictions', adminController.calculateWeeklyPredictions);
 router.post('/update-actual-moods', adminController.updateActualMoods);
 

@@ -12,11 +12,12 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { useNavigation, useFocusEffect } from '@react-navigation/native';
 import { MaterialIcons, MaterialCommunityIcons } from '@expo/vector-icons';
 import Toast from 'react-native-toast-message';
-import { BarChart, PieChart } from 'react-native-chart-kit';
+import { BarChart, PieChart, LineChart } from 'react-native-chart-kit';
 import { Dimensions } from 'react-native';
 import { fonts } from '../../utils/fonts/fonts';
 import { colors } from '../../utils/colors/colors';
 import { authService } from '../../services/authService';
+import { downloadChartPDF } from '../../components/PDFTemplate/DashboardPDFs';
 
 const API_BASE_URL = process.env.EXPO_PUBLIC_API_URL || 'http://localhost:5001';
 const screenWidth = Dimensions.get('window').width;
@@ -27,12 +28,58 @@ const AdminDashboard = () => {
   const [dashboardStats, setDashboardStats] = useState(null);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
+  const [weeklyLogsData, setWeeklyLogsData] = useState(null);
+  const [weeklyLogsLoading, setWeeklyLogsLoading] = useState(false);
+  const [viewType, setViewType] = useState('weekly');
 
   useFocusEffect(
     React.useCallback(() => {
       loadDashboardData();
+      loadWeeklyLogsData();
     }, [])
   );
+
+  useEffect(() => {
+    loadWeeklyLogsData();
+  }, [viewType]);
+
+  const loadWeeklyLogsData = async () => {
+    try {
+      setWeeklyLogsLoading(true);
+      const sessionResult = await authService.checkAuthStatus();
+
+      if (!sessionResult.isAuthenticated) {
+        return;
+      }
+
+      const response = await fetch(
+        `${API_BASE_URL}/api/admin/weekly-logs-by-category?viewType=${viewType}`,
+        {
+          headers: {
+            'Authorization': `Bearer ${sessionResult.token}`,
+            'Content-Type': 'application/json',
+          },
+        }
+      );
+
+      if (!response.ok) {
+        throw new Error('Failed to fetch weekly logs');
+      }
+
+      const data = await response.json();
+      if (data.success) {
+        setWeeklyLogsData(data.data);
+      }
+    } catch (error) {
+      console.error('Error loading weekly logs:', error);
+    } finally {
+      setWeeklyLogsLoading(false);
+    }
+  };
+
+  const handleViewTypeChange = (type) => {
+    setViewType(type);
+  };
 
   const loadDashboardData = async () => {
     try {
@@ -97,6 +144,44 @@ const AdminDashboard = () => {
     setRefreshing(true);
     await loadDashboardData();
     setRefreshing(false);
+  };
+
+  const handleDownloadChart = async (chartName) => {
+    try {
+      Toast.show({
+        type: 'info',
+        text1: 'Download Started',
+        text2: `Preparing ${chartName} for download...`,
+        position: 'bottom',
+      });
+
+      let data = null;
+      if (chartName === 'Monthly User Registrations') {
+        data = userChartData;
+      } else if (chartName === 'Active vs Inactive Students') {
+        data = activeInactiveChartData;
+      } else if (chartName === 'Weekly Logs by Category') {
+        data = weeklyLogsData;
+      }
+
+      if (data) {
+        await downloadChartPDF(chartName, data, viewType);
+        Toast.show({
+          type: 'success',
+          text1: 'Download Complete',
+          text2: `${chartName} has been saved.`,
+          position: 'bottom',
+        });
+      }
+    } catch (error) {
+      console.error('Download error:', error);
+      Toast.show({
+        type: 'error',
+        text1: 'Download Failed',
+        text2: 'An error occurred while generating the PDF.',
+        position: 'bottom',
+      });
+    }
   };
 
   if (loading) {
@@ -496,17 +581,21 @@ const AdminDashboard = () => {
                 elevation: 5,
               }}
             >
-              <Text
-                style={{
-                  fontSize: 16,
-                  fontWeight: '600',
-                  color: colors.text,
-                  marginBottom: 12,
-                  fontFamily: fonts.semiBold,
-                }}
-              >
-                Monthly User Registrations
-              </Text>
+              <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
+                <Text
+                  style={{
+                    fontSize: 16,
+                    fontWeight: '600',
+                    color: colors.text,
+                    fontFamily: fonts.semiBold,
+                  }}
+                >
+                  Monthly User Registrations
+                </Text>
+                <TouchableOpacity onPress={() => handleDownloadChart('Monthly User Registrations')}>
+                  <MaterialIcons name="file-download" size={24} color={colors.primary} />
+                </TouchableOpacity>
+              </View>
               <BarChart
                 data={userChartData}
                 width={screenWidth - 64}
@@ -554,17 +643,21 @@ const AdminDashboard = () => {
                 elevation: 5,
               }}
             >
-              <Text
-                style={{
-                  fontSize: 16,
-                  fontWeight: '600',
-                  color: colors.text,
-                  marginBottom: 12,
-                  fontFamily: fonts.semiBold,
-                }}
-              >
-                Active vs Inactive Students
-              </Text>
+              <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
+                <Text
+                  style={{
+                    fontSize: 16,
+                    fontWeight: '600',
+                    color: colors.text,
+                    fontFamily: fonts.semiBold,
+                  }}
+                >
+                  Active vs Inactive Students
+                </Text>
+                <TouchableOpacity onPress={() => handleDownloadChart('Active vs Inactive Students')}>
+                  <MaterialIcons name="file-download" size={24} color={colors.primary} />
+                </TouchableOpacity>
+              </View>
               <View style={{ position: 'relative', alignItems: 'center', justifyContent: 'center' }}>
                 <PieChart
                   data={activeInactiveChartData}
@@ -608,6 +701,254 @@ const AdminDashboard = () => {
                   ))}
                 </View>
               </View>
+            </View>
+          )}
+
+          {/* Weekly Logs by Category Chart */}
+          {weeklyLogsData && (
+            <View
+              style={{
+                backgroundColor: 'white',
+                borderRadius: 12,
+                padding: 16,
+                marginBottom: 20,
+                shadowColor: '#000',
+                shadowOffset: { width: 0, height: 2 },
+                shadowOpacity: 0.1,
+                shadowRadius: 3.84,
+                elevation: 5,
+              }}
+            >
+              <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 4 }}>
+                <Text
+                  style={{
+                    fontSize: 16,
+                    fontWeight: '600',
+                    color: colors.text,
+                    fontFamily: fonts.semiBold,
+                  }}
+                >
+                  Weekly Logs by Category
+                </Text>
+                <TouchableOpacity onPress={() => handleDownloadChart('Weekly Logs by Category')}>
+                  <MaterialIcons name="file-download" size={24} color={colors.primary} />
+                </TouchableOpacity>
+              </View>
+
+              {/* View Type Filters */}
+              <View style={{ flexDirection: 'row', justifyContent: 'center', gap: 8, marginBottom: 16 }}>
+                {['daily', 'weekly', 'monthly'].map((type) => (
+                  <TouchableOpacity
+                    key={type}
+                    onPress={() => handleViewTypeChange(type)}
+                    style={{
+                      paddingHorizontal: 12,
+                      paddingVertical: 6,
+                      borderRadius: 20,
+                      backgroundColor: viewType === type ? colors.primary : '#f0f0f0',
+                    }}
+                  >
+                    <Text
+                      style={{
+                        fontSize: 12,
+                        color: viewType === type ? 'white' : '#666',
+                        fontFamily: fonts.medium,
+                        textTransform: 'capitalize',
+                      }}
+                    >
+                      {type}
+                    </Text>
+                  </TouchableOpacity>
+                ))}
+              </View>
+
+              <Text
+                style={{
+                  fontSize: 12,
+                  color: '#999999',
+                  marginBottom: 12,
+                  fontFamily: fonts.regular,
+                  textAlign: 'center',
+                }}
+              >
+                {viewType === 'weekly' ? (
+                  `Last 8 Weeks (${weeklyLogsData.weekStart} - ${weeklyLogsData.weekEnd})`
+                ) : viewType === 'daily' ? (
+                  `Past 30 Days (${weeklyLogsData.weekStart} - ${weeklyLogsData.weekEnd})`
+                ) : (
+                  `Last 12 Months (${weeklyLogsData.weekStart} - ${weeklyLogsData.weekEnd})`
+                )}
+              </Text>
+
+              {weeklyLogsLoading ? (
+                <ActivityIndicator size="large" color={colors.primary} />
+              ) : (
+                <>
+                  {(() => {
+                    // Calculate max value from all datasets to determine segments
+                    const allValues = [
+                      ...(weeklyLogsData.activity || []),
+                      ...(weeklyLogsData.social || []),
+                      ...(weeklyLogsData.health || []),
+                      ...(weeklyLogsData.sleep || [])
+                    ];
+                    const maxValue = Math.max(...allValues, 0);
+                    const chartMax = Math.ceil(maxValue / 5) * 5 || 5;
+                    const dynamicSegments = 5;
+
+                    // Filter labels to show only some if there are too many
+                    const labels = weeklyLogsData.labels || [];
+                    const displayLabels = labels.map((label, index) => {
+                      if (viewType === 'daily') {
+                        return index % 3 === 0 ? label : '';
+                      }
+                      if (viewType === 'weekly') {
+                        return label.split(' - ')[0];
+                      }
+                      if (viewType === 'monthly') {
+                        return label.split(' ')[0];
+                      }
+                      return label;
+                    });
+
+                    const chartWidth = viewType === 'daily' 
+                      ? Math.max(screenWidth - 64, labels.length * 45) 
+                      : screenWidth - 64;
+
+                    return (
+                      <ScrollView horizontal showsHorizontalScrollIndicator={false}>
+                        <LineChart
+                          data={{
+                            labels: displayLabels,
+                            datasets: [
+                              {
+                                data: weeklyLogsData.activity || [],
+                                color: (opacity = 1) => `rgba(33, 150, 243, ${opacity})`,
+                                strokeWidth: 2,
+                                name: 'Activity'
+                              },
+                              {
+                                data: weeklyLogsData.social || [],
+                                color: (opacity = 1) => `rgba(233, 30, 99, ${opacity})`,
+                                strokeWidth: 2,
+                                name: 'Social'
+                              },
+                              {
+                                data: weeklyLogsData.health || [],
+                                color: (opacity = 1) => `rgba(76, 175, 80, ${opacity})`,
+                                strokeWidth: 2,
+                                name: 'Health'
+                              },
+                              {
+                                data: weeklyLogsData.sleep || [],
+                                color: (opacity = 1) => `rgba(255, 152, 0, ${opacity})`,
+                                strokeWidth: 2,
+                                name: 'Sleep'
+                              },
+                              {
+                                data: new Array(labels.length).fill(chartMax),
+                                color: () => 'transparent',
+                                strokeWidth: 0,
+                                withDots: false,
+                              }
+                            ]
+                          }}
+                          width={chartWidth}
+                          height={280}
+                          yAxisLabel=""
+                          yAxisSuffix=""
+                          fromZero={true}
+                          segments={dynamicSegments}
+                          chartConfig={{
+                            backgroundColor: '#ffffff',
+                            backgroundGradientFrom: '#ffffff',
+                            backgroundGradientTo: '#ffffff',
+                            decimalPlaces: 0,
+                            color: (opacity = 1) => `rgba(0, 0, 0, ${opacity})`,
+                            labelColor: (opacity = 1) => `rgba(0, 0, 0, ${opacity})`,
+                            style: {
+                              borderRadius: 12,
+                            },
+                            propsForLabels: {
+                              fontSize: 10,
+                            },
+                            propsForBackgroundLines: {
+                              strokeWidth: 1,
+                            },
+                          }}
+                          style={{ borderRadius: 12 }}
+                          withDots={true}
+                          withShadow={false}
+                          withInnerLines={true}
+                          bezier
+                        />
+                      </ScrollView>
+                    );
+                  })()}
+
+                  {/* Legend */}
+                  <View style={{ marginTop: 16 }}>
+                    <View style={{ flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'center', gap: 12 }}>
+                      <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                        <View
+                          style={{
+                            width: 12,
+                            height: 12,
+                            backgroundColor: '#2196F3',
+                            marginRight: 6,
+                            borderRadius: 2,
+                          }}
+                        />
+                        <Text style={{ fontSize: 11, color: colors.text, fontFamily: fonts.regular }}>
+                          Activity
+                        </Text>
+                      </View>
+                      <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                        <View
+                          style={{
+                            width: 12,
+                            height: 12,
+                            backgroundColor: '#E91E63',
+                            marginRight: 6,
+                            borderRadius: 2,
+                          }}
+                        />
+                        <Text style={{ fontSize: 11, color: colors.text, fontFamily: fonts.regular }}>
+                          Social
+                        </Text>
+                      </View>
+                      <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                        <View
+                          style={{
+                            width: 12,
+                            height: 12,
+                            backgroundColor: '#4CAF50',
+                            marginRight: 6,
+                            borderRadius: 2,
+                          }}
+                        />
+                        <Text style={{ fontSize: 11, color: colors.text, fontFamily: fonts.regular }}>
+                          Health
+                        </Text>
+                      </View>
+                      <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                        <View
+                          style={{
+                            width: 12,
+                            height: 12,
+                            backgroundColor: '#FF9800',
+                            marginRight: 6,
+                            borderRadius: 2,
+                          }}
+                        />
+                        <Text style={{ fontSize: 11, color: colors.text, fontFamily: fonts.regular }}>
+                          Sleep
+                        </Text>
+                      </View>
+                    </View>
+                  </View>
+                </>
+              )}
             </View>
           )}
         </View>
