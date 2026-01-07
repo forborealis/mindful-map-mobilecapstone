@@ -1,7 +1,8 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { View, Text, TouchableOpacity, SafeAreaView, Image, Modal, TextInput, BackHandler, Platform } from 'react-native';
+import { View, Text, TouchableOpacity, SafeAreaView, Image, Modal, TextInput, BackHandler, Platform, Animated } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useNavigation, useFocusEffect } from '@react-navigation/native';
+import { Audio } from 'expo-av';
 import { colors } from '../../../utils/colors/colors';
 import { fonts } from '../../../utils/fonts/fonts';
 
@@ -37,13 +38,27 @@ const plantOptions = [
       require('../../../assets/images/pomodoro/thirdOption/flower3.2.png'),
       require('../../../assets/images/pomodoro/thirdOption/flower3.3.png'),
     ],
-    unlocked: () => true, // Always unlocked now
+    unlocked: () => true,
   }
 ];
 
 const DEFAULT_MINUTES = 25;
 const MIN_MINUTES = 10;
 const MAX_MINUTES = 60;
+
+// Affirming messages (from Pomodoro.jsx, web version)
+const affirmingMessages = [
+  "Great start! Stay focused and keep going! 🌱",
+  "You're doing amazing! Keep it up! 🌟",
+  "Halfway there! Keep pushing! 💪",
+  "Stay strong, you're almost done! 🌸",
+  "Awesome focus! You're on fire! 🔥",
+  "Just a little more! You got this! 🌼",
+  "Incredible work! Your plant is blooming! 🌷",
+  "Take a deep breath and keep going! 🌿",
+  "You're unstoppable! Finish strong! 🌻",
+  "Last push! Your plant is almost fully grown! 🌺"
+];
 
 const PomodoroTechnique = () => {
   const navigation = useNavigation();
@@ -64,7 +79,65 @@ const PomodoroTechnique = () => {
   const [alertMessage, setAlertMessage] = useState('');
   const [showLeaveModal, setShowLeaveModal] = useState(false);
 
+  // Music states
+  const [sound, setSound] = useState(null);
+  const [musicVolume, setMusicVolume] = useState(0.3);
+  const [isMuted, setIsMuted] = useState(false);
+
+  // Affirming message
+  const [showAffirm, setShowAffirm] = useState(false);
+  const [affirmMessage, setAffirmMessage] = useState('');
+  const lastAffirmTimeRef = useRef(0);
+
   const intervalRef = useRef(null);
+
+  // Use local rain.mp3 as background music
+  const musicSource = require('../../../assets/music/rain.mp3');
+
+  // Music player logic
+  useEffect(() => {
+    let isMounted = true;
+    const loadMusic = async () => {
+      try {
+        if (sound) {
+          await sound.unloadAsync();
+        }
+        const { sound: newSound } = await Audio.Sound.createAsync(
+          musicSource,
+          { shouldPlay: false, volume: isMuted ? 0 : musicVolume, isLooping: true }
+        );
+        if (!isMounted) {
+          await newSound.unloadAsync();
+          return;
+        }
+        setSound(newSound);
+      } catch (e) {}
+    };
+    loadMusic();
+    return () => {
+      isMounted = false;
+      if (sound) sound.unloadAsync();
+    };
+    // eslint-disable-next-line
+  }, []);
+
+  // Play/pause music based on timer state
+  useEffect(() => {
+    if (!sound) return;
+    if (isActive && !isPaused) {
+      sound.setVolumeAsync(isMuted ? 0 : musicVolume);
+      sound.playAsync();
+    } else {
+      sound.pauseAsync();
+    }
+  }, [isActive, isPaused, sound, isMuted, musicVolume]);
+
+  // Volume/mute control
+  useEffect(() => {
+    if (sound) {
+      sound.setVolumeAsync(isMuted ? 0 : musicVolume);
+    }
+  }, [musicVolume, isMuted, sound]);
 
   // Timer logic
   useEffect(() => {
@@ -84,6 +157,32 @@ const PomodoroTechnique = () => {
     }
     return () => clearInterval(intervalRef.current);
   }, [isActive, isPaused]);
+
+  // Affirming messages logic (web-like, more frequent and contextual)
+  useEffect(() => {
+    if (isActive && !isPaused && time > 0) {
+      const elapsed = initialTime - time;
+      // Show at start, halfway, 5 min left, 1 min left, and random
+      if (
+        (elapsed === 0 && initialTime > 60) ||
+        (elapsed === Math.floor(initialTime / 2) && initialTime > 60) ||
+        (time === 300 && initialTime > 300) ||
+        (time === 60 && initialTime > 60) ||
+        (elapsed > 0 && elapsed % 300 === 0 && elapsed !== lastAffirmTimeRef.current)
+      ) {
+        lastAffirmTimeRef.current = elapsed;
+        let msg = "";
+        if (elapsed === 0) msg = affirmingMessages[0];
+        else if (elapsed === Math.floor(initialTime / 2)) msg = affirmingMessages[2];
+        else if (time === 300) msg = affirmingMessages[3];
+        else if (time === 60) msg = affirmingMessages[4];
+        else msg = affirmingMessages[Math.floor(Math.random() * affirmingMessages.length)];
+        setAffirmMessage(msg);
+        setShowAffirm(true);
+        setTimeout(() => setShowAffirm(false), 3000);
+      }
+    }
+  }, [time, isActive, isPaused, initialTime]);
 
   // Plant stages logic
   const getPlantStages = () => {
@@ -110,9 +209,10 @@ const PomodoroTechnique = () => {
 
   const handleTimerComplete = () => {
     setCompletedPomodoros(completedPomodoros + 1);
-    setAlertMessage('Good job! Take a break now.');
+    setAlertMessage('Great job! Your plant is fully grown. Take a break! 🌱');
     setShowAlert(true);
     setIsActive(false);
+    if (sound) sound.pauseAsync();
   };
 
   const toggleStartPause = () => {
@@ -130,6 +230,7 @@ const PomodoroTechnique = () => {
     setTime(initialTime);
     setIsActive(false);
     setIsPaused(false);
+    if (sound) sound.pauseAsync();
   };
 
   const handleMinutesChange = (val) => {
@@ -161,10 +262,10 @@ const PomodoroTechnique = () => {
         }
         return false;
       };
-   let backHandlerSub;
-   if (Platform.OS === 'android') {
-     backHandlerSub = BackHandler.addEventListener('hardwareBackPress', onBackPress);
-   }
+      let backHandlerSub;
+      if (Platform.OS === 'android') {
+        backHandlerSub = BackHandler.addEventListener('hardwareBackPress', onBackPress);
+      }
       const unsubscribe = navigation.addListener('beforeRemove', (e) => {
         if (isActive && !isPaused && time > 0) {
           e.preventDefault();
@@ -172,9 +273,9 @@ const PomodoroTechnique = () => {
         }
       });
       return () => {
-  if (backHandlerSub) {
-     backHandlerSub.remove();
-   }
+        if (backHandlerSub) {
+          backHandlerSub.remove();
+        }
         unsubscribe();
       };
     }, [isActive, isPaused, time, navigation])
@@ -188,10 +289,46 @@ const PomodoroTechnique = () => {
     }
   }, [showAlert]);
 
+  // Volume slider animation (web-like)
+  const sliderWidth = 180;
+  const sliderHeight = 6;
+  const thumbSize = 18;
+  const minVolume = 0;
+  const maxVolume = 1;
+
+  // For slider drag
+  const pan = useRef(new Animated.Value((musicVolume - minVolume) / (maxVolume - minVolume) * sliderWidth)).current;
+
+  useEffect(() => {
+    Animated.timing(pan, {
+      toValue: (musicVolume - minVolume) / (maxVolume - minVolume) * sliderWidth,
+      duration: 120,
+      useNativeDriver: false,
+    }).start();
+  }, [musicVolume]);
+
+  const handleSliderPress = (evt) => {
+    const x = evt.nativeEvent.locationX;
+    let newVolume = x / sliderWidth;
+    newVolume = Math.max(0, Math.min(1, newVolume));
+    setMusicVolume(newVolume);
+    if (newVolume === 0) setIsMuted(true);
+    else if (isMuted) setIsMuted(false);
+  };
+
+  const handleThumbDrag = (evt) => {
+    const x = evt.nativeEvent.locationX;
+    let newVolume = x / sliderWidth;
+    newVolume = Math.max(0, Math.min(1, newVolume));
+    setMusicVolume(newVolume);
+    if (newVolume === 0) setIsMuted(true);
+    else if (isMuted) setIsMuted(false);
+  };
+
   return (
     <SafeAreaView style={{
       flex: 1,
-      backgroundColor: colors.background,
+      backgroundColor: colors.primary,
     }}>
       {/* Header */}
       <View
@@ -254,6 +391,34 @@ const PomodoroTechnique = () => {
         </View>
       </View>
 
+      {/* Affirming Message */}
+      {showAffirm && (
+        <View style={{
+          position: 'absolute',
+          top: 90,
+          left: 0,
+          right: 0,
+          alignItems: 'center',
+          zIndex: 10,
+        }}>
+          <Text style={{
+            backgroundColor: colors.primary,
+            color: '#fff',
+            fontFamily: fonts.bold,
+            fontSize: 16,
+            paddingHorizontal: 24,
+            paddingVertical: 12,
+            borderRadius: 20,
+            overflow: 'hidden',
+            textAlign: 'center',
+            elevation: 4,
+            shadowColor: '#000',
+            shadowOpacity: 0.13,
+            shadowRadius: 8,
+          }}>{affirmMessage}</Text>
+        </View>
+      )}
+
       {/* Plant Selection Modal */}
       <Modal visible={showPlantModal} transparent animationType="fade">
         <View style={{
@@ -296,7 +461,7 @@ const PomodoroTechnique = () => {
                   key={plant.key}
                   style={{
                     alignItems: 'center',
-                    marginHorizontal: 2, // bring cards closer
+                    marginHorizontal: 2,
                     padding: 4,
                     borderRadius: 16,
                     backgroundColor: '#e8f5ea',
@@ -376,7 +541,7 @@ const PomodoroTechnique = () => {
             </View>
             <Text style={{
               fontFamily: fonts.regular,
-              color: colors.primary,
+              color: colors.text,
               fontSize: 15,
               textAlign: 'center',
               marginBottom: 10,
@@ -386,25 +551,25 @@ const PomodoroTechnique = () => {
             <View style={{ marginTop: 10 }}>
               <Text style={{
                 fontFamily: fonts.regular,
-                color: colors.primary,
+                color: colors.text,
                 fontSize: 15,
                 marginBottom: 2,
               }}>• Pick a plant and set your timer (10–60 min)</Text>
               <Text style={{
                 fontFamily: fonts.regular,
-                color: colors.primary,
+                color: colors.text,
                 fontSize: 15,
                 marginBottom: 2,
               }}>• Stay focused while your plant grows</Text>
               <Text style={{
                 fontFamily: fonts.regular,
-                color: colors.primary,
+                color: colors.text,
                 fontSize: 15,
                 marginBottom: 2,
               }}>• When the timer ends, your plant is fully grown!</Text>
               <Text style={{
                 fontFamily: fonts.regular,
-                color: colors.primary,
+                color: colors.text,
                 fontSize: 15,
                 marginBottom: 2,
               }}>• Complete more Pomodoros to unlock new plants</Text>
@@ -550,7 +715,7 @@ const PomodoroTechnique = () => {
             flexDirection: 'row',
             justifyContent: 'center',
             alignItems: 'center',
-            marginTop: -10, // bring controls upward
+            marginTop: -10,
             marginBottom: 0,
           }}>
             <TouchableOpacity onPress={toggleStartPause} style={{
@@ -574,6 +739,86 @@ const PomodoroTechnique = () => {
               <Ionicons name="refresh" size={32} color={colors.primary} />
             </TouchableOpacity>
           </View>
+        </View>
+        {/* Music Volume Control (web-like) */}
+        <View style={{
+          width: 260,
+          marginTop: 10,
+          backgroundColor: '#bfe2d2',
+          borderRadius: 16,
+          padding: 12,
+          flexDirection: 'row',
+          alignItems: 'center',
+          justifyContent: 'center',
+        }}>
+          <TouchableOpacity
+            onPress={() => setIsMuted(!isMuted)}
+            style={{ marginRight: 8 }}
+            accessibilityLabel="Mute"
+          >
+            <Ionicons
+              name={isMuted || musicVolume === 0 ? 'volume-mute' : 'volume-high'}
+              size={22}
+              color="#3d6a52"
+            />
+          </TouchableOpacity>
+          <TouchableOpacity
+            style={{
+              flex: 1,
+              height: sliderHeight + 18,
+              justifyContent: 'center',
+            }}
+            activeOpacity={1}
+            onPress={handleSliderPress}
+          >
+            <View style={{
+              height: sliderHeight,
+              backgroundColor: '#a8d5bb',
+              borderRadius: sliderHeight / 2,
+              width: sliderWidth,
+              position: 'relative',
+              overflow: 'hidden',
+            }}>
+              <View style={{
+                position: 'absolute',
+                left: 0,
+                top: 0,
+                height: sliderHeight,
+                backgroundColor: '#3d6a52',
+                borderRadius: sliderHeight / 2,
+                width: `${musicVolume * sliderWidth}px`,
+              }} />
+              <Animated.View
+                style={{
+                  position: 'absolute',
+                  left: pan,
+                  top: -(thumbSize - sliderHeight) / 2,
+                  width: thumbSize,
+                  height: thumbSize,
+                  borderRadius: thumbSize / 2,
+                  backgroundColor: '#3d6a52',
+                  borderWidth: 2,
+                  borderColor: '#bfe2d2',
+                  shadowColor: '#3d6a52',
+                  shadowOpacity: 0.18,
+                  shadowRadius: 6,
+                  elevation: 2,
+                }}
+                {...{
+                  onStartShouldSetResponder: () => true,
+                  onResponderMove: handleThumbDrag,
+                }}
+              />
+            </View>
+          </TouchableOpacity>
+          <Text style={{
+            marginLeft: 10,
+            color: '#3d6a52',
+            fontFamily: fonts.medium,
+            fontSize: 15,
+            minWidth: 38,
+            textAlign: 'right'
+          }}>{`${Math.round((isMuted ? 0 : musicVolume) * 100)}%`}</Text>
         </View>
       </View>
 
