@@ -482,7 +482,14 @@ const MoodEntries = ({ navigation }) => {
                 justifyContent: 'center',
                 marginRight: 8
               }}
-              onPress={() => navigation.navigate('ChooseCategory')}
+              onPress={() => {
+                // Format today's date as YYYY-MM-DD to ensure consistent sleep log checking
+                const today = new Date();
+                const formattedMonth = (today.getMonth() + 1).toString().padStart(2, '0');
+                const formattedDay = today.getDate().toString().padStart(2, '0');
+                const formattedDate = `${today.getFullYear()}-${formattedMonth}-${formattedDay}`;
+                navigation.navigate('ChooseCategory', { selectedDate: formattedDate });
+              }}
             >
               <Text style={{
                 fontFamily: fonts.semiBold,

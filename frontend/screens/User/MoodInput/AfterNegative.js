@@ -374,7 +374,14 @@ const AfterNegative = ({ navigation, route }) => {
         visible={showModal}
         onContinue={() => {
           setShowModal(false);
-          navigation.navigate('ChooseCategory');
+          // Format today's date as YYYY-MM-DD if not already selected from calendar
+          const dateToPass = selectedDate || (() => {
+            const today = new Date();
+            const formattedMonth = (today.getMonth() + 1).toString().padStart(2, '0');
+            const formattedDay = today.getDate().toString().padStart(2, '0');
+            return `${today.getFullYear()}-${formattedMonth}-${formattedDay}`;
+          })();
+          navigation.navigate('ChooseCategory', { selectedDate: dateToPass });
         }}
         onDone={() => {
           setShowModal(false);
