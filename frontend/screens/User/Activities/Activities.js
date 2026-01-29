@@ -29,13 +29,6 @@ const Activities = ({ navigation }) => {
     },
     {
       id: 4,
-      title: 'Daily Affirmation',
-      description: 'Build confidence and positive mindset through affirmations. Transform negative thoughts with powerful positive statements.',
-      icon: 'heart-outline',
-      screen: 'DailyAffirmation'
-    },
-    {
-      id: 5,
       title: 'Calming Music',
       description: 'Relax with soothing melodies and nature sounds. Curated audio tracks designed to reduce anxiety and promote peaceful states of mind.',
       icon: 'musical-notes-outline',

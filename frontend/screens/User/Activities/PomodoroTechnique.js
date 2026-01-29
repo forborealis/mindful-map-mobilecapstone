@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { View, Text, TouchableOpacity, SafeAreaView, Image, Modal, TextInput, BackHandler, Platform, Animated } from 'react-native';
+import { View, Text, TouchableOpacity, SafeAreaView, Image, Modal, TextInput, BackHandler, Platform, Animated, KeyboardAvoidingView } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useNavigation, useFocusEffect } from '@react-navigation/native';
 import { Audio } from 'expo-av';
@@ -73,7 +73,7 @@ const PomodoroTechnique = () => {
   const [completedPomodoros, setCompletedPomodoros] = useState(0);
   const [showPlantModal, setShowPlantModal] = useState(true);
   const [selectedPlant, setSelectedPlant] = useState(null);
-  const [customMinutes, setCustomMinutes] = useState(DEFAULT_MINUTES);
+  const [customMinutes, setCustomMinutes] = useState(DEFAULT_MINUTES.toString());
   const [showInfoModal, setShowInfoModal] = useState(false);
   const [showAlert, setShowAlert] = useState(false);
   const [alertMessage, setAlertMessage] = useState('');
@@ -88,6 +88,7 @@ const PomodoroTechnique = () => {
   const [showAffirm, setShowAffirm] = useState(false);
   const [affirmMessage, setAffirmMessage] = useState('');
   const lastAffirmTimeRef = useRef(0);
+  const isLeavingRef = useRef(false);
 
   const intervalRef = useRef(null);
 
@@ -199,10 +200,13 @@ const PomodoroTechnique = () => {
   );
 
   const handlePlantSelect = (key) => {
+    const mins = parseInt(customMinutes, 10);
+    if (isNaN(mins) || mins < MIN_MINUTES || mins > MAX_MINUTES) return;
+
     setSelectedPlant(key);
     setShowPlantModal(false);
-    setInitialTime(customMinutes * 60);
-    setTime(customMinutes * 60);
+    setInitialTime(mins * 60);
+    setTime(mins * 60);
     setIsActive(false);
     setIsPaused(false);
   };
@@ -234,14 +238,9 @@ const PomodoroTechnique = () => {
   };
 
   const handleMinutesChange = (val) => {
-    let minutes = parseInt(val, 10);
-    if (isNaN(minutes)) minutes = DEFAULT_MINUTES;
-    minutes = Math.max(MIN_MINUTES, Math.min(MAX_MINUTES, minutes));
-    setCustomMinutes(minutes);
-    setInitialTime(minutes * 60);
-    setTime(minutes * 60);
-    setIsActive(false);
-    setIsPaused(false);
+    // Only allow numeric input
+    const numericValue = val.replace(/[^0-9]/g, '');
+    setCustomMinutes(numericValue);
   };
 
   const formatTime = (seconds) => {
@@ -267,6 +266,7 @@ const PomodoroTechnique = () => {
         backHandlerSub = BackHandler.addEventListener('hardwareBackPress', onBackPress);
       }
       const unsubscribe = navigation.addListener('beforeRemove', (e) => {
+        if (isLeavingRef.current) return;
         if (isActive && !isPaused && time > 0) {
           e.preventDefault();
           setShowLeaveModal(true);
@@ -421,64 +421,91 @@ const PomodoroTechnique = () => {
 
       {/* Plant Selection Modal */}
       <Modal visible={showPlantModal} transparent animationType="fade">
-        <View style={{
-          flex: 1,
-          backgroundColor: 'rgba(30,40,60,0.18)',
-          justifyContent: 'center',
-          alignItems: 'center',
-        }}>
+        <KeyboardAvoidingView
+          behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+          keyboardVerticalOffset={Platform.OS === 'ios' ? 40 : -100}
+          style={{ 
+            flex: 1, 
+            backgroundColor: 'rgba(30,40,60,0.18)', 
+            justifyContent: 'center', 
+            alignItems: 'center' 
+          }}
+        >
           <View style={{
             backgroundColor: colors.white,
             borderRadius: 24,
             padding: 24,
             alignItems: 'center',
             width: 320,
+            maxWidth: '90%',
             elevation: 8,
+            shadowColor: '#000',
+            shadowOpacity: 0.1,
+            shadowRadius: 10,
+            marginBottom: Platform.OS === 'android' ? 50 : 0, // Extra push for Android
           }}>
             <Text style={{
               fontSize: 22,
               fontFamily: fonts.bold,
               color: colors.primary,
-              marginBottom: 14,
+              marginBottom: 10,
+              textAlign: 'center',
             }}>Choose a Plant to Grow</Text>
             <Text style={{
               fontFamily: fonts.regular,
               color: colors.primary,
               fontSize: 13,
-              marginBottom: 12,
+              marginBottom: 16,
               textAlign: 'center',
+              lineHeight: 18,
             }}>
-              Watch your plant grow as you stay focused! The longer you work, the more your plant blossoms. Complete your Pomodoro to see it fully bloom!
+              Watch your plant grow as you stay focused! The longer you work, the more your plant blossoms.
             </Text>
+
             <View style={{
               flexDirection: 'row',
               justifyContent: 'center',
               alignItems: 'center',
-              marginBottom: 10,
+              marginBottom: 20,
+              gap: 8,
             }}>
-              {plantOptions.map((plant, idx) => (
-                <TouchableOpacity
-                  key={plant.key}
-                  style={{
-                    alignItems: 'center',
-                    marginHorizontal: 2,
-                    padding: 4,
-                    borderRadius: 16,
-                    backgroundColor: '#e8f5ea',
-                  }}
-                  onPress={() => handlePlantSelect(plant.key)}
-                >
-                  <Image
-                    source={plant.preview}
+              {plantOptions.map((plant, idx) => {
+                const isValid = parseInt(customMinutes, 10) >= MIN_MINUTES && parseInt(customMinutes, 10) <= MAX_MINUTES;
+                return (
+                  <TouchableOpacity
+                    key={plant.key}
+                    disabled={!isValid}
                     style={{
-                      width: 60,
-                      height: 60,
+                      alignItems: 'center',
+                      padding: 8,
+                      borderRadius: 16,
+                      backgroundColor: '#e8f5ea',
+                      opacity: isValid ? 1 : 0.4,
+                      borderWidth: 1,
+                      borderColor: '#d1e6d9',
                     }}
-                  />
-                </TouchableOpacity>
-              ))}
+                    onPress={() => handlePlantSelect(plant.key)}
+                  >
+                    <Image
+                      source={plant.preview}
+                      style={{
+                        width: 55,
+                        height: 55,
+                      }}
+                      resizeMode="contain"
+                    />
+                  </TouchableOpacity>
+                );
+              })}
             </View>
-            <View style={{ alignItems: 'center', marginTop: 10 }}>
+
+            <View style={{ 
+              alignItems: 'center', 
+              width: '100%',
+              paddingTop: 10,
+              borderTopWidth: 1,
+              borderTopColor: '#f0f0f0',
+            }}>
               <Text style={{
                 fontFamily: fonts.medium,
                 color: colors.primary,
@@ -487,32 +514,37 @@ const PomodoroTechnique = () => {
               }}>Pomodoro Duration</Text>
               <TextInput
                 style={{
-                  width: 60,
-                  height: 36,
-                  borderWidth: 1,
+                  width: 80,
+                  height: 50,
+                  borderWidth: 2,
                   borderColor: colors.primary,
-                  borderRadius: 8,
+                  borderRadius: 12,
                   textAlign: 'center',
-                  fontSize: 18,
+                  fontSize: 22,
                   fontFamily: fonts.bold,
                   color: colors.primary,
                   backgroundColor: '#f8faf9',
-                  marginBottom: 2,
+                  padding: 0, // Reset all padding to center better
+                  textAlignVertical: 'center', // Specific for Android
                 }}
                 keyboardType="numeric"
-                value={customMinutes.toString()}
+                value={customMinutes}
                 onChangeText={handleMinutesChange}
                 maxLength={2}
+                placeholder="25"
+                placeholderTextColor="#ccc"
+                includeFontPadding={false} // Android specific: remove extra space
               />
+              
               <Text style={{
                 fontFamily: fonts.regular,
-                color: colors.primary,
-                fontSize: 13,
-                marginTop: 2,
+                color: (parseInt(customMinutes, 10) < MIN_MINUTES || parseInt(customMinutes, 10) > MAX_MINUTES) && customMinutes !== '' ? '#e57373' : colors.primary,
+                fontSize: 12,
+                marginTop: 6,
               }}>minutes (10–60)</Text>
             </View>
           </View>
-        </View>
+        </KeyboardAvoidingView>
       </Modal>
 
       {/* Info Modal */}
@@ -639,6 +671,7 @@ const PomodoroTechnique = () => {
                   marginRight: 8,
                 }}
                 onPress={() => {
+                  isLeavingRef.current = true;
                   setShowLeaveModal(false);
                   setIsActive(false);
                   navigation.goBack();

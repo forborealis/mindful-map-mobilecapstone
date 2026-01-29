@@ -34,10 +34,7 @@ import ActivitiesStatistics from '../screens/User/Statistics/ActivitiesStatistic
 import SleepAnalysis from '../screens/User/Statistics/SleepAnalysis';
 import Anova from '../screens/User/Statistics/Anova';
 import DailyAnova from '../screens/User/Statistics/Daily/DailyAnova';
-import Recommendation from '../screens/User/Statistics/Daily/Recommendation'; 
-import RecommendationRating from '../screens/User/Statistics/Daily/RecommendationRating';
-import ViewRecommendation from '../screens/User/Statistics/Daily/ViewRecommendation'; 
-import EditRecommendation from '../screens/User/Statistics/Daily/EditRecommendation';
+import Recommendation from '../screens/User/Statistics/Daily/Recommendation';  
 import WeeklyAnova from '../screens/User/Statistics/Weekly/WeeklyAnova';
 import Prediction from '../screens/User/Prediction/Prediction';
 import CategoryPrediction from '../screens/User/Prediction/CategoryPrediction';
@@ -46,14 +43,9 @@ import CompletionModal from '../screens/User/Activities/BreathingExercise/Comple
 import ProgressModal from '../screens/User/Activities/BreathingExercise/ProgressModal';
 import PomodoroTechnique from '../screens/User/Activities/PomodoroTechnique';
 import GuidedMeditation from '../screens/User/Activities/GuidedMeditation';
-import DailyAffirmation from '../screens/User/Activities/DailyAffirmation';
 import CalmingMusic from '../screens/User/Activities/CalmingMusic';
 import MentalHealthResources from '../screens/User/MentalHealthResources';
-import JournalChallenge from '../screens/User/Journal/JournalChallenge';
-import CreateJournalEntry from '../screens/User/Journal/CreateJournalEntry';
-import EditJournal from '../screens/User/Journal/EditJournal';
-import ViewJournal from '../screens/User/Journal/ViewJournal';
-import JournalLogs from '../screens/User/Journal/JournalLogs';
+
 const Stack = createStackNavigator();
 
 export default function MainStack({ initialRoute }) {
@@ -225,49 +217,9 @@ export default function MainStack({ initialRoute }) {
         options={{ headerShown: false }}
       />
       <Stack.Screen
-        name="RecommendationRating"
-        component={RecommendationRating}
-        options={{ headerShown: false }}
-      />
-      <Stack.Screen
-        name="ViewRecommendation"
-        component={ViewRecommendation}
-        options={{ headerShown: false }}
-      />
-      <Stack.Screen
-        name="EditRecommendation"
-        component={EditRecommendation}
-        options={{ headerShown: false }}
-      />
-      <Stack.Screen
         name="WeeklyAnova"
         component={WeeklyAnova}
         options={{ headerShown: false }}
-      />
-      <Stack.Screen
-        name="JournalChallenge"
-        component={JournalChallenge}
-        options={{ headerShown: false }}
-      />
-       <Stack.Screen
-        name="CreateJournalEntry"
-        component={CreateJournalEntry}
-        options={{ headerShown: false }}
-      />
-      <Stack.Screen
-        name="EditJournal"
-        component={EditJournal}
-        options={{ headerShown: false }}
-      />
-      <Stack.Screen
-        name="ViewJournal"
-        component={ViewJournal}
-        options={{ headerShown: false }}
-      />
-      <Stack.Screen
-        name="JournalLogs"
-        component={JournalLogs}
-        options={{ headerShown: true }}
       />
       <Stack.Screen
         name="Prediction"
@@ -302,11 +254,6 @@ export default function MainStack({ initialRoute }) {
       <Stack.Screen
         name="GuidedMeditation"
         component={GuidedMeditation}
-        options={{ headerShown: false }}
-      />
-      <Stack.Screen
-        name="DailyAffirmation"
-        component={DailyAffirmation}
         options={{ headerShown: false }}
       />
       <Stack.Screen

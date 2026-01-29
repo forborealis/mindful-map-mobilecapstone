@@ -221,7 +221,12 @@ const BreathingExercises = ({ navigation }) => {
     useCallback(() => {
       fetchData();
       return () => {
+        // Stop and unload music when screen loses focus
         stopAndUnloadSound();
+        // Also pause timer if active
+        if (timerRef.current) {
+          clearInterval(timerRef.current);
+        }
       };
     }, [fetchData])
   );
