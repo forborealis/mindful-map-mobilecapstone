@@ -1,3 +1,4 @@
+// ...existing code...
 import React, { useState } from 'react';
 import {
   View,
@@ -7,13 +8,18 @@ import {
   Linking,
   Alert,
   StatusBar,
-  Dimensions,
 } from 'react-native';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { fonts } from '../../utils/fonts/fonts';
 import { colors } from '../../utils/colors/colors';
 
-const { width } = Dimensions.get('window');
+const cardShadow = {
+  shadowColor: '#000',
+  shadowOpacity: 0.08,
+  shadowRadius: 8,
+  shadowOffset: { width: 0, height: 3 },
+  elevation: 3,
+};
 
 const MentalHealthResources = ({ navigation }) => {
   const [expandedId, setExpandedId] = useState(null);
@@ -29,16 +35,21 @@ const MentalHealthResources = ({ navigation }) => {
         phone: ['0929-521-8373', '0967-039-3456'],
         email: 'mhptaguig@gmail.com',
         address: 'Lakeshore, C6, Lower Bicutan, Taguig City, NCR',
-        website: 'https://mentalhealthph.org/directory/listing/cho-taguig-mental-health-clinic-and-online-service/'
+        website:
+          'https://mentalhealthph.org/directory/listing/cho-taguig-mental-health-clinic-and-online-service/',
       },
-      categories: ['Crisis Hotline', 'Advocacy Group', 'Online Services / Telemental Health'],
+      categories: [
+        'Crisis Hotline',
+        'Advocacy Group',
+        'Online Services / Telemental Health',
+      ],
       deliveryMode: 'Hybrid',
       services: [
         'Consultation',
         'Counseling / Therapy',
         'Information Dissemination',
         'Medication',
-        'Psychological Assessment'
+        'Psychological Assessment',
       ],
       mhpssLevel: 'Level 4 – Specialised Mental Health Care',
     },
@@ -51,18 +62,16 @@ const MentalHealthResources = ({ navigation }) => {
       contact: {
         phone: ['0919-057-1553', '0918-639-2672', '0917-899-8727', '0966-351-4518'],
         telNo: ['8531-9001', '(02) 7-989-8727'],
-        nationwide: [
-          { number: '(02) 1553', type: 'Toll-free' }
-        ],
+        nationwide: [{ number: '(02) 1553', type: 'Toll-free' }],
         phoneByProvider: [
           { number: '0919-057-1553', type: 'Smart/TNT' },
           { number: '0918-639-2672', type: 'Smart/TNT' },
           { number: '0917-899-8727', type: 'Globe/TM' },
-          { number: '0966-351-4518', type: 'Globe/TM' }
+          { number: '0966-351-4518', type: 'Globe/TM' },
         ],
         email: 'mcc@ncmh.gov.ph',
         address: 'Nueve de Pebrero Street, Mauway, Mandaluyong City, NCR',
-        website: 'https://ncmh.gov.ph/'
+        website: 'https://ncmh.gov.ph/',
       },
       categories: ['Crisis Hotline', 'Hospital'],
       deliveryMode: 'Hybrid',
@@ -73,10 +82,10 @@ const MentalHealthResources = ({ navigation }) => {
         'Information Dissemination',
         'Medication',
         'Psychological Assessment',
-        'Training'
+        'Training',
       ],
       mhpssLevel: 'Level 4 – Specialised Mental Health Care',
-    }
+    },
   ];
 
   const handlePhoneClick = (phone) => {
@@ -104,32 +113,32 @@ const MentalHealthResources = ({ navigation }) => {
   return (
     <View style={{ flex: 1, backgroundColor: colors.background }}>
       <StatusBar backgroundColor={colors.primary} barStyle="light-content" />
-      
+
       {/* Header */}
       <View
         style={{
           backgroundColor: colors.primary,
           paddingTop: 50,
-          paddingBottom: 20,
+          paddingBottom: 18,
           paddingHorizontal: 16,
           flexDirection: 'row',
           alignItems: 'center',
           justifyContent: 'space-between',
+          ...cardShadow,
         }}
       >
         <TouchableOpacity
           onPress={() => navigation.goBack()}
-          style={{ paddingRight: 10 }}
+          style={{
+            paddingRight: 10,
+            paddingVertical: 4,
+          }}
         >
-          <Text
-            style={{
-              fontSize: 24,
-              fontWeight: 'bold',
-              color: colors.creamWhite,
-            }}
-          >
-            ←
-          </Text>
+          <MaterialCommunityIcons
+            name="arrow-left"
+            size={26}
+            color={colors.creamWhite}
+          />
         </TouchableOpacity>
         <Text
           style={{
@@ -137,8 +146,9 @@ const MentalHealthResources = ({ navigation }) => {
             fontFamily: fonts.bold,
             color: colors.creamWhite,
             flex: 1,
-            marginLeft: 10,
+            marginLeft: 6,
           }}
+          numberOfLines={1}
         >
           Mental Health Resources
         </Text>
@@ -147,36 +157,51 @@ const MentalHealthResources = ({ navigation }) => {
       {/* Content */}
       <ScrollView
         showsVerticalScrollIndicator={false}
-        contentContainerStyle={{ paddingBottom: 30 }}
+        contentContainerStyle={{ paddingBottom: 30, paddingTop: 10 }}
       >
         {/* Crisis Banner - At Top */}
-        <View style={{ paddingHorizontal: 12, paddingVertical: 16 }}>
+        <View style={{ paddingHorizontal: 16, paddingVertical: 8 }}>
           <View
             style={{
               backgroundColor: colors.white,
-              padding: 14,
-              borderRadius: 12,
+              padding: 16,
+              borderRadius: 14,
               borderLeftWidth: 4,
               borderLeftColor: colors.primary,
+              ...cardShadow,
             }}
           >
-            <Text
+            <View
               style={{
-                fontSize: 14,
-                fontFamily: fonts.semiBold,
-                color: colors.text,
+                flexDirection: 'row',
+                alignItems: 'center',
                 marginBottom: 6,
               }}
             >
-              🆘 Need Immediate Help?
-            </Text>
+              <MaterialCommunityIcons
+                name="alert-circle-outline"
+                size={24}
+                color={colors.primary}
+                style={{ marginRight: 8 }}
+              />
+              <Text
+                style={{
+                  fontSize: 19,
+                  fontFamily: fonts.semiBold,
+                  color: colors.text,
+                }}
+              >
+                Need Immediate Help?
+              </Text>
+            </View>
             <Text
               style={{
-                fontSize: 12,
+                fontSize: 15,
                 fontFamily: fonts.regular,
                 color: colors.text,
                 lineHeight: 18,
-                opacity: 0.8,
+                opacity: 0.85,
+                textAlign: 'justify',
               }}
             >
               Call the National Center for Mental Health Crisis Hotline at{' '}
@@ -187,42 +212,47 @@ const MentalHealthResources = ({ navigation }) => {
                 }}
               >
                 (02) 1553
-              </Text>
-              {' '}available 24/7.
+              </Text>{' '}
+              available 24/7.
             </Text>
           </View>
         </View>
 
         {/* Intro Section */}
-        <View style={{ paddingHorizontal: 16, paddingVertical: 16 }}>
+        <View style={{ paddingHorizontal: 20, paddingVertical: 14 }}>
           <Text
             style={{
-              fontSize: 13,
+              fontSize: 15,
               fontFamily: fonts.regular,
               color: colors.text,
               lineHeight: 20,
               opacity: 0.8,
-              textAlign: 'center',
+              textAlign: 'justify',
             }}
           >
-            You're not alone. Here are trusted mental health resources available to support your wellbeing journey.
+            You're not alone. Here are trusted mental health resources available
+            to support your wellbeing journey.
           </Text>
         </View>
 
         {/* Resources List */}
-        <View style={{ paddingHorizontal: 12 }}>
+        <View style={{ paddingHorizontal: 16 }}>
           {resources.map((resource) => (
             <TouchableOpacity
               key={resource.id}
               onPress={() => toggleExpanded(resource.id)}
-              style={{
-                backgroundColor: colors.white,
-                borderRadius: 16,
-                marginBottom: 12,
-                overflow: 'hidden',
-                borderLeftWidth: 4,
-                borderLeftColor: colors.primary,
-              }}
+              activeOpacity={0.9}
+              style={[
+                {
+                  backgroundColor: colors.white,
+                  borderRadius: 16,
+                  marginBottom: 14,
+                  overflow: 'hidden',
+                  borderLeftWidth: 4,
+                  borderLeftColor: colors.primary,
+                },
+                cardShadow,
+              ]}
             >
               {/* Resource Header */}
               <View
@@ -234,10 +264,16 @@ const MentalHealthResources = ({ navigation }) => {
                 }}
               >
                 <View style={{ flex: 1, marginRight: 12 }}>
-                  <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 2 }}>
+                  <View
+                    style={{
+                      flexDirection: 'row',
+                      alignItems: 'center',
+                      marginBottom: 4,
+                    }}
+                  >
                     <Text
                       style={{
-                        fontSize: 18,
+                        fontSize: 19,
                         fontFamily: fonts.bold,
                         color: colors.text,
                         flexShrink: 1,
@@ -249,22 +285,25 @@ const MentalHealthResources = ({ navigation }) => {
                       {resource.name}
                     </Text>
                     <View style={{ width: 6 }} />
-                    <Text
+                    <View
                       style={{
                         backgroundColor: colors.accent + '30',
                         paddingHorizontal: 10,
                         paddingVertical: 3,
-                        borderRadius: 12,
-                        fontSize: 11,
-                        fontFamily: fonts.semiBold,
-                        color: colors.primary,
-                        letterSpacing: 0.2,
-                        overflow: 'hidden',
-                        includeFontPadding: false,
+                        borderRadius: 999,
                       }}
                     >
-                      {resource.classification}
-                    </Text>
+                      <Text
+                        style={{
+                          fontSize: 11,
+                          fontFamily: fonts.semiBold,
+                          color: colors.primary,
+                          letterSpacing: 0.2,
+                        }}
+                      >
+                        {resource.classification}
+                      </Text>
+                    </View>
                   </View>
                   {resource.subtitle && (
                     <Text
@@ -273,13 +312,25 @@ const MentalHealthResources = ({ navigation }) => {
                         fontFamily: fonts.regular,
                         color: colors.text,
                         marginBottom: 8,
+                        opacity: 0.85,
                       }}
                     >
                       {resource.subtitle}
                     </Text>
                   )}
-                  <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 8, gap: 8 }}>
-                    <MaterialCommunityIcons name="clock-outline" size={16} color={colors.primary} style={{ marginRight: 3 }} />
+                  <View
+                    style={{
+                      flexDirection: 'row',
+                      alignItems: 'center',
+                      marginBottom: 8,
+                    }}
+                  >
+                    <MaterialCommunityIcons
+                      name="clock-outline"
+                      size={16}
+                      color={colors.primary}
+                      style={{ marginRight: 6 }}
+                    />
                     <Text
                       style={{
                         fontSize: 13,
@@ -304,15 +355,15 @@ const MentalHealthResources = ({ navigation }) => {
                         <View
                           key={index}
                           style={{
-                            backgroundColor: colors.accent + '30',
+                            backgroundColor: colors.accent + '25',
                             paddingHorizontal: 10,
                             paddingVertical: 4,
-                            borderRadius: 12,
+                            borderRadius: 999,
                           }}
                         >
                           <Text
                             style={{
-                              fontSize: 12,
+                              fontSize: 11,
                               fontFamily: fonts.regular,
                               color: colors.primary,
                             }}
@@ -324,15 +375,24 @@ const MentalHealthResources = ({ navigation }) => {
                     </View>
                   )}
                 </View>
-                <Text
+                <View
                   style={{
-                    fontSize: 20,
-                    fontWeight: 'bold',
-                    color: colors.primary,
+                    width: 28,
+                    height: 28,
+                    borderRadius: 14,
+                    borderWidth: 1,
+                    borderColor: colors.primary + '50',
+                    justifyContent: 'center',
+                    alignItems: 'center',
+                    backgroundColor: colors.primary + '08',
                   }}
                 >
-                  {expandedId === resource.id ? '−' : '+'}
-                </Text>
+                  <MaterialCommunityIcons
+                    name={expandedId === resource.id ? 'chevron-up' : 'chevron-down'}
+                    size={20}
+                    color={colors.primary}
+                  />
+                </View>
               </View>
 
               {/* Expanded Details */}
@@ -340,46 +400,59 @@ const MentalHealthResources = ({ navigation }) => {
                 <View
                   style={{
                     borderTopWidth: 1,
-                    borderTopColor: colors.primary + '20',
+                    borderTopColor: colors.primary + '15',
                     paddingTop: 12,
                     paddingHorizontal: 16,
                     paddingBottom: 16,
+                    backgroundColor: colors.background,
                   }}
                 >
-
                   {/* Contact Information */}
-                  <View style={{ marginTop: 12 }}>
+                  <View style={{ marginTop: 4 }}>
                     <Text
                       style={{
                         fontSize: 13,
                         fontFamily: fonts.semiBold,
                         color: colors.text,
-                        marginBottom: 8,
+                        marginBottom: 10,
                       }}
                     >
-                      Contact Information:
+                      Contact Information
                     </Text>
 
-                    {/* Address - at top */}
+                    {/* Address */}
                     {resource.contact.address && (
                       <View style={{ marginBottom: 14 }}>
-                        <Text
+                        <View
                           style={{
-                            fontSize: 12,
-                            fontFamily: fonts.regular,
-                            color: colors.text,
-                            opacity: 0.7,
+                            flexDirection: 'row',
+                            alignItems: 'center',
                             marginBottom: 4,
                           }}
                         >
-                          📍 Address:
-                        </Text>
+                          <MaterialCommunityIcons
+                            name="map-marker-outline"
+                            size={16}
+                            color={colors.primary}
+                            style={{ marginRight: 6 }}
+                          />
+                          <Text
+                            style={{
+                              fontSize: 12,
+                              fontFamily: fonts.regular,
+                              color: colors.text,
+                              opacity: 0.7,
+                            }}
+                          >
+                            Address
+                          </Text>
+                        </View>
                         <Text
                           style={{
                             fontSize: 13,
                             fontFamily: fonts.regular,
                             color: colors.text,
-                            marginLeft: 8,
+                            marginLeft: 4,
                             lineHeight: 18,
                           }}
                         >
@@ -389,233 +462,299 @@ const MentalHealthResources = ({ navigation }) => {
                     )}
 
                     {/* Tel No */}
-                    {resource.contact.telNo && resource.contact.telNo.length > 0 && (
-                      <View style={{ marginBottom: 14 }}>
-                        <Text
-                          style={{
-                            fontSize: 12,
-                            fontFamily: fonts.regular,
-                            color: colors.text,
-                            opacity: 0.7,
-                            marginBottom: 4,
-                          }}
-                        >
-                          📞 Tel. No:
-                        </Text>
-                        {resource.contact.telNo.map((phone, index) => (
-                          <TouchableOpacity
-                            key={index}
-                            onPress={() => handlePhoneClick(phone)}
-                            style={{ marginBottom: 4 }}
+                    {resource.contact.telNo &&
+                      resource.contact.telNo.length > 0 && (
+                        <View style={{ marginBottom: 14 }}>
+                          <View
+                            style={{
+                              flexDirection: 'row',
+                              alignItems: 'center',
+                              marginBottom: 4,
+                            }}
                           >
+                            <MaterialCommunityIcons
+                              name="phone-outline"
+                              size={16}
+                              color={colors.primary}
+                              style={{ marginRight: 6 }}
+                            />
                             <Text
                               style={{
-                                fontSize: 13,
+                                fontSize: 12,
                                 fontFamily: fonts.regular,
-                                color: colors.primary,
-                                textDecorationLine: 'underline',
-                                marginLeft: 8,
+                                color: colors.text,
+                                opacity: 0.7,
                               }}
                             >
-                              {phone}
+                              Tel. No
                             </Text>
-                          </TouchableOpacity>
-                        ))}
-                      </View>
-                    )}
-
-                    {/* Nationwide Landline */}
-                    {resource.contact.nationwide && resource.contact.nationwide.length > 0 && (
-                      <View style={{ marginBottom: 14 }}>
-                        <Text
-                          style={{
-                            fontSize: 12,
-                            fontFamily: fonts.regular,
-                            color: colors.text,
-                            opacity: 0.7,
-                            marginBottom: 4,
-                          }}
-                        >
-                          🌐 Nationwide Landline:
-                        </Text>
-                        {resource.contact.nationwide.map((item, index) => (
-                          <TouchableOpacity
-                            key={index}
-                            onPress={() => handlePhoneClick(item.number)}
-                            style={{ marginBottom: 4 }}
-                          >
-                            <Text
-                              style={{
-                                fontSize: 13,
-                                fontFamily: fonts.regular,
-                                color: colors.primary,
-                                textDecorationLine: 'underline',
-                                marginLeft: 8,
-                              }}
+                          </View>
+                          {resource.contact.telNo.map((phone, index) => (
+                            <TouchableOpacity
+                              key={index}
+                              onPress={() => handlePhoneClick(phone)}
+                              style={{ marginBottom: 4 }}
                             >
-                              {item.number}{' '}
                               <Text
                                 style={{
+                                  fontSize: 13,
                                   fontFamily: fonts.regular,
-                                  color: colors.text,
-                                  opacity: 0.6,
-                                  textDecorationLine: 'none',
+                                  color: colors.primary,
+                                  textDecorationLine: 'underline',
+                                  marginLeft: 4,
                                 }}
                               >
-                                ({item.type})
+                                {phone}
                               </Text>
-                            </Text>
-                          </TouchableOpacity>
-                        ))}
-                      </View>
-                    )}
-
-                    {/* Phone Numbers by Provider - 2 Column Format */}
-                    {resource.contact.phoneByProvider && resource.contact.phoneByProvider.length > 0 && (
-                      <View style={{ marginBottom: 14 }}>
-                        <Text
-                          style={{
-                            fontSize: 12,
-                            fontFamily: fonts.regular,
-                            color: colors.text,
-                            opacity: 0.7,
-                            marginBottom: 6,
-                          }}
-                        >
-                          📱 Phone Numbers:
-                        </Text>
-                        <View
-                          style={{
-                            flexDirection: 'row',
-                            gap: 8,
-                          }}
-                        >
-                          {/* Column 1 - Smart/TNT */}
-                          <View style={{ flex: 1 }}>
-                            {resource.contact.phoneByProvider
-                              .filter(item => item.type === 'Smart/TNT')
-                              .map((item, index) => (
-                                <TouchableOpacity
-                                  key={index}
-                                  onPress={() => handlePhoneClick(item.number)}
-                                  style={{
-                                    marginBottom: 3,
-                                  }}
-                                >
-                                  <Text
-                                    style={{
-                                      fontSize: 11,
-                                      fontFamily: fonts.regular,
-                                      color: colors.text,
-                                      opacity: 0.6,
-                                      marginBottom: 1,
-                                    }}
-                                  >
-                                    {item.type}
-                                  </Text>
-                                  <Text
-                                    style={{
-                                      fontSize: 12,
-                                      fontFamily: fonts.regular,
-                                      color: colors.primary,
-                                      textDecorationLine: 'underline',
-                                    }}
-                                  >
-                                    {item.number}
-                                  </Text>
-                                </TouchableOpacity>
-                              ))}
-                          </View>
-                          {/* Column 2 - Globe/TM */}
-                          <View style={{ flex: 1 }}>
-                            {resource.contact.phoneByProvider
-                              .filter(item => item.type === 'Globe/TM')
-                              .map((item, index) => (
-                                <TouchableOpacity
-                                  key={index}
-                                  onPress={() => handlePhoneClick(item.number)}
-                                  style={{
-                                    marginBottom: 3,
-                                  }}
-                                >
-                                  <Text
-                                    style={{
-                                      fontSize: 11,
-                                      fontFamily: fonts.regular,
-                                      color: colors.text,
-                                      opacity: 0.6,
-                                      marginBottom: 1,
-                                    }}
-                                  >
-                                    {item.type}
-                                  </Text>
-                                  <Text
-                                    style={{
-                                      fontSize: 12,
-                                      fontFamily: fonts.regular,
-                                      color: colors.primary,
-                                      textDecorationLine: 'underline',
-                                    }}
-                                  >
-                                    {item.number}
-                                  </Text>
-                                </TouchableOpacity>
-                              ))}
-                          </View>
+                            </TouchableOpacity>
+                          ))}
                         </View>
-                      </View>
-                    )}
+                      )}
 
-                    {/* CHO Phone Numbers (simple list) */}
-                    {resource.id === 1 && resource.contact.phone && resource.contact.phone.length > 0 && (
-                      <View style={{ marginBottom: 14 }}>
-                        <Text
-                          style={{
-                            fontSize: 12,
-                            fontFamily: fonts.regular,
-                            color: colors.text,
-                            opacity: 0.7,
-                            marginBottom: 4,
-                          }}
-                        >
-                          📱 Phone Numbers:
-                        </Text>
-                        {resource.contact.phone.map((phone, index) => (
-                          <TouchableOpacity
-                            key={index}
-                            onPress={() => handlePhoneClick(phone)}
-                            style={{ marginBottom: 4 }}
+                    {/* Nationwide Landline */}
+                    {resource.contact.nationwide &&
+                      resource.contact.nationwide.length > 0 && (
+                        <View style={{ marginBottom: 14 }}>
+                          <View
+                            style={{
+                              flexDirection: 'row',
+                              alignItems: 'center',
+                              marginBottom: 4,
+                            }}
                           >
+                            <MaterialCommunityIcons
+                              name="phone-classic"
+                              size={16}
+                              color={colors.primary}
+                              style={{ marginRight: 6 }}
+                            />
                             <Text
                               style={{
-                                fontSize: 13,
+                                fontSize: 12,
                                 fontFamily: fonts.regular,
-                                color: colors.primary,
-                                textDecorationLine: 'underline',
-                                marginLeft: 8,
+                                color: colors.text,
+                                opacity: 0.7,
                               }}
                             >
-                              {phone}
+                              Nationwide Landline
                             </Text>
-                          </TouchableOpacity>
-                        ))}
-                      </View>
-                    )}
+                          </View>
+                          {resource.contact.nationwide.map((item, index) => (
+                            <TouchableOpacity
+                              key={index}
+                              onPress={() => handlePhoneClick(item.number)}
+                              style={{ marginBottom: 4 }}
+                            >
+                              <Text
+                                style={{
+                                  fontSize: 13,
+                                  fontFamily: fonts.regular,
+                                  color: colors.primary,
+                                  textDecorationLine: 'underline',
+                                  marginLeft: 4,
+                                }}
+                              >
+                                {item.number}{' '}
+                                <Text
+                                  style={{
+                                    fontFamily: fonts.regular,
+                                    color: colors.text,
+                                    opacity: 0.6,
+                                    textDecorationLine: 'none',
+                                  }}
+                                >
+                                  ({item.type})
+                                </Text>
+                              </Text>
+                            </TouchableOpacity>
+                          ))}
+                        </View>
+                      )}
+
+                    {/* Phone Numbers by Provider - 2 Column Format */}
+                    {resource.contact.phoneByProvider &&
+                      resource.contact.phoneByProvider.length > 0 && (
+                        <View style={{ marginBottom: 14 }}>
+                          <View
+                            style={{
+                              flexDirection: 'row',
+                              alignItems: 'center',
+                              marginBottom: 6,
+                            }}
+                          >
+                            <MaterialCommunityIcons
+                              name="cellphone"
+                              size={16}
+                              color={colors.primary}
+                              style={{ marginRight: 6 }}
+                            />
+                            <Text
+                              style={{
+                                fontSize: 12,
+                                fontFamily: fonts.regular,
+                                color: colors.text,
+                                opacity: 0.7,
+                              }}
+                            >
+                              Phone Numbers
+                            </Text>
+                          </View>
+                          <View
+                            style={{
+                              flexDirection: 'row',
+                              gap: 8,
+                            }}
+                          >
+                            {/* Column 1 - Smart/TNT */}
+                            <View style={{ flex: 1 }}>
+                              {resource.contact.phoneByProvider
+                                .filter((item) => item.type === 'Smart/TNT')
+                                .map((item, index) => (
+                                  <TouchableOpacity
+                                    key={index}
+                                    onPress={() => handlePhoneClick(item.number)}
+                                    style={{ marginBottom: 6 }}
+                                  >
+                                    <Text
+                                      style={{
+                                        fontSize: 11,
+                                        fontFamily: fonts.regular,
+                                        color: colors.text,
+                                        opacity: 0.6,
+                                        marginBottom: 1,
+                                      }}
+                                    >
+                                      {item.type}
+                                    </Text>
+                                    <Text
+                                      style={{
+                                        fontSize: 12,
+                                        fontFamily: fonts.regular,
+                                        color: colors.primary,
+                                        textDecorationLine: 'underline',
+                                      }}
+                                    >
+                                      {item.number}
+                                    </Text>
+                                  </TouchableOpacity>
+                                ))}
+                            </View>
+                            {/* Column 2 - Globe/TM */}
+                            <View style={{ flex: 1 }}>
+                              {resource.contact.phoneByProvider
+                                .filter((item) => item.type === 'Globe/TM')
+                                .map((item, index) => (
+                                  <TouchableOpacity
+                                    key={index}
+                                    onPress={() => handlePhoneClick(item.number)}
+                                    style={{ marginBottom: 6 }}
+                                  >
+                                    <Text
+                                      style={{
+                                        fontSize: 11,
+                                        fontFamily: fonts.regular,
+                                        color: colors.text,
+                                        opacity: 0.6,
+                                        marginBottom: 1,
+                                      }}
+                                    >
+                                      {item.type}
+                                    </Text>
+                                    <Text
+                                      style={{
+                                        fontSize: 12,
+                                        fontFamily: fonts.regular,
+                                        color: colors.primary,
+                                        textDecorationLine: 'underline',
+                                      }}
+                                    >
+                                      {item.number}
+                                    </Text>
+                                  </TouchableOpacity>
+                                ))}
+                            </View>
+                          </View>
+                        </View>
+                      )}
+
+                    {/* CHO Phone Numbers (simple list) */}
+                    {resource.id === 1 &&
+                      resource.contact.phone &&
+                      resource.contact.phone.length > 0 && (
+                        <View style={{ marginBottom: 14 }}>
+                          <View
+                            style={{
+                              flexDirection: 'row',
+                              alignItems: 'center',
+                              marginBottom: 4,
+                            }}
+                          >
+                            <MaterialCommunityIcons
+                              name="cellphone"
+                              size={16}
+                              color={colors.primary}
+                              style={{ marginRight: 6 }}
+                            />
+                            <Text
+                              style={{
+                                fontSize: 12,
+                                fontFamily: fonts.regular,
+                                color: colors.text,
+                                opacity: 0.7,
+                              }}
+                            >
+                              Phone Numbers
+                            </Text>
+                          </View>
+                          {resource.contact.phone.map((phone, index) => (
+                            <TouchableOpacity
+                              key={index}
+                              onPress={() => handlePhoneClick(phone)}
+                              style={{ marginBottom: 4 }}
+                            >
+                              <Text
+                                style={{
+                                  fontSize: 13,
+                                  fontFamily: fonts.regular,
+                                  color: colors.primary,
+                                  textDecorationLine: 'underline',
+                                  marginLeft: 4,
+                                }}
+                              >
+                                {phone}
+                              </Text>
+                            </TouchableOpacity>
+                          ))}
+                        </View>
+                      )}
 
                     {/* Email */}
                     {resource.contact.email && (
                       <View style={{ marginBottom: 14 }}>
-                        <Text
+                        <View
                           style={{
-                            fontSize: 12,
-                            fontFamily: fonts.regular,
-                            color: colors.text,
-                            opacity: 0.7,
+                            flexDirection: 'row',
+                            alignItems: 'center',
                             marginBottom: 4,
                           }}
                         >
-                          ✉️ Email:
-                        </Text>
+                          <MaterialCommunityIcons
+                            name="email-outline"
+                            size={16}
+                            color={colors.primary}
+                            style={{ marginRight: 6 }}
+                          />
+                          <Text
+                            style={{
+                              fontSize: 12,
+                              fontFamily: fonts.regular,
+                              color: colors.text,
+                              opacity: 0.7,
+                            }}
+                          >
+                            Email
+                          </Text>
+                        </View>
                         <TouchableOpacity
                           onPress={() => handleEmailClick(resource.contact.email)}
                         >
@@ -625,7 +764,7 @@ const MentalHealthResources = ({ navigation }) => {
                               fontFamily: fonts.regular,
                               color: colors.primary,
                               textDecorationLine: 'underline',
-                              marginLeft: 8,
+                              marginLeft: 4,
                             }}
                           >
                             {resource.contact.email}
@@ -636,20 +775,35 @@ const MentalHealthResources = ({ navigation }) => {
 
                     {/* Website */}
                     {resource.contact.website && (
-                      <View style={{ marginBottom: 14 }}>
-                        <Text
+                      <View style={{ marginBottom: 4 }}>
+                        <View
                           style={{
-                            fontSize: 12,
-                            fontFamily: fonts.regular,
-                            color: colors.text,
-                            opacity: 0.7,
+                            flexDirection: 'row',
+                            alignItems: 'center',
                             marginBottom: 4,
                           }}
                         >
-                          🌐 Website:
-                        </Text>
+                          <MaterialCommunityIcons
+                            name="web"
+                            size={16}
+                            color={colors.primary}
+                            style={{ marginRight: 6 }}
+                          />
+                          <Text
+                            style={{
+                              fontSize: 12,
+                              fontFamily: fonts.regular,
+                              color: colors.text,
+                              opacity: 0.7,
+                            }}
+                          >
+                            Website
+                          </Text>
+                        </View>
                         <TouchableOpacity
-                          onPress={() => handleWebsiteClick(resource.contact.website)}
+                          onPress={() =>
+                            handleWebsiteClick(resource.contact.website)
+                          }
                         >
                           <Text
                             style={{
@@ -657,7 +811,7 @@ const MentalHealthResources = ({ navigation }) => {
                               fontFamily: fonts.regular,
                               color: colors.primary,
                               textDecorationLine: 'underline',
-                              marginLeft: 8,
+                              marginLeft: 4,
                             }}
                             numberOfLines={2}
                           >
@@ -670,7 +824,7 @@ const MentalHealthResources = ({ navigation }) => {
 
                   {/* Services */}
                   {resource.services && resource.services.length > 0 && (
-                    <View style={{ marginTop: 12, marginBottom: 12 }}>
+                    <View style={{ marginTop: 16, marginBottom: 8 }}>
                       <Text
                         style={{
                           fontSize: 13,
@@ -679,20 +833,23 @@ const MentalHealthResources = ({ navigation }) => {
                           marginBottom: 6,
                         }}
                       >
-                        Services Offered:
+                        Services Offered
                       </Text>
                       {resource.services.map((service, index) => (
-                        <View key={index} style={{ marginBottom: 4, flexDirection: 'row', alignItems: 'flex-start' }}>
-                          <Text
-                            style={{
-                              fontSize: 12,
-                              fontFamily: fonts.regular,
-                              color: colors.primary,
-                              marginRight: 8,
-                            }}
-                          >
-                            ✓
-                          </Text>
+                        <View
+                          key={index}
+                          style={{
+                            marginBottom: 4,
+                            flexDirection: 'row',
+                            alignItems: 'flex-start',
+                          }}
+                        >
+                          <MaterialCommunityIcons
+                            name="check-circle-outline"
+                            size={14}
+                            color={colors.primary}
+                            style={{ marginRight: 6, marginTop: 2 }}
+                          />
                           <Text
                             style={{
                               fontSize: 12,
@@ -710,9 +867,19 @@ const MentalHealthResources = ({ navigation }) => {
 
                   {/* Delivery Mode & MHPSS Level */}
                   {(resource.deliveryMode || resource.mhpssLevel) && (
-                    <View style={{ marginTop: 12, paddingTop: 12, borderTopWidth: 1, borderTopColor: colors.primary + '20' }}>
+                    <View
+                      style={{
+                        marginTop: 12,
+                        paddingTop: 10,
+                        borderTopWidth: 1,
+                        borderTopColor: colors.primary + '25',
+                        flexDirection: 'row',
+                        justifyContent: 'space-between',
+                        gap: 12,
+                      }}
+                    >
                       {resource.deliveryMode && (
-                        <View style={{ marginBottom: 8 }}>
+                        <View style={{ flex: 1 }}>
                           <Text
                             style={{
                               fontSize: 11,
@@ -736,7 +903,7 @@ const MentalHealthResources = ({ navigation }) => {
                         </View>
                       )}
                       {resource.mhpssLevel && (
-                        <View>
+                        <View style={{ flex: 1 }}>
                           <Text
                             style={{
                               fontSize: 11,
@@ -769,133 +936,210 @@ const MentalHealthResources = ({ navigation }) => {
 
         {/* Self-Care Tips Section */}
         <View style={{ paddingHorizontal: 16, paddingVertical: 20 }}>
-          <Text
+          <View
             style={{
-              fontSize: 16,
-              fontFamily: fonts.bold,
-              color: colors.text,
-              marginBottom: 12,
+              flexDirection: 'row',
+              alignItems: 'center',
+              marginBottom: 10,
             }}
           >
-            💚 Self-Care Tips
-          </Text>
+            <MaterialCommunityIcons
+              name="heart-circle-outline"
+              size={20}
+              color={colors.primary}
+              style={{ marginRight: 8 }}
+            />
+            <Text
+              style={{
+                fontSize: 16,
+                fontFamily: fonts.bold,
+                color: colors.text,
+              }}
+            >
+              Self-Care Tips
+            </Text>
+          </View>
+
           <View style={{ gap: 10 }}>
             <View
-              style={{
-                backgroundColor: colors.accent + '20',
-                padding: 12,
-                borderRadius: 12,
-              }}
+              style={[
+                {
+                  backgroundColor: colors.white,
+                  padding: 12,
+                  borderRadius: 12,
+                  borderLeftWidth: 3,
+                  borderLeftColor: colors.primary,
+                },
+                cardShadow,
+              ]}
             >
-              <Text
-                style={{
-                  fontSize: 13,
-                  fontFamily: fonts.semiBold,
-                  color: colors.text,
-                  marginBottom: 6,
-                }}
+              <View
+                style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 6 }}
               >
-                🧘 Practice Mindfulness
-              </Text>
+                <MaterialCommunityIcons
+                  name="meditation"
+                  size={18}
+                  color={colors.primary}
+                  style={{ marginRight: 8 }}
+                />
+                <Text
+                  style={{
+                    fontSize: 13,
+                    fontFamily: fonts.semiBold,
+                    color: colors.text,
+                  }}
+                >
+                  Practice Mindfulness
+                </Text>
+              </View>
               <Text
                 style={{
                   fontSize: 12,
                   fontFamily: fonts.regular,
                   color: colors.text,
                   lineHeight: 18,
+                  opacity: 0.9,
                 }}
               >
-                Take a few minutes daily to breathe deeply and be present in the moment.
+                Take a few minutes daily to breathe deeply and be present in the
+                moment.
               </Text>
             </View>
+
             <View
-              style={{
-                backgroundColor: colors.accent + '20',
-                padding: 12,
-                borderRadius: 12,
-              }}
+              style={[
+                {
+                  backgroundColor: colors.white,
+                  padding: 12,
+                  borderRadius: 12,
+                  borderLeftWidth: 3,
+                  borderLeftColor: colors.primary,
+                },
+                cardShadow,
+              ]}
             >
-              <Text
-                style={{
-                  fontSize: 13,
-                  fontFamily: fonts.semiBold,
-                  color: colors.text,
-                  marginBottom: 6,
-                }}
+              <View
+                style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 6 }}
               >
-                🚶 Move Your Body
-              </Text>
+                <MaterialCommunityIcons
+                  name="walk"
+                  size={18}
+                  color={colors.primary}
+                  style={{ marginRight: 8 }}
+                />
+                <Text
+                  style={{
+                    fontSize: 13,
+                    fontFamily: fonts.semiBold,
+                    color: colors.text,
+                  }}
+                >
+                  Move Your Body
+                </Text>
+              </View>
               <Text
                 style={{
                   fontSize: 12,
                   fontFamily: fonts.regular,
                   color: colors.text,
                   lineHeight: 18,
+                  opacity: 0.9,
                 }}
               >
-                Regular exercise and physical activity can significantly boost your mental health.
+                Regular exercise and physical activity can significantly boost your
+                mental health.
               </Text>
             </View>
+
             <View
-              style={{
-                backgroundColor: colors.accent + '20',
-                padding: 12,
-                borderRadius: 12,
-              }}
+              style={[
+                {
+                  backgroundColor: colors.white,
+                  padding: 12,
+                  borderRadius: 12,
+                  borderLeftWidth: 3,
+                  borderLeftColor: colors.primary,
+                },
+                cardShadow,
+              ]}
             >
-              <Text
-                style={{
-                  fontSize: 13,
-                  fontFamily: fonts.semiBold,
-                  color: colors.text,
-                  marginBottom: 6,
-                }}
+              <View
+                style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 6 }}
               >
-                💬 Connect with Others
-              </Text>
+                <MaterialCommunityIcons
+                  name="account-heart-outline"
+                  size={18}
+                  color={colors.primary}
+                  style={{ marginRight: 8 }}
+                />
+                <Text
+                  style={{
+                    fontSize: 13,
+                    fontFamily: fonts.semiBold,
+                    color: colors.text,
+                  }}
+                >
+                  Connect with Others
+                </Text>
+              </View>
               <Text
                 style={{
                   fontSize: 12,
                   fontFamily: fonts.regular,
                   color: colors.text,
                   lineHeight: 18,
+                  opacity: 0.9,
                 }}
               >
-                Share your feelings with trusted friends, family, or mental health professionals.
+                Share your feelings with trusted friends, family, or mental health
+                professionals.
               </Text>
             </View>
           </View>
         </View>
 
         {/* Remember Section */}
-        <View style={{ paddingHorizontal: 16, paddingBottom: 20 }}>
+        <View style={{ paddingHorizontal: 16, paddingBottom: 24 }}>
           <View
-            style={{
-              backgroundColor: colors.primary + '10',
-              padding: 14,
-              borderRadius: 12,
-              borderLeftWidth: 4,
-              borderLeftColor: colors.primary,
-            }}
+            style={[
+              {
+                backgroundColor: colors.primary + '10',
+                padding: 14,
+                borderRadius: 12,
+                borderLeftWidth: 4,
+                borderLeftColor: colors.primary,
+              },
+              cardShadow,
+            ]}
           >
-            <Text
-              style={{
-                fontSize: 12,
-                fontFamily: fonts.regular,
-                color: colors.text,
-                lineHeight: 18,
-              }}
-            >
+            <View style={{ flexDirection: 'row', alignItems: 'flex-start' }}>
+              <MaterialCommunityIcons
+                name="lightbulb-on-outline"
+                size={18}
+                color={colors.primary}
+                style={{ marginRight: 8, marginTop: 2 }}
+              />
               <Text
                 style={{
-                  fontFamily: fonts.semiBold,
-                  color: colors.primary,
+                  fontSize: 12,
+                  fontFamily: fonts.regular,
+                  color: colors.text,
+                  lineHeight: 18,
+                  flex: 1,
                 }}
               >
-                Remember:
+                <Text
+                  style={{
+                    fontFamily: fonts.semiBold,
+                    color: colors.primary,
+                  }}
+                >
+                  Remember:{' '}
+                </Text>
+                Seeking help is a sign of strength. Mental health is just as
+                important as physical health.
               </Text>
-              {' '}Seeking help is a sign of strength. Mental health is just as important as physical health.
-            </Text>
+            </View>
           </View>
         </View>
       </ScrollView>

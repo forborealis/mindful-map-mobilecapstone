@@ -28,18 +28,44 @@ export default function ViewRecommendation() {
   const [effective, setEffective] = useState(!!passedEffective);
   const [loading, setLoading] = useState(false);
 
+  // Keep combinedScore / effective / sentimentScore in sync with feedback if present
+  useEffect(() => {
+    if (feedback) {
+      if (typeof feedback.combinedScore === 'number') {
+        setCombinedScore(feedback.combinedScore);
+      }
+      if (typeof feedback.effective === 'boolean') {
+        setEffective(feedback.effective);
+      }
+      if (typeof feedback.sentimentScore === 'number') {
+        setSentimentScore(feedback.sentimentScore);
+      } else if (typeof feedback.scores?.combined === 'number') {
+        setSentimentScore(feedback.scores.combined);
+      }
+    }
+  }, [feedback]);
+
   // Helper function to format text: capitalize first letters and remove dashes
   const formatText = (text) => {
     if (!text) return '';
     return text
       .split('-')
-      .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+      .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
       .join(' ');
   };
 
   const scorePct = Math.round(Math.max(0, Math.min(1, combinedScore)) * 100);
   const ratingEmojis = ['😟', '😐', '🙂', '😊', '🤩'];
   const ratingLabels = ['Poor', 'Fair', 'Good', 'Great', 'Excellent'];
+
+  // Sentiment label (VADER-style thresholds) derived from numeric sentimentScore
+  const sentimentLabel = (() => {
+    const s = Number(sentimentScore);
+    if (Number.isNaN(s)) return 'Neutral';
+    if (s >= 0.05) return 'Positive';
+    if (s <= -0.05) return 'Negative';
+    return 'Neutral';
+  })();
 
   return (
     <View style={{ flex: 1, backgroundColor: colors.primary }}>
@@ -59,7 +85,7 @@ export default function ViewRecommendation() {
       >
         <View style={{ flexDirection: 'row', alignItems: 'center' }}>
           <TouchableOpacity
-            onPress={() => navigation.navigate('DailyAnova')}
+            onPress={() => navigation.navigate('MoodHabitAnalysis')}
             style={{
               padding: 8,
             }}
@@ -76,8 +102,8 @@ export default function ViewRecommendation() {
       </View>
 
       {/* Content */}
-      <ScrollView 
-        style={{ flex: 1 }} 
+      <ScrollView
+        style={{ flex: 1 }}
         contentContainerStyle={{ paddingHorizontal: 20, paddingTop: 20, paddingBottom: 30 }}
         showsVerticalScrollIndicator={false}
       >
@@ -94,8 +120,23 @@ export default function ViewRecommendation() {
                   justifyContent: 'center',
                 }}
               >
-                <View style={{ height: 12, width: '70%', backgroundColor: '#E6F4EA', borderRadius: 6, marginBottom: 10 }} />
-                <View style={{ height: 12, width: '50%', backgroundColor: '#F7FBF9', borderRadius: 6 }} />
+                <View
+                  style={{
+                    height: 12,
+                    width: '70%',
+                    backgroundColor: '#E6F4EA',
+                    borderRadius: 6,
+                    marginBottom: 10,
+                  }}
+                />
+                <View
+                  style={{
+                    height: 12,
+                    width: '50%',
+                    backgroundColor: '#F7FBF9',
+                    borderRadius: 6,
+                  }}
+                />
               </View>
             ))}
             <View style={{ alignItems: 'center', marginTop: 40 }}>
@@ -131,10 +172,23 @@ export default function ViewRecommendation() {
                   <MaterialIcons name="check-circle" size={26} color="#fff" />
                 </View>
                 <View style={{ flex: 1 }}>
-                  <Text style={{ fontFamily: fonts.bold, fontSize: 16, color: '#fff', marginBottom: 4 }}>
+                  <Text
+                    style={{
+                      fontFamily: fonts.bold,
+                      fontSize: 16,
+                      color: '#fff',
+                      marginBottom: 4,
+                    }}
+                  >
                     Feedback Submitted!
                   </Text>
-                  <Text style={{ fontFamily: fonts.regular, fontSize: 13, color: 'rgba(255, 255, 255, 0.9)' }}>
+                  <Text
+                    style={{
+                      fontFamily: fonts.regular,
+                      fontSize: 13,
+                      color: 'rgba(255, 255, 255, 0.9)',
+                    }}
+                  >
                     Your input helps us improve
                   </Text>
                 </View>
@@ -155,7 +209,14 @@ export default function ViewRecommendation() {
                   elevation: 3,
                 }}
               >
-                <View style={{ flexDirection: 'row', alignItems: 'flex-start', gap: 12, marginBottom: 14 }}>
+                <View
+                  style={{
+                    flexDirection: 'row',
+                    alignItems: 'flex-start',
+                    gap: 12,
+                    marginBottom: 14,
+                  }}
+                >
                   <View
                     style={{
                       height: 44,
@@ -167,10 +228,24 @@ export default function ViewRecommendation() {
                     <Ionicons name="star" size={22} color="#55AD9B" />
                   </View>
                   <View style={{ flex: 1 }}>
-                    <Text style={{ fontFamily: fonts.bold, fontSize: 15, color: '#1b5f52', marginBottom: 6 }}>
+                    <Text
+                      style={{
+                        fontFamily: fonts.bold,
+                        fontSize: 15,
+                        color: '#1b5f52',
+                        marginBottom: 6,
+                      }}
+                    >
                       Your Recommendation
                     </Text>
-                    <Text style={{ fontFamily: fonts.regular, fontSize: 14, color: '#272829', lineHeight: 20 }}>
+                    <Text
+                      style={{
+                        fontFamily: fonts.regular,
+                        fontSize: 14,
+                        color: '#272829',
+                        lineHeight: 20,
+                      }}
+                    >
                       {recommendation.recommendation}
                     </Text>
                   </View>
@@ -190,8 +265,21 @@ export default function ViewRecommendation() {
                         backgroundColor: 'rgba(85, 173, 155, 0.1)',
                       }}
                     >
-                      <View style={{ width: 6, height: 6, borderRadius: 3, backgroundColor: '#55AD9B' }} />
-                      <Text style={{ fontFamily: fonts.semiBold, fontSize: 11, color: '#1b5f52' }}>
+                      <View
+                        style={{
+                          width: 6,
+                          height: 6,
+                          borderRadius: 3,
+                          backgroundColor: '#55AD9B',
+                        }}
+                      />
+                      <Text
+                        style={{
+                          fontFamily: fonts.semiBold,
+                          fontSize: 11,
+                          color: '#1b5f52',
+                        }}
+                      >
                         {formatText(recommendation.category)}
                       </Text>
                     </View>
@@ -208,8 +296,21 @@ export default function ViewRecommendation() {
                         backgroundColor: 'rgba(149, 210, 179, 0.1)',
                       }}
                     >
-                      <View style={{ width: 6, height: 6, borderRadius: 3, backgroundColor: '#95D2B3' }} />
-                      <Text style={{ fontFamily: fonts.semiBold, fontSize: 11, color: '#1b5f52' }}>
+                      <View
+                        style={{
+                          width: 6,
+                          height: 6,
+                          borderRadius: 3,
+                          backgroundColor: '#95D2B3',
+                        }}
+                      />
+                      <Text
+                        style={{
+                          fontFamily: fonts.semiBold,
+                          fontSize: 11,
+                          color: '#1b5f52',
+                        }}
+                      >
                         {formatText(recommendation.activity)}
                       </Text>
                     </View>
@@ -233,25 +334,60 @@ export default function ViewRecommendation() {
                   elevation: 3,
                 }}
               >
-                <Text style={{ fontFamily: fonts.bold, fontSize: 16, color: '#1b5f52', marginBottom: 14 }}>
+                <Text
+                  style={{
+                    fontFamily: fonts.bold,
+                    fontSize: 16,
+                    color: '#1b5f52',
+                    marginBottom: 14,
+                  }}
+                >
                   Your Rating
                 </Text>
 
                 {feedback?.rating ? (
                   <View style={{ flexDirection: 'row', alignItems: 'center', gap: 14 }}>
-                    <Text style={{ fontSize: 52 }}>{ratingEmojis[feedback.rating - 1]}</Text>
+                    <Text style={{ fontSize: 52 }}>
+                      {ratingEmojis[feedback.rating - 1]}
+                    </Text>
                     <View style={{ flex: 1 }}>
-                      <Text style={{ fontSize: 36, fontFamily: fonts.bold, color: '#55AD9B' }}>
+                      <Text
+                        style={{
+                          fontSize: 36,
+                          fontFamily: fonts.bold,
+                          color: '#55AD9B',
+                        }}
+                      >
                         {feedback.rating}
                       </Text>
-                      <Text style={{ fontSize: 12, color: '#6b7280', marginBottom: 3 }}>out of 5</Text>
-                      <Text style={{ fontSize: 15, fontFamily: fonts.semiBold, color: '#1b5f52' }}>
+                      <Text
+                        style={{
+                          fontSize: 12,
+                          color: '#6b7280',
+                          marginBottom: 3,
+                        }}
+                      >
+                        out of 5
+                      </Text>
+                      <Text
+                        style={{
+                          fontSize: 15,
+                          fontFamily: fonts.semiBold,
+                          color: '#1b5f52',
+                        }}
+                      >
                         {ratingLabels[feedback.rating - 1]}
                       </Text>
                     </View>
                   </View>
                 ) : (
-                  <Text style={{ fontFamily: fonts.regular, fontSize: 13, color: '#6b7280' }}>
+                  <Text
+                    style={{
+                      fontFamily: fonts.regular,
+                      fontSize: 13,
+                      color: '#6b7280',
+                    }}
+                  >
                     No rating provided
                   </Text>
                 )}
@@ -270,7 +406,14 @@ export default function ViewRecommendation() {
                   elevation: 3,
                 }}
               >
-                <Text style={{ fontFamily: fonts.bold, fontSize: 16, color: '#1b5f52', marginBottom: 14 }}>
+                <Text
+                  style={{
+                    fontFamily: fonts.bold,
+                    fontSize: 16,
+                    color: '#1b5f52',
+                    marginBottom: 14,
+                  }}
+                >
                   Effectiveness
                 </Text>
 
@@ -284,9 +427,13 @@ export default function ViewRecommendation() {
                       paddingVertical: 8,
                       borderRadius: 999,
                       alignSelf: 'flex-start',
-                      backgroundColor: effective ? 'rgba(85, 173, 155, 0.1)' : 'rgba(255, 152, 0, 0.1)',
+                      backgroundColor: effective
+                        ? 'rgba(85, 173, 155, 0.1)'
+                        : 'rgba(255, 152, 0, 0.1)',
                       borderWidth: 1.5,
-                      borderColor: effective ? 'rgba(85, 173, 155, 0.3)' : 'rgba(255, 152, 0, 0.3)',
+                      borderColor: effective
+                        ? 'rgba(85, 173, 155, 0.3)'
+                        : 'rgba(255, 152, 0, 0.3)',
                     }}
                   >
                     <Text
@@ -301,11 +448,29 @@ export default function ViewRecommendation() {
                   </View>
 
                   <View>
-                    <View style={{ flexDirection: 'row', justifyContent: 'space-between', marginBottom: 8 }}>
-                      <Text style={{ fontFamily: fonts.regular, fontSize: 13, color: '#6b7280' }}>
+                    <View
+                      style={{
+                        flexDirection: 'row',
+                        justifyContent: 'space-between',
+                        marginBottom: 8,
+                      }}
+                    >
+                      <Text
+                        style={{
+                          fontFamily: fonts.regular,
+                          fontSize: 13,
+                          color: '#6b7280',
+                        }}
+                      >
                         Combined Score
                       </Text>
-                      <Text style={{ fontFamily: fonts.bold, fontSize: 13, color: '#1b5f52' }}>
+                      <Text
+                        style={{
+                          fontFamily: fonts.bold,
+                          fontSize: 13,
+                          color: '#1b5f52',
+                        }}
+                      >
                         {scorePct}%
                       </Text>
                     </View>
@@ -329,10 +494,26 @@ export default function ViewRecommendation() {
                     </View>
                   </View>
 
-                  <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
-                    <MaterialCommunityIcons name="emoticon-happy-outline" size={18} color="#6b7280" />
-                    <Text style={{ fontFamily: fonts.regular, fontSize: 13, color: '#6b7280' }}>
-                      Sentiment: {sentimentScore?.toFixed(3)}
+                  <View
+                    style={{
+                      flexDirection: 'row',
+                      alignItems: 'center',
+                      gap: 8,
+                    }}
+                  >
+                    <MaterialCommunityIcons
+                      name="emoticon-happy-outline"
+                      size={18}
+                      color="#6b7280"
+                    />
+                    <Text
+                      style={{
+                        fontFamily: fonts.regular,
+                        fontSize: 13,
+                        color: '#6b7280',
+                      }}
+                    >
+                      Sentiment Analysis: {sentimentLabel}
                     </Text>
                   </View>
                 </View>
@@ -353,13 +534,33 @@ export default function ViewRecommendation() {
                   elevation: 3,
                 }}
               >
-                <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8, marginBottom: 10 }}>
+                <View
+                  style={{
+                    flexDirection: 'row',
+                    alignItems: 'center',
+                    gap: 8,
+                    marginBottom: 10,
+                  }}
+                >
                   <MaterialIcons name="comment" size={20} color="#55AD9B" />
-                  <Text style={{ fontFamily: fonts.bold, fontSize: 16, color: '#1b5f52' }}>
+                  <Text
+                    style={{
+                      fontFamily: fonts.bold,
+                      fontSize: 16,
+                      color: '#1b5f52',
+                    }}
+                  >
                     Your Thoughts
                   </Text>
                 </View>
-                <Text style={{ fontFamily: fonts.regular, fontSize: 14, color: '#272829', lineHeight: 20 }}>
+                <Text
+                  style={{
+                    fontFamily: fonts.regular,
+                    fontSize: 14,
+                    color: '#272829',
+                    lineHeight: 20,
+                  }}
+                >
                   {feedback.comment}
                 </Text>
               </View>
@@ -368,7 +569,7 @@ export default function ViewRecommendation() {
             {/* Action Buttons */}
             <View style={{ gap: 12, marginTop: 8 }}>
               <TouchableOpacity
-                onPress={() => navigation.navigate('DailyAnova')}
+                onPress={() => navigation.navigate('MoodHabitAnalysis')}
                 style={{
                   paddingVertical: 16,
                   borderRadius: 16,
@@ -381,19 +582,27 @@ export default function ViewRecommendation() {
                   elevation: 4,
                 }}
               >
-                <Text style={{ fontFamily: fonts.semiBold, fontSize: 15, color: '#fff' }}>
+                <Text
+                  style={{
+                    fontFamily: fonts.semiBold,
+                    fontSize: 15,
+                    color: '#fff',
+                  }}
+                >
                   Back to Daily Analysis
                 </Text>
               </TouchableOpacity>
 
               <TouchableOpacity
-                onPress={() => navigation.navigate('Recommendation', {
-                  recommendationId,
-                  moodScoreId,
-                  date,
-                  category,
-                  activity,
-                })}
+                onPress={() =>
+                  navigation.navigate('Recommendation', {
+                    recommendationId,
+                    moodScoreId,
+                    date,
+                    category,
+                    activity,
+                  })
+                }
                 style={{
                   paddingVertical: 14,
                   borderRadius: 16,
@@ -403,7 +612,13 @@ export default function ViewRecommendation() {
                   alignItems: 'center',
                 }}
               >
-                <Text style={{ fontFamily: fonts.semiBold, fontSize: 14, color: '#1b5f52' }}>
+                <Text
+                  style={{
+                    fontFamily: fonts.semiBold,
+                    fontSize: 14,
+                    color: '#1b5f52',
+                  }}
+                >
                   View Recommendations
                 </Text>
               </TouchableOpacity>
@@ -411,8 +626,17 @@ export default function ViewRecommendation() {
 
             {/* Bottom Note */}
             <View style={{ alignItems: 'center', paddingVertical: 12 }}>
-              <Text style={{ fontFamily: fonts.regular, fontSize: 12, color: '#f1f3f6ff', textAlign: 'center', lineHeight: 18 }}>
-                Thank you for sharing your feedback! Your insights help us personalize your experience.
+              <Text
+                style={{
+                  fontFamily: fonts.regular,
+                  fontSize: 12,
+                  color: '#f1f3f6ff',
+                  textAlign: 'center',
+                  lineHeight: 18,
+                }}
+              >
+                Thank you for sharing your feedback! Your insights help us personalize your
+                experience.
               </Text>
             </View>
           </View>

@@ -32,9 +32,12 @@ import WeeklyStatistics from '../screens/User/Statistics/Weekly/WeeklyStatistics
 import MoodCount from '../screens/User/Statistics/MoodCount';
 import ActivitiesStatistics from '../screens/User/Statistics/ActivitiesStatistics';
 import SleepAnalysis from '../screens/User/Statistics/SleepAnalysis';
-import Anova from '../screens/User/Statistics/Anova';
-import DailyAnova from '../screens/User/Statistics/Daily/DailyAnova';
+import MoodHabit from '../screens/User/Statistics/MoodHabit';
+import MoodHabitAnalysis from '../screens/User/Statistics/Daily/MoodHabitAnalysis';
 import Recommendation from '../screens/User/Statistics/Daily/Recommendation';  
+import RecommendationRating from '../screens/User/Statistics/Daily/RecommendationRating';
+import ViewRecommendation from '../screens/User/Statistics/Daily/ViewRecommendation';
+import EditRecommendation from '../screens/User/Statistics/Daily/EditRecommendation';
 import WeeklyAnova from '../screens/User/Statistics/Weekly/WeeklyAnova';
 import Prediction from '../screens/User/Prediction/Prediction';
 import CategoryPrediction from '../screens/User/Prediction/CategoryPrediction';
@@ -202,18 +205,33 @@ export default function MainStack({ initialRoute }) {
         options={{ headerShown: false }}
       />
       <Stack.Screen
-        name="Anova"
-        component={Anova}
+        name="MoodHabit"
+        component={MoodHabit}
         options={{ headerShown: false }}
       />
       <Stack.Screen
-        name="DailyAnova"
-        component={DailyAnova}
+        name="MoodHabitAnalysis"
+        component={MoodHabitAnalysis}
         options={{ headerShown: false }}
       />
       <Stack.Screen
         name="Recommendation"
         component={Recommendation}
+        options={{ headerShown: false }}
+      />
+      <Stack.Screen
+        name="RecommendationRating"
+        component={RecommendationRating}
+        options={{ headerShown: false }}
+      />
+      <Stack.Screen
+        name="ViewRecommendation"
+        component={ViewRecommendation}
+        options={{ headerShown: false }}
+      />
+      <Stack.Screen
+        name="EditRecommendation"
+        component={EditRecommendation}
         options={{ headerShown: false }}
       />
       <Stack.Screen

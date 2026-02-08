@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, TouchableOpacity, ScrollView, ActivityIndicator, Alert } from 'react-native';
+import { View, Text, TouchableOpacity, ScrollView, ActivityIndicator } from 'react-native';
 import { useRoute, useNavigation } from '@react-navigation/native';
 import { Ionicons, MaterialIcons } from '@expo/vector-icons';
 import { colors } from '../../../../utils/colors/colors';
@@ -9,6 +9,7 @@ import { generateRecommendations } from '../../../../services/recommendationServ
 export default function Recommendation() {
   const route = useRoute();
   const navigation = useNavigation();
+  // moodScoreId here acts as a generic entry ID (MoodLog or MoodScore), same as web
   const { moodScoreId, date, category, activity } = route.params || {};
 
   const [recommendations, setRecommendations] = useState([]);
@@ -33,30 +34,63 @@ export default function Recommendation() {
         return;
       }
 
-      try {
-        const payload = hasId ? { moodScoreId } : { date, category, activity: activity || null };
-        const recs = await generateRecommendations(payload);
+      const normalizeList = (recs) => {
+        if (!recs) return null;
+        if (Array.isArray(recs)) return recs;
+        if (Array.isArray(recs?.recommendations)) return recs.recommendations;
+        return null;
+      };
 
-        const list = Array.isArray(recs) ? recs : (recs?.recommendations || []);
+      const tryGenerate = async (payload) => {
+        try {
+          const recs = await generateRecommendations(payload);
+          return normalizeList(recs);
+        } catch {
+          return null;
+        }
+      };
 
-        if (mounted) {
-          setRecommendations(Array.isArray(list) ? list : []);
-          if (!list || list.length === 0) {
-            setErrorText('No recommendation found for the selected input.');
-          }
+      let list = [];
+
+      if (hasId) {
+        // Try CCC flow first (MoodLog), then legacy MoodScore, mirroring web behavior
+        list = (await tryGenerate({ moodLogId: moodScoreId })) || [];
+        if (!list || list.length === 0) {
+          list = (await tryGenerate({ moodScoreId })) || [];
         }
-      } catch (e) {
-        if (mounted) {
-          setRecommendations([]);
-          setErrorText('Failed to load recommendations.');
+
+        // Optional legacy fallback by key if still nothing and we have date/category
+        if ((!list || list.length === 0) && hasKey) {
+          list =
+            (await tryGenerate({
+              date,
+              category,
+              activity: activity || null,
+            })) || [];
         }
-      } finally {
-        if (mounted) setLoading(false);
+      } else if (hasKey) {
+        // Pure legacy flow (date + category [+ activity])
+        list =
+          (await tryGenerate({
+            date,
+            category,
+            activity: activity || null,
+          })) || [];
+      }
+
+      if (mounted) {
+        setRecommendations(Array.isArray(list) ? list : []);
+        if (!list || list.length === 0) {
+          setErrorText('No recommendation found for the selected input.');
+        }
+        setLoading(false);
       }
     };
 
     fetchRecommendations();
-    return () => { mounted = false; };
+    return () => {
+      mounted = false;
+    };
   }, [moodScoreId, date, category, activity]);
 
   const handleRateRecommendation = (recommendationId, hasExistingFeedback) => {
@@ -67,7 +101,7 @@ export default function Recommendation() {
       moodScoreId,
       date,
       category,
-      activity
+      activity,
     });
   };
 
@@ -118,7 +152,14 @@ export default function Recommendation() {
             }}
           >
             <MaterialIcons name="local-fire-department" size={18} color="#fff" />
-            <Text style={{ marginLeft: 6, color: '#fff', fontFamily: fonts.semiBold, fontSize: 12 }}>
+            <Text
+              style={{
+                marginLeft: 6,
+                color: '#fff',
+                fontFamily: fonts.semiBold,
+                fontSize: 12,
+              }}
+            >
               Daily Growth
             </Text>
           </View>
@@ -145,8 +186,21 @@ export default function Recommendation() {
             }}
           >
             {/* Top row */}
-            <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap' }}>
-              <View style={{ flexDirection: 'row', alignItems: 'center', flexShrink: 1 }}>
+            <View
+              style={{
+                flexDirection: 'row',
+                alignItems: 'center',
+                justifyContent: 'space-between',
+                flexWrap: 'wrap',
+              }}
+            >
+              <View
+                style={{
+                  flexDirection: 'row',
+                  alignItems: 'center',
+                  flexShrink: 1,
+                }}
+              >
                 <View
                   style={{
                     height: 40,
@@ -161,14 +215,22 @@ export default function Recommendation() {
                 </View>
                 <View style={{ marginLeft: 10, flexShrink: 1 }}>
                   <Text
-                    style={{ fontFamily: fonts.bold, fontSize: 20, color: '#1b5f52' }}
+                    style={{
+                      fontFamily: fonts.bold,
+                      fontSize: 20,
+                      color: '#1b5f52',
+                    }}
                     numberOfLines={1}
                     ellipsizeMode="tail"
                   >
                     Personalized Recommendations
                   </Text>
                   <Text
-                    style={{ fontFamily: fonts.medium, fontSize: 12, color: '#3e8e7e' }}
+                    style={{
+                      fontFamily: fonts.medium,
+                      fontSize: 12,
+                      color: '#3e8e7e',
+                    }}
                     numberOfLines={2}
                   >
                     "Small steps each day lead to big changes over time."
@@ -190,7 +252,14 @@ export default function Recommendation() {
                 }}
               >
                 <MaterialIcons name="celebration" size={18} color="#2f6c60" />
-                <Text style={{ marginLeft: 6, color: '#2f6c60', fontFamily: fonts.semiBold, fontSize: 12 }}>
+                <Text
+                  style={{
+                    marginLeft: 6,
+                    color: '#2f6c60',
+                    fontFamily: fonts.semiBold,
+                    fontSize: 12,
+                  }}
+                >
                   Your daily boost
                 </Text>
               </View>
@@ -214,8 +283,23 @@ export default function Recommendation() {
                       marginBottom: 8,
                     }}
                   >
-                    <View style={{ height: 12, width: '66%', backgroundColor: '#DDEFE3', borderRadius: 6, marginBottom: 6 }} />
-                    <View style={{ height: 12, width: '50%', backgroundColor: '#E6F4EA', borderRadius: 6 }} />
+                    <View
+                      style={{
+                        height: 12,
+                        width: '66%',
+                        backgroundColor: '#DDEFE3',
+                        borderRadius: 6,
+                        marginBottom: 6,
+                      }}
+                    />
+                    <View
+                      style={{
+                        height: 12,
+                        width: '50%',
+                        backgroundColor: '#E6F4EA',
+                        borderRadius: 6,
+                      }}
+                    />
                   </View>
                 ))}
                 <View style={{ alignItems: 'center', marginTop: 10 }}>
@@ -223,7 +307,13 @@ export default function Recommendation() {
                 </View>
               </View>
             ) : noParams ? (
-              <View style={{ alignItems: 'center', marginTop: 16, paddingHorizontal: 6 }}>
+              <View
+                style={{
+                  alignItems: 'center',
+                  marginTop: 16,
+                  paddingHorizontal: 6,
+                }}
+              >
                 <View
                   style={{
                     height: 56,
@@ -235,10 +325,21 @@ export default function Recommendation() {
                     marginBottom: 8,
                   }}
                 >
-                  <MaterialIcons name="sentiment-satisfied-alt" size={28} color="#55AD9B" />
+                  <MaterialIcons
+                    name="sentiment-satisfied-alt"
+                    size={28}
+                    color="#55AD9B"
+                  />
                 </View>
-                <Text style={{ color: '#2b3b36', fontFamily: fonts.medium, fontSize: 14, textAlign: 'center' }}>
-                  No selection provided. Use "View Recommendation" from Daily Analysis.
+                <Text
+                  style={{
+                    color: '#2b3b36',
+                    fontFamily: fonts.medium,
+                    fontSize: 14,
+                    textAlign: 'center',
+                  }}
+                >
+                  No selection provided. Use "View Tips" from Daily Analysis.
                 </Text>
                 <TouchableOpacity
                   style={{
@@ -250,7 +351,13 @@ export default function Recommendation() {
                   }}
                   onPress={() => navigation.navigate('DailyAnova')}
                 >
-                  <Text style={{ color: '#fff', fontFamily: fonts.semiBold, fontSize: 13 }}>
+                  <Text
+                    style={{
+                      color: '#fff',
+                      fontFamily: fonts.semiBold,
+                      fontSize: 13,
+                    }}
+                  >
                     Go to Daily Analysis
                   </Text>
                 </TouchableOpacity>
@@ -282,24 +389,44 @@ export default function Recommendation() {
                     <MaterialIcons name="auto-awesome" size={24} color="#fff" />
                   </View>
                   <View style={{ flex: 1 }}>
-                    <Text style={{ fontFamily: fonts.bold, fontSize: 17, color: '#fff' }}>
+                    <Text
+                      style={{
+                        fontFamily: fonts.bold,
+                        fontSize: 17,
+                        color: '#fff',
+                      }}
+                    >
                       Your Growth Plan
                     </Text>
-                    <Text style={{ fontFamily: fonts.medium, fontSize: 13, color: 'rgba(255,255,255,0.9)' }}>
-                      {items.length} personalized {items.length === 1 ? 'tip' : 'tips'} ready for you
+                    <Text
+                      style={{
+                        fontFamily: fonts.medium,
+                        fontSize: 13,
+                        color: 'rgba(255,255,255,0.9)',
+                      }}
+                    >
+                      {items.length} personalized{' '}
+                      {items.length === 1 ? 'tip' : 'tips'} ready for you
                     </Text>
                   </View>
                 </View>
 
                 {/* Recommendations List */}
                 {items.map((item, idx) => {
-                  const text = typeof item === 'string' ? item : item?.recommendation;
-                  const key = (typeof item === 'object' && item?._id) || `rec-${idx}`;
-                  const recommendationId = typeof item === 'object' ? item?._id : null;
+                  const text =
+                    typeof item === 'string' ? item : item?.recommendation;
+                  const key =
+                    (typeof item === 'object' && item?._id) || `rec-${idx}`;
+                  const recommendationId =
+                    typeof item === 'object' ? item?._id : null;
                   const hasExistingFeedback =
-                    typeof item?.effectivenessCount === 'number' && item.effectivenessCount > 0;
+                    typeof item?.effectivenessCount === 'number' &&
+                    item.effectivenessCount > 0;
 
-                  const isEffective = typeof item?.effective === 'boolean' ? item.effective : null;
+                  const isEffective =
+                    typeof item?.effective === 'boolean'
+                      ? item.effective
+                      : null;
 
                   return (
                     <View
@@ -333,14 +460,27 @@ export default function Recommendation() {
                           zIndex: 1,
                         }}
                       >
-                        <Text style={{ color: '#fff', fontFamily: fonts.bold, fontSize: 14 }}>
+                        <Text
+                          style={{
+                            color: '#fff',
+                            fontFamily: fonts.bold,
+                            fontSize: 14,
+                          }}
+                        >
                           {idx + 1}
                         </Text>
                       </View>
 
                       <View style={{ paddingLeft: 44 }}>
-                        {/* Recommendation Text */}
-                        <View style={{ flexDirection: 'row', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: 8 }}>
+                        {/* Recommendation Text + status */}
+                        <View
+                          style={{
+                            flexDirection: 'row',
+                            alignItems: 'flex-start',
+                            justifyContent: 'space-between',
+                            marginBottom: 8,
+                          }}
+                        >
                           <Text
                             style={{
                               color: '#272829',
@@ -353,16 +493,20 @@ export default function Recommendation() {
                           >
                             {text}
                           </Text>
-                          
+
                           {/* Status Chip */}
                           {hasExistingFeedback && isEffective !== null && (
                             <View
                               style={{
                                 flexDirection: 'row',
                                 alignItems: 'center',
-                                backgroundColor: isEffective ? '#55AD9B15' : '#FF980015',
+                                backgroundColor: isEffective
+                                  ? '#55AD9B15'
+                                  : '#FF980015',
                                 borderWidth: 1,
-                                borderColor: isEffective ? '#55AD9B40' : '#FF980040',
+                                borderColor: isEffective
+                                  ? '#55AD9B40'
+                                  : '#FF980040',
                                 borderRadius: 999,
                                 paddingHorizontal: 10,
                                 paddingVertical: 4,
@@ -375,7 +519,9 @@ export default function Recommendation() {
                                   fontSize: 11,
                                 }}
                               >
-                                {isEffective ? '✓ Effective' : '✗ Not effective'}
+                                {isEffective
+                                  ? '✓ Effective'
+                                  : '✗ Not effective'}
                               </Text>
                             </View>
                           )}
@@ -391,7 +537,12 @@ export default function Recommendation() {
                             }}
                           >
                             <TouchableOpacity
-                              onPress={() => handleRateRecommendation(recommendationId, hasExistingFeedback)}
+                              onPress={() =>
+                                handleRateRecommendation(
+                                  recommendationId,
+                                  hasExistingFeedback
+                                )
+                              }
                               style={{
                                 backgroundColor: colors.primary,
                                 borderRadius: 999,
@@ -405,8 +556,16 @@ export default function Recommendation() {
                                 elevation: 2,
                               }}
                             >
-                              <Text style={{ color: '#fff', fontFamily: fonts.semiBold, fontSize: 13 }}>
-                                {hasExistingFeedback ? 'Update Effectiveness' : 'Rate Effectiveness'}
+                              <Text
+                                style={{
+                                  color: '#fff',
+                                  fontFamily: fonts.semiBold,
+                                  fontSize: 13,
+                                }}
+                              >
+                                {hasExistingFeedback
+                                  ? 'Update Effectiveness'
+                                  : 'Rate Effectiveness'}
                               </Text>
                             </TouchableOpacity>
                             <Text
@@ -452,14 +611,34 @@ export default function Recommendation() {
                       flexShrink: 0,
                     }}
                   >
-                    <MaterialIcons name="celebration" size={24} color="#92400e" />
+                    <MaterialIcons
+                      name="celebration"
+                      size={24}
+                      color="#92400e"
+                    />
                   </View>
                   <View style={{ flex: 1 }}>
-                    <Text style={{ fontFamily: fonts.bold, fontSize: 16, color: '#92400e', marginBottom: 4 }}>
+                    <Text
+                      style={{
+                        fontFamily: fonts.bold,
+                        fontSize: 16,
+                        color: '#92400e',
+                        marginBottom: 4,
+                      }}
+                    >
                       Stay Consistent!
                     </Text>
-                    <Text style={{ fontFamily: fonts.regular, fontSize: 13, color: '#78350f', lineHeight: 18 }}>
-                      Try one recommendation today and take note of how you feel afterward. Small, consistent actions create lasting change. You've got this! 🌟
+                    <Text
+                      style={{
+                        fontFamily: fonts.regular,
+                        fontSize: 13,
+                        color: '#78350f',
+                        lineHeight: 18,
+                      }}
+                    >
+                      Try one recommendation today and take note of how you feel
+                      afterward. Small, consistent actions create lasting
+                      change. You've got this!
                     </Text>
                   </View>
                 </View>
@@ -477,9 +656,19 @@ export default function Recommendation() {
                     marginBottom: 8,
                   }}
                 >
-                  <MaterialIcons name="sentiment-satisfied-alt" size={28} color="#55AD9B" />
+                  <MaterialIcons
+                    name="sentiment-satisfied-alt"
+                    size={28}
+                    color="#55AD9B"
+                  />
                 </View>
-                <Text style={{ color: '#2b3b36', fontFamily: fonts.medium, fontSize: 14 }}>
+                <Text
+                  style={{
+                    color: '#2b3b36',
+                    fontFamily: fonts.medium,
+                    fontSize: 14,
+                  }}
+                >
                   {errorText || 'No recommendation found.'}
                 </Text>
               </View>

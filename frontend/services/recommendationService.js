@@ -32,7 +32,7 @@ export async function generateRecommendations(payload) {
     throw new Error(message);
   }
 
-  return data; 
+  return data;
 }
 
 export async function getCurrentWeekRecommendations() {
@@ -46,6 +46,19 @@ export async function getCurrentWeekRecommendations() {
 }
 
 /**
+ * Alias used by some components: same as getCurrentWeekRecommendations
+ */
+export async function getWeeklyRecommendations() {
+  const token = await AsyncStorage.getItem('token');
+  const resp = await fetch(`${API_BASE_URL}/api/recommendations/week`, {
+    headers: { ...(token ? { Authorization: `Bearer ${token}` } : {}) },
+  });
+  const data = await resp.json();
+  if (!resp.ok) throw new Error(data?.message || 'Failed to fetch weekly recommendations');
+  return data;
+}
+
+/**
  * Submit effectiveness feedback for a recommendation
  * @param {string} recommendationId - The recommendation ID
  * @param {number} rating - Rating from 1-5
@@ -53,7 +66,7 @@ export async function getCurrentWeekRecommendations() {
  */
 export async function submitRecommendationFeedback(recommendationId, rating, comment = '') {
   const token = await AsyncStorage.getItem('token');
-  
+
   const resp = await fetch(`${API_BASE_URL}/api/recommendations/feedback`, {
     method: 'POST',
     headers: {
@@ -69,7 +82,8 @@ export async function submitRecommendationFeedback(recommendationId, rating, com
 
   const data = await resp.json();
   if (!resp.ok) {
-    const message = data?.error || data?.message || `Failed to submit feedback (HTTP ${resp.status})`;
+    const message =
+      data?.error || data?.message || `Failed to submit feedback (HTTP ${resp.status})`;
     throw new Error(message);
   }
 
@@ -82,16 +96,20 @@ export async function submitRecommendationFeedback(recommendationId, rating, com
  */
 export async function getUserFeedbackForRecommendation(recommendationId) {
   const token = await AsyncStorage.getItem('token');
-  
-  const resp = await fetch(`${API_BASE_URL}/api/recommendations/feedback/${recommendationId}`, {
-    headers: {
-      ...(token ? { Authorization: `Bearer ${token}` } : {}),
-    },
-  });
+
+  const resp = await fetch(
+    `${API_BASE_URL}/api/recommendations/feedback/${recommendationId}`,
+    {
+      headers: {
+        ...(token ? { Authorization: `Bearer ${token}` } : {}),
+      },
+    }
+  );
 
   const data = await resp.json();
   if (!resp.ok) {
-    const message = data?.error || data?.message || `Failed to fetch feedback (HTTP ${resp.status})`;
+    const message =
+      data?.error || data?.message || `Failed to fetch feedback (HTTP ${resp.status})`;
     throw new Error(message);
   }
 

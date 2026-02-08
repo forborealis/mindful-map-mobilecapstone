@@ -2,510 +2,510 @@
   "Activity": {
     "commute": {
       "positive": [
-        "Use commute time for mindful breathing to maintain a calmer baseline. (APA, 2021; NHS Mindfulness Guidance)",
-        "Listen to uplifting music or educational podcasts to enhance mood and engagement. (Mayo Clinic, 2022; APA, 2021)",
-        "Incorporate short walks for part of your route when possible to improve mood and cardiovascular health. (CDC Physical Activity Guidelines, 2022)",
-        "Practice gratitude journaling during the commute (voice notes) to positively prime your day. (APA, 2021; Greater Good Science Center)",
-        "Plan your route and schedule buffers to reduce stress from delays. (DOT Travel Behavior Research; APA, 2021)",
-        "Use noise-reducing headphones to lower sensory stress on crowded routes. (NIOSH, 2021; WHO Environmental Noise Guidelines)"
+        "Use calm breathing during your ride. (APA Mindfulness; NHS)",
+        "Play upbeat music or a good podcast. (Mayo Clinic; APA)",
+        "Walk part of your route if possible. (CDC Physical Activity)",
+        "Record a quick gratitude note. (Greater Good; APA)",
+        "Plan your route with buffer time. (DOT Travel Tips; APA)",
+        "Use noise-reducing headphones in crowds. (WHO Noise; NIOSH)"
       ],
       "negative": [
-        "Try box breathing (inhale 4, hold 4, exhale 4, hold 4) to reduce commute stress. (APA, 2021; Navy SEAL breathing protocol references)",
-        "Leave 10–15 minutes earlier to reduce rush and perceived time pressure. (DOT Travel Behavior; APA, 2021)",
-        "Use re-routing apps and check transit alerts to minimize disruptions. (DOT; Transport for London Data)",
-        "If driving, practice safe defensive driving and take a short stretch break if stressed. (NHTSA; CDC Workplace Health)",
-        "Try calm playlists and limit negative news exposure during commute. (APA Media Psychology; WHO Mental Health)",
-        "Consider carpooling or cycling portions to add social or activity benefits. (CDC, 2022; WHO Physical Activity Guidelines)"
+        "Try box breathing (4–4–4–4). (APA Anxiety; NHS)",
+        "Leave 10–15 minutes early to avoid rushing. (DOT; APA)",
+        "Check traffic or transit alerts first. (DOT Travel Tips)",
+        "Take a short stretch break if stressed. (CDC Workplace Health)",
+        "Use calm playlists and limit heavy news. (APA Media; WHO)",
+        "Try carpooling or biking when you can. (CDC Physical Activity; WHO)"
       ]
     },
     "exam": {
       "positive": [
-        "Space your study (spaced repetition) to consolidate memory and reduce anxiety. (APA, 2021; Ebbinghaus; Dunlosky et al., 2013)",
-        "Practice retrieval (quizzing) to improve test performance and confidence. (APA Learning; Roediger & Karpicke, 2006)",
-        "Use sleep hygiene the night before the exam for memory consolidation. (Sleep Foundation, 2022; NIH)",
-        "Do a 3–5 min breathing or grounding exercise pre-exam to steady arousal. (APA Anxiety Management; NHS)",
-        "Prepare a simple checklist (ID, pens, water) to reduce cognitive load. (APA, 2021; Human Factors research)",
-        "Limit last-minute cramming; do a brief concept review and positive self-talk. (APA Cognitive Behavioral approaches)"
+        "Study in small chunks over days. (APA Learning; NHS)",
+        "Quiz yourself to practice recall. (APA Learning)",
+        "Sleep well the night before. (Sleep Foundation; NIH)",
+        "Do 3–5 minutes of calm breathing before. (NHS; APA)",
+        "Pack a simple checklist (ID, pens, water). (APA Study Skills)",
+        "Do quick review and kind self-talk. (APA CBT)"
       ],
       "negative": [
-        "Switch to active methods: summarize aloud, teach a peer, do practice items. (APA, 2021; Dunlosky et al., 2013)",
-        "Use Pomodoro (25/5) blocks to avoid burnout while studying. (Productivity research; APA)",
-        "Write out a quick coping plan for test anxiety (breathing, pacing, reframing). (APA CBT; NHS)",
-        "Get 7–9 hours of sleep and avoid heavy late-night studying. (Sleep Foundation, 2022; NIH)",
-        "Eat a balanced meal and hydrate to stabilize energy and focus. (CDC Nutrition; WHO)",
-        "Ask for clarification from teachers/counselors when stuck; social support helps outcomes. (CDC, 2022; APA)"
+        "Switch to active study (teach it, practice). (APA Learning)",
+        "Use Pomodoro (25 focus, 5 break). (APA Study Skills)",
+        "Write a short test-stress plan. (NHS; APA)",
+        "Aim for 7–9 hours of sleep. (Sleep Foundation; NIH)",
+        "Eat balanced and hydrate. (CDC Nutrition)",
+        "Ask questions early if stuck. (CDC Education; APA)"
       ]
     },
     "homework": {
       "positive": [
-        "Set specific, small goals per session to maintain momentum. (APA Goal Setting; Locke & Latham)",
-        "Use a dedicated, tidy workspace to reduce distractions. (APA Environmental Psychology)",
-        "Reward completion with brief enjoyable breaks to reinforce habit. (Behavioral Psychology; APA)",
-        "Schedule homework in consistent time slots to build routine. (APA Habit formation; BJ Fogg)",
-        "Batch similar tasks to reduce context switching and fatigue. (Human Factors; APA)",
-        "Track progress visibly (checklist) to build self-efficacy. (Bandura; APA)"
+        "Set small, clear goals for each session. (APA Goal Setting)",
+        "Use a tidy, dedicated workspace. (APA Environment)",
+        "Reward tasks with short breaks. (APA Habits)",
+        "Do homework at a regular time. (APA Routine)",
+        "Batch similar tasks together. (APA Productivity)",
+        "Track progress with a checklist. (APA Self-Efficacy)"
       ],
       "negative": [
-        "Break large tasks into actionable steps and sequence them. (APA Goal Setting; Project Planning)",
-        "Try timeboxing (15–25 minutes) to initiate tough tasks. (Productivity Research; APA)",
-        "Remove distractors (phone Do Not Disturb, noise control) during sessions. (APA; NIOSH)",
-        "Ask for help early—peers, tutors, teachers—to unblock. (CDC Education; APA)",
-        "Alternate hard/easy tasks to balance cognitive load. (Cognitive Load Theory; APA)",
-        "Use self-compassion and realistic expectations when behind. (APA Self-Compassion; Neff)"
-      ]
-    },
-    "project": {
-      "positive": [
-        "Create a simple project plan with milestones and check-ins. (PMI Basics; APA Goal Setting)",
-        "Celebrate small wins to reinforce progress and motivation. (Behavioral Psychology; APA)",
-        "Use collaboration tools and clarify roles for smoother teamwork. (Organizational Psych; APA)",
-        "Timebox deep work sessions and protect them from interruptions. (APA; Cal Newport references)",
-        "Track risks and blockers weekly to stay proactive. (PMI; APA)",
-        "Reflect briefly after each milestone to improve the next. (Deliberate practice; APA)"
-      ],
-      "negative": [
-        "Break the project into tasks with owners and deadlines. (PMI; APA)",
-        "Do a 15-minute starter task to reduce overwhelm. (Behavioral Activation; APA)",
-        "Ask for support or delegate parts if feasible. (Organizational Psych; APA)",
-        "Use checklists/Kanban to visualize work-in-progress. (Lean/Agile; APA)",
-        "Schedule buffer time to handle surprises. (PMI; Human Factors)",
-        "Keep scope clear and avoid overcommitment. (PMI Scope Management)"
+        "Break big tasks into tiny steps. (APA Goal Setting)",
+        "Timebox a tough start (15–25 min). (APA Productivity)",
+        "Put phone on Do Not Disturb. (APA Attention)",
+        "Ask for help from peers or teachers. (CDC Education; APA)",
+        "Mix hard and easy tasks. (APA Cognitive Load)",
+        "Use self-compassion when behind. (APA Self-Compassion)"
       ]
     },
     "study": {
       "positive": [
-        "Use spaced repetition and retrieval practice for durable learning. (Dunlosky et al., 2013; APA)",
-        "Interleave topics to enhance transfer and reduce monotony. (APA Learning; Rohrer, 2012)",
-        "Teach concepts to someone else to identify gaps and cement memory. (APA; Protégé effect)",
-        "Take brief movement breaks to reset attention. (NIH; CDC Physical Activity)",
-        "Sleep 7–9 hours; sleep consolidates memory. (Sleep Foundation; NIH)",
-        "Use dual coding (words + visuals) for complex concepts. (Paivio; APA)"
+        "Use spaced repetition and self-testing. (APA Learning; Dunlosky)",
+        "Mix topics to stay fresh. (APA Learning)",
+        "Teach someone else to find gaps. (APA Learning)",
+        "Take short movement breaks. (CDC Physical Activity)",
+        "Sleep 7–9 hours for memory. (Sleep Foundation; NIH)",
+        "Use words plus visuals for tough topics. (APA Dual Coding)"
       ],
       "negative": [
-        "Swap passive rereading for practice problems or summarizing. (Dunlosky; APA)",
-        "Study in shorter, focused blocks to reduce burnout. (APA; Pomodoro technique)",
-        "Change study locations to reduce context dependency. (Environmental context; APA)",
-        "Make a quick plan: objectives, methods, and time windows. (APA Goal Setting)",
-        "Use positive self-talk and normalize struggle in hard topics. (CBT; APA)",
-        "Ask for clarification and examples from instructors. (APA; CDC Education)"
+        "Swap rereading for practice problems. (APA Learning)",
+        "Use shorter, focused blocks. (APA Study Skills)",
+        "Change study spots sometimes. (APA Environment)",
+        "Make a quick plan before starting. (APA Goal Setting)",
+        "Use positive self-talk on hard topics. (APA CBT)",
+        "Ask instructors for examples. (CDC Education)"
+      ]
+    },
+    "project": {
+      "positive": [
+        "Make a simple plan with milestones. (PMI Basics)",
+        "Celebrate small wins as you go. (APA Positive Psych)",
+        "Use shared tools and clear roles. (APA Teams)",
+        "Protect deep work time. (APA Productivity)",
+        "Check for risks weekly. (PMI Risk)",
+        "Reflect after milestones to improve. (APA Metacognition)"
+      ],
+      "negative": [
+        "Break work into tasks with owners and dates. (PMI Planning)",
+        "Start with an easy 15-minute task. (APA Activation)",
+        "Ask for help or delegate when possible. (APA Teams)",
+        "Use a checklist or Kanban board. (PMI; Lean)",
+        "Add buffer time for surprises. (PMI Planning)",
+        "Keep scope clear and avoid overcommitment. (PMI Scope)"
       ]
     },
     "read": {
       "positive": [
-        "Read in a quiet, comfortable space to deepen absorption. (APA Environmental Psych)",
-        "Use annotations or summaries to improve retention. (APA Learning Strategies)",
-        "Reading before bed can help you wind down. (Sleep Foundation, 2022)",
-        "Join a book club to add social engagement and accountability. (APA Social Support)",
-        "Alternate genres to keep interest high and broaden perspective. (APA; Literary studies)",
-        "Use short reading sprints for focus, then reflect. (APA; Metacognition)"
+        "Read in a quiet, comfy spot. (APA Environment)",
+        "Add notes or short summaries. (APA Learning)",
+        "Read a little before bed to wind down. (Sleep Foundation)",
+        "Join a book club or share picks. (APA Social Support)",
+        "Alternate genres to keep interest high. (APA Motivation)",
+        "Do short reading sprints, then reflect. (APA Metacognition)"
       ],
       "negative": [
-        "Switch genres or formats (audiobook vs. print) to match energy levels. (APA; Accessibility research)",
-        "Set small reading goals (10–15 minutes) to avoid overwhelm. (APA Goal Setting)",
-        "Choose uplifting or interest-matched materials to improve mood. (APA Media Psychology)",
-        "Use eye breaks (20-20-20 rule) to reduce strain. (Optometry recommendations)",
-        "Read earlier in the evening to avoid late-night fatigue. (Sleep Foundation)",
-        "Pair reading with a comfortable routine (tea, calm music). (APA; Behavioral activation)"
+        "Switch genre or try audio if stuck. (APA Accessibility)",
+        "Set a small reading goal (10–15 min). (APA Goals)",
+        "Pick uplifting or fun material. (APA Media)",
+        "Use eye breaks (20-20-20). (Optometry)",
+        "Read earlier in the evening. (Sleep Foundation)",
+        "Pair reading with a cozy routine. (APA Habits)"
       ]
     },
     "extracurricular": {
       "positive": [
-        "Select activities aligned with your interests and strengths. (APA Strengths; VIA)",
-        "Keep a balanced schedule to avoid overload. (APA Stress Management)",
-        "Set goals and reflect on growth periodically. (APA Goal Setting)",
-        "Engage socially; extracurriculars foster belonging. (CDC Social Health)",
-        "Rotate activities seasonally to maintain novelty. (APA Motivation)",
-        "Track time spent to avoid crowding academics. (Time Management; APA)"
+        "Pick activities that match your interests. (APA Strengths)",
+        "Keep a balanced schedule. (APA Stress)",
+        "Set simple goals and review progress. (APA Goals)",
+        "Connect with others; build friendships. (CDC Social Health)",
+        "Rotate activities to keep them fresh. (APA Motivation)",
+        "Track time so school doesn’t get crowded out. (APA Time Management)"
       ],
       "negative": [
-        "Prioritize the activities that energize you most. (APA Self-Determination Theory)",
-        "Cut back temporarily if feeling overwhelmed. (APA Stress Reduction)",
-        "Schedule decompression windows between events. (NIOSH; APA)",
-        "Communicate boundaries with organizers. (APA Assertiveness)",
-        "Seek mentorship to navigate challenges. (APA; CDC Youth Development)",
-        "Shift to low-effort, high-meaning activities while recovering. (Behavioral Activation; APA)"
+        "Prioritize activities that energize you. (APA Motivation)",
+        "Cut back a bit if overloaded. (APA Stress)",
+        "Add short breaks between events. (NIOSH Fatigue)",
+        "Share limits clearly with organizers. (APA Assertiveness)",
+        "Find a mentor for tips and support. (CDC Youth Development)",
+        "Choose low-effort, meaningful options when tired. (APA Activation)"
       ]
     },
     "household-chores": {
       "positive": [
-        "Play energizing music and set a timer to boost flow. (APA; Behavioral activation)",
-        "Batch chores (cleaning, laundry) to reduce switching cost. (Human Factors; APA)",
-        "Use a simple checklist to visualize completion. (APA Goal Setting)",
-        "Pair chores with light movement for extra health benefits. (CDC, 2022)",
-        "Do chores together to add social support and fun. (CDC Social; APA)",
-        "Reward completion with a relaxing break. (Behavioral Psychology; APA)"
+        "Play energizing music and set a timer. (APA Activation)",
+        "Batch chores to reduce switching. (APA Productivity)",
+        "Use a simple checklist for wins. (APA Goals)",
+        "Add light movement while you clean. (CDC Physical Activity)",
+        "Do chores together for support. (CDC Social Health)",
+        "Reward yourself with a short break. (APA Habits)"
       ],
       "negative": [
-        "Break chores into tiny tasks and start with the easiest. (Behavioral Activation; APA)",
-        "Use timeboxing (10–15 minutes) to reduce avoidance. (APA; Productivity research)",
-        "Declutter one small area to gain momentum. (APA; Environmental Psych)",
-        "Reduce distractions (phone away, TV off) for short bursts. (APA Attention)",
-        "Create a weekly chore schedule to distribute load. (APA Habit Formation)",
-        "Practice self-compassion—progress over perfection. (APA Self-Compassion)"
+        "Start with tiny tasks to build momentum. (APA Activation)",
+        "Timebox chores (10–15 min). (APA Productivity)",
+        "Declutter one small area first. (APA Environment)",
+        "Put phone away during short bursts. (APA Attention)",
+        "Make a weekly chore plan. (APA Routine)",
+        "Aim for progress, not perfection. (APA Self-Compassion)"
       ]
     },
     "relax": {
       "positive": [
-        "Use guided breathing or body scans to deepen relaxation. (APA; NHS Mindfulness)",
-        "Schedule regular micro-breaks to prevent fatigue. (NIOSH; APA)",
-        "Pair relaxing activities with gentle movement (stretching). (CDC; NIH)",
-        "Journal briefly to externalize stress and process emotions. (APA Expressive Writing)",
-        "Use progressive muscle relaxation to reduce tension. (APA; Edmund Jacobson)",
-        "Protect relaxation time with boundaries in your calendar. (APA Stress Management)"
+        "Try guided breathing or a body scan. (NHS Mindfulness; APA)",
+        "Take regular micro-breaks. (NIOSH Fatigue)",
+        "Add gentle stretching. (NIH Physical Activity)",
+        "Journal your thoughts for a few minutes. (APA Writing)",
+        "Use muscle relaxation to release tension. (APA PMR)",
+        "Protect your chill time on your calendar. (APA Boundaries)"
       ],
       "negative": [
-        "Try a short beginner meditation or guided app session. (APA; NHS)",
-        "Use a 5-minute breath focus to pivot mood. (APA Anxiety tools)",
-        "Practice self-compassion and allow rest without guilt. (Neff; APA)",
-        "Switch to a relaxing hobby (drawing, music) that feels engaging. (APA Behavioral Activation)",
-        "Lower screen time before relaxation to reduce stimulation. (Sleep Foundation; WHO)",
-        "Set a consistent wind-down routine in the evening. (Sleep Hygiene; NIH)"
+        "Try a short beginner meditation. (NHS; APA)",
+        "Do a 5-minute breath focus. (APA Anxiety Tools)",
+        "Give yourself permission to rest. (APA Self-Compassion)",
+        "Switch to a relaxing hobby you enjoy. (APA Activation)",
+        "Lower screen time before relaxing. (Sleep Foundation; WHO)",
+        "Create a simple evening wind-down routine. (Sleep Foundation)"
       ]
     },
     "watch-movie": {
       "positive": [
-        "Choose uplifting or humorous content to reinforce positive affect. (APA Media Psychology)",
-        "Share the experience with friends/family to add social benefit. (CDC Social Health)",
-        "Schedule movies earlier to avoid late-night stimulation. (Sleep Foundation)",
-        "Pair viewing with light stretching breaks. (NIH; CDC)",
-        "Reflect briefly after about what resonated and why. (APA Metacognition)",
-        "Curate a watchlist aligned with values/interests. (APA Positive Psych)"
+        "Pick light or funny content. (APA Media)",
+        "Watch with friends or family. (CDC Social Health)",
+        "Start earlier to avoid late stimulation. (Sleep Foundation)",
+        "Take short stretch breaks. (NIH Physical Activity)",
+        "Reflect briefly on what you liked. (APA Metacognition)",
+        "Keep a watchlist that fits your mood. (APA Positive Psych)"
       ],
       "negative": [
-        "Switch to lighter or uplifting content if mood dips. (APA Media Psychology)",
-        "Limit screen time before bed to protect sleep quality. (Sleep Foundation; WHO)",
-        "Take short breaks to move and rest eyes. (CDC; Optometry)",
-        "Avoid doom-scrolling or heavy news right before/after. (APA; WHO)",
-        "Watch with someone supportive to reframe and discuss. (APA Social Support)",
-        "Use blue-light filters in evening viewing. (Sleep Hygiene; NIH)"
+        "Switch to lighter content if you feel down. (APA Media)",
+        "Limit screens before bedtime. (Sleep Foundation)",
+        "Take breaks to rest eyes and move. (CDC; Optometry)",
+        "Avoid heavy news right before or after. (APA Media; WHO)",
+        "Watch with someone supportive. (CDC Social Health)",
+        "Use night mode in the evening. (Sleep Foundation)"
       ]
     },
     "listen-music": {
       "positive": [
-        "Curate mood-boost playlists; use them proactively. (APA Music Therapy references)",
-        "Use calming tracks for study or wind-down. (APA; Sleep Foundation)",
-        "Explore new genres to renew enjoyment and novelty. (APA Motivation)",
-        "Combine music with light activity (walks) to amplify mood lift. (CDC; APA)",
-        "Use lyrics-free tracks to aid focus when needed. (APA Attention; Productivity research)",
-        "Share music with friends to add social benefit. (CDC Social; APA)"
+        "Make playlists for different moods. (APA Music Therapy)",
+        "Use calm tracks for study or wind-down. (APA; Sleep Foundation)",
+        "Try new genres for fun. (APA Motivation)",
+        "Combine music with a walk. (CDC Physical Activity)",
+        "Use lyric-free tracks when you need focus. (APA Attention)",
+        "Share music with friends. (CDC Social Health)"
       ],
       "negative": [
-        "Switch to calming playlists and slow tempos to reduce arousal. (Music Therapy; APA)",
-        "Limit intense or negative lyrical content when down. (APA Media Psychology)",
-        "Try guided soundscapes or instrumental for relaxation. (APA; NHS)",
-        "Use short listening sessions with intention (goal: calm). (APA Mindfulness)",
-        "Pair music with diaphragmatic breathing. (APA Anxiety tools)",
-        "Journal mood before/after to tailor future choices. (APA Self-Monitoring)"
+        "Pick calming playlists and slower tempos. (APA Music Therapy)",
+        "Limit intense or negative lyrics when low. (APA Media)",
+        "Try instrumental or nature sounds. (NHS Relaxation)",
+        "Do short, intentional listening sessions. (APA Mindfulness)",
+        "Pair music with belly breathing. (APA Anxiety Tools)",
+        "Track your mood to guide choices. (APA Self-Monitoring)"
       ]
     },
     "gaming": {
       "positive": [
-        "Prefer cooperative/creative modes to support relatedness and competence. (Self-Determination Theory; APA)",
-        "Set clear session limits to avoid fatigue. (NIH; APA)",
-        "Play with supportive friends to add social benefits. (CDC Social Health)",
-        "Choose games that match your current energy and focus. (APA Motivation; Flow)",
-        "Take movement/eye breaks every 45–60 minutes. (NIH; CDC)",
-        "Reflect on skill growth and achievements to reinforce positive impact. (APA Positive Psych)"
+        "Choose creative or co-op modes. (APA Media; SDT)",
+        "Set clear time limits. (NIH Screen Time; APA)",
+        "Play with supportive friends. (CDC Social Health)",
+        "Match the game to your energy level. (APA Motivation)",
+        "Take movement and eye breaks. (NIH; CDC)",
+        "Notice your progress and wins. (APA Positive Psych)"
       ],
       "negative": [
-        "Switch to cooperative or low-stress games when feeling down. (APA Media Psychology)",
-        "Limit competitive or high-arousal modes temporarily. (APA; WHO Gaming balance)",
-        "Use timers and stick to shorter sessions. (APA; Productivity research)",
-        "Alternate with offline relaxing activities. (APA Behavioral Activation)",
-        "Mute toxicity; curate your online spaces. (APA Cyberpsychology)",
-        "If persistent mood drop, reduce playtime and monitor mood changes. (APA Self-Monitoring)"
+        "Switch to low-stress games when down. (APA Media)",
+        "Limit competitive modes for now. (WHO Gaming Balance)",
+        "Use timers for shorter sessions. (APA Productivity)",
+        "Alternate with offline relaxing activities. (APA Activation)",
+        "Mute toxic chats; curate spaces. (APA Cyberpsychology)",
+        "If mood drops often, reduce playtime and check in. (APA Self-Monitoring)"
       ]
     },
     "browse-internet": {
       "positive": [
-        "Set a clear goal (learn, connect, relax) before browsing. (APA Goal Setting)",
-        "Follow quality sources to reduce misinformation stress. (WHO; CDC Media Literacy)",
-        "Schedule browsing windows to prevent spillover. (APA Time Management)",
-        "Use apps to track/limit time if needed. (Behavioral tools; APA)",
-        "Pair browsing with breaks to reset attention. (NIOSH; APA)",
-        "Curate feeds to emphasize uplifting/educational content. (APA Media Psychology)"
+        "Decide your goal before browsing. (APA Goal Setting)",
+        "Follow quality sources. (WHO Media Literacy; CDC)",
+        "Use set browsing windows. (APA Time Management)",
+        "Track or limit time if needed. (APA Habits)",
+        "Take quick breaks to reset. (NIOSH Fatigue)",
+        "Curate feeds with uplifting content. (APA Media)"
       ],
       "negative": [
-        "Reduce doom-scrolling; set limits on news/social when feeling low. (APA; WHO)",
-        "Take 5–10 minute offline breaks after extended browsing. (NIOSH; APA)",
-        "Mute or unfollow sources that harm mood. (APA Cyberpsychology)",
-        "Do a brief grounding exercise before/after heavy content. (APA Mindfulness)",
-        "Shift to offline hobbies for recovery. (APA Behavioral Activation)",
-        "Use bedtime cutoffs to protect sleep. (Sleep Foundation; NIH)"
+        "Cut doom-scrolling; limit news when low. (APA; WHO)",
+        "Take 5–10 minute offline breaks. (NIOSH Fatigue)",
+        "Unfollow sources that hurt mood. (APA Cyberpsychology)",
+        "Do a short grounding after heavy content. (APA Mindfulness)",
+        "Switch to offline hobbies. (APA Activation)",
+        "Set a screen cutoff before bed. (Sleep Foundation)"
       ]
     },
     "shopping": {
       "positive": [
-        "Make lists and budgets to reduce decision fatigue. (APA Decision Science)",
-        "Shop with supportive friends/family to add social enjoyment. (CDC Social Health)",
-        "Choose off-peak hours to lower crowd stress. (Human Factors; APA)",
-        "Treat yourself within limits to maintain balance. (APA Self-Regulation)",
-        "Plan essentials ahead to prevent last-minute rushes. (APA; Time Management)",
-        "Use mindful purchasing—pause and reflect before buying. (APA Mindfulness)"
+        "Make a list and a simple budget. (APA Decision Making)",
+        "Go with a supportive friend or family member. (CDC Social Health)",
+        "Shop at off-peak times. (APA Environment)",
+        "Treat yourself within limits. (APA Self-Regulation)",
+        "Plan essentials ahead of time. (APA Time Management)",
+        "Pause and think before buying. (APA Mindfulness)"
       ],
       "negative": [
-        "Set a clear budget and stick to your list. (APA Financial Well-being)",
-        "Avoid crowded/overstimulating times if stressed. (Human Factors; APA)",
-        "Take breaks and hydrate to prevent fatigue. (CDC; WHO)",
-        "If mood dips, switch to a brief window-shopping or postpone. (APA Self-Regulation)",
-        "Use cash or set caps to reduce overspending guilt. (Behavioral Economics; APA)",
-        "Pair shopping with calming music and slow pacing. (APA; Mindfulness)"
+        "Stick to your budget and list. (APA Financial Well-being)",
+        "Avoid crowds if you feel stressed. (APA Environment)",
+        "Take breaks and hydrate. (CDC)",
+        "If mood dips, window-shop or postpone. (APA Self-Regulation)",
+        "Use cash or set spending caps. (APA Behavioral Economics)",
+        "Play calming music and slow your pace. (APA Mindfulness)"
       ]
     },
     "travel": {
       "positive": [
-        "Plan ahead; build buffers and itinerary clarity. (APA Stress Reduction; PMI)",
-        "Use comfort items (water, snacks, neck pillow) to stabilize energy. (CDC Travel Health)",
-        "Practice light movement during long trips. (NIH; CDC)",
-        "Document highlights to build positive memory and meaning. (APA Positive Psych)",
-        "Use breathing or grounding in crowded transit. (APA Anxiety tools)",
-        "Sleep hygiene on trips to maintain mood stability. (Sleep Foundation; NIH)"
+        "Plan ahead and add buffer time. (PMI Planning; APA)",
+        "Pack water, snacks, and small comforts. (CDC Travel Health)",
+        "Move a little during long trips. (NIH; CDC)",
+        "Write down trip highlights. (APA Positive Psych)",
+        "Use calm breathing in crowds. (APA Anxiety Tools)",
+        "Keep a simple sleep routine on trips. (Sleep Foundation)"
       ],
       "negative": [
-        "Prepare a simple coping plan for delays (plan B routes, snacks). (PMI Risk; APA)",
-        "Hydrate, stretch, and pace to lower physical stress. (CDC; NIH)",
-        "Lower stimulation (earplugs, eye mask) when fatigued. (WHO; Sleep Foundation)",
-        "Use short mindfulness practices during transit. (APA; NHS)",
-        "Travel with supportive company when possible. (CDC Social Health)",
-        "Limit heavy content consumption while stressed. (APA Media Psychology)"
+        "Have a backup plan for delays. (PMI Risk)",
+        "Hydrate, stretch, and pace yourself. (CDC; NIH)",
+        "Lower noise and light if tired. (WHO; Sleep Foundation)",
+        "Do short mindfulness in transit. (NHS; APA)",
+        "Travel with supportive company if you can. (CDC Social Health)",
+        "Limit heavy content when stressed. (APA Media)"
       ]
     }
   },
   "Social": {
     "alone": {
       "positive": [
-        "Use alone time for restorative activities (reading, nature). (APA; WHO Mental Health)",
-        "Practice mindfulness or gentle breathing to deepen calm. (APA; NHS)",
-        "Journal reflection to consolidate insights and goals. (APA; Positive Psych)",
-        "Plan small creative projects (art, music) that energize you. (APA Creativity Research)",
-        "Schedule boundaries to protect your recharge time. (APA Stress Management)",
-        "Balance alone time with periodic social contact. (CDC Social Health)"
+        "Use alone time for calm activities. (APA; WHO Mental Health)",
+        "Try short mindfulness or breathing. (NHS; APA)",
+        "Journal quick reflections or goals. (APA Writing)",
+        "Do a small creative project. (APA Creativity)",
+        "Set boundaries to protect recharge time. (APA Boundaries)",
+        "Balance alone time with some social contact. (CDC Social Health)"
       ],
       "negative": [
-        "Reach out to friends or join interest groups to reduce loneliness. (CDC; APA)",
-        "Try volunteer/community activities to build connection. (Mayo Clinic; APA)",
-        "Do short energizing activities outdoors to improve mood. (NIH; APA Nature and mental health)",
-        "Use guided meditations to stabilize emotions. (APA; NHS)",
-        "Plan one small social activity per week as a starter. (APA Behavioral Activation)",
-        "Seek support if loneliness persists. (APA; Mental Health services)"
+        "Message a friend or join a group. (CDC Social Health)",
+        "Try a small volunteer activity. (Mayo Clinic; APA)",
+        "Go outside for a short walk. (NIH Physical Activity)",
+        "Use a guided meditation to steady emotions. (NHS; APA)",
+        "Plan one small social plan each week. (APA Activation)",
+        "Reach out for support if loneliness persists. (APA Mental Health)"
       ]
     },
     "friends": {
       "positive": [
-        "Plan regular check-ins or activities to maintain bonds. (APA Social Support)",
-        "Share appreciation and positive feedback to deepen connection. (APA Positive Psych)",
-        "Engage in cooperative tasks or games to strengthen teamwork. (APA Group Dynamics)",
-        "Use active listening to boost relationship quality. (APA Communication)",
-        "Balance digital and in-person interactions. (APA Cyberpsychology; CDC)",
-        "Protect friendship time with calendar boundaries. (APA Stress Management)"
+        "Plan regular check-ins or hangouts. (APA Social Support)",
+        "Share appreciation and kind feedback. (APA Positive Psych)",
+        "Play cooperative games or activities. (APA Groups)",
+        "Use active listening. (APA Communication)",
+        "Mix online and in-person time. (CDC Social Health)",
+        "Protect friendship time on your calendar. (APA Boundaries)"
       ],
       "negative": [
-        "Address misunderstandings with open, respectful dialogue. (APA Communication)",
-        "Invite a friend for a simple activity you enjoy. (CDC Social Health)",
-        "Expand circle via clubs or classes if feeling left out. (APA; CDC Youth Development)",
+        "Talk through misunderstandings calmly. (APA Communication)",
+        "Invite a friend for a simple activity. (CDC Social Health)",
+        "Join clubs or classes to expand your circle. (CDC Youth)",
         "Practice empathy and perspective-taking. (APA Social Psych)",
-        "Set healthy boundaries to prevent burnout. (APA; WHO)",
-        "Seek support if conflicts persist. (Counseling; APA)"
+        "Set healthy boundaries. (WHO Mental Health; APA)",
+        "Seek support if conflicts repeat. (APA Counseling)"
       ]
     },
     "family": {
       "positive": [
-        "Plan shared activities and mealtimes to build connection. (CDC Family Health)",
-        "Express gratitude and recognition regularly. (APA Positive Psych)",
-        "Use calm communication techniques during conflicts. (APA Family Therapy basics)",
-        "Balance shared time with personal space. (APA Boundaries)",
-        "Create small traditions to reinforce belonging. (Family Studies; APA)",
-        "Practice problem-solving together for household matters. (APA Communication)"
+        "Plan shared meals or activities. (CDC Family Health)",
+        "Say thank you and appreciate small things. (APA Positive Psych)",
+        "Use calm talk during disagreements. (APA Communication)",
+        "Balance family time with personal space. (APA Boundaries)",
+        "Create small traditions. (APA Family Studies)",
+        "Solve household problems together. (APA Problem Solving)"
       ],
       "negative": [
-        "Use time-outs and cooling-off periods if tension rises. (APA Anger Management)",
-        "Set clear boundaries and expectations. (APA; WHO)",
-        "Seek mediation or counseling if issues persist. (APA Family Therapy)",
-        "Focus discussions on behaviors, not personal attacks. (APA Communication)",
-        "Plan short, positive interactions to rebuild trust. (APA Relationship repair)",
-        "Engage neutral activities (walks, games) to reset. (CDC; APA)"
+        "Take short breaks if tension rises. (APA Anger Management)",
+        "Set clear boundaries and expectations. (WHO; APA)",
+        "Try mediation or counseling if needed. (APA Family Therapy)",
+        "Discuss behaviors, not personal attacks. (APA Communication)",
+        "Plan short, positive time to rebuild trust. (APA Relationship Repair)",
+        "Do neutral activities to reset. (CDC; APA)"
       ]
     },
     "classmates": {
       "positive": [
-        "Use clear goals and roles in group work. (APA Group Dynamics)",
-        "Share study tips and resources to support each other. (APA Learning; CDC)",
-        "Rotate tasks to develop varied skills. (Education research; APA)",
-        "Practice respectful feedback and active listening. (APA Communication)",
-        "Celebrate milestones after submissions. (Positive Psych; APA)",
-        "Build peer networks for mutual support. (CDC; APA)"
+        "Set clear goals and roles for group work. (APA Group Dynamics)",
+        "Share study tips and resources. (APA Learning; CDC)",
+        "Rotate tasks to learn new skills. (APA Education)",
+        "Give respectful feedback and listen well. (APA Communication)",
+        "Celebrate wins after submissions. (APA Positive Psych)",
+        "Build study buddies for support. (CDC Social Health)"
       ],
       "negative": [
-        "Set expectations early for fair contribution. (APA Group Dynamics)",
-        "Communicate concerns promptly and constructively. (APA Communication)",
-        "Ask instructors for guidance when blocked. (CDC Education; APA)",
-        "Document task agreements to prevent confusion. (PMI; APA)",
-        "Use brief check-ins to avoid last-minute rush. (Time Management; APA)",
-        "Keep focus on shared goals and mutual respect. (APA Group Process)"
+        "Set expectations early for fair work. (APA Group Dynamics)",
+        "Speak up kindly if something’s off. (APA Communication)",
+        "Ask teachers for guidance when stuck. (CDC Education; APA)",
+        "Write task agreements to stay clear. (PMI Basics)",
+        "Do brief check-ins to avoid last-minute rush. (APA Time Management)",
+        "Keep focus on shared goals. (APA Group Process)"
       ]
     },
     "relationship": {
       "positive": [
-        "Use active listening and empathy to strengthen bonds. (APA Couples Therapy)",
-        "Schedule quality time and shared activities. (APA Relationship research)",
-        "Express appreciation and small acts of kindness. (Positive Psych; APA)",
-        "Discuss needs and boundaries openly. (APA Communication)",
-        "Practice repair attempts after conflict. (Gottman Method; APA references)",
-        "Balance attachment and autonomy. (Attachment Theory; APA)"
+        "Listen actively and show empathy. (APA Couples)",
+        "Plan quality time and shared activities. (APA Relationships)",
+        "Express appreciation with small acts. (APA Positive Psych)",
+        "Talk openly about needs and boundaries. (APA Communication)",
+        "Use gentle repair after conflict. (Gottman; APA)",
+        "Balance closeness and personal space. (APA Attachment)"
       ],
       "negative": [
-        "Use calm, non-accusatory language during conflict. (APA Communication)",
-        "Take breaks if discussions become heated. (APA Anger Management)",
-        "Seek counseling if patterns persist. (APA; NHS)",
-        "Clarify expectations and negotiate compromises. (APA Relationship skills)",
-        "Avoid harsh start-ups; begin gently. (Gottman research; APA)",
-        "Focus on specific behaviors, not character judgments. (APA Communication)"
+        "Use calm, kind language in conflict. (APA Communication)",
+        "Take short breaks if things heat up. (APA Anger Management)",
+        "Seek counseling if patterns persist. (NHS; APA)",
+        "Clarify expectations and find compromises. (APA Relationships)",
+        "Start conversations gently, not harshly. (Gottman; APA)",
+        "Focus on actions, not labels. (APA Communication)"
+      ]
+    },
+    "online": {
+      "positive": [
+        "Choose platforms that feel supportive. (APA Cyberpsychology)",
+        "Set time limits and stick to them. (APA Habits)",
+        "Share and follow uplifting content. (APA Media)",
+        "Use privacy tools to stay safe. (CDC Online Safety)",
+        "Mix online time with offline breaks. (NIOSH Fatigue)",
+        "Check in with friends kindly. (CDC Social Health)"
+      ],
+      "negative": [
+        "Mute or block toxic accounts. (APA Cyberpsychology)",
+        "Limit late-night scrolling. (Sleep Foundation)",
+        "Avoid heated threads when stressed. (APA Emotion Regulation)",
+        "Do a short breathing break after heavy content. (APA Mindfulness)",
+        "Switch to offline activities to reset. (APA Activation)",
+        "Seek help if online stress persists. (APA Mental Health)"
       ]
     },
     "pet": {
       "positive": [
-        "Schedule regular play to boost mood and connection. (CDC; APA Anthrozoology)",
-        "Use simple training for engagement and bonding. (Behavioral research; APA)",
-        "Routine care reduces stress and supports wellbeing. (CDC; WHO)",
-        "Go outdoors together for activity and sunlight. (NIH; CDC)",
-        "Share pet moments with friends/family to add social joy. (CDC Social Health)",
-        "Track care tasks to keep consistency. (APA Habit Formation)"
+        "Play regularly to boost mood. (CDC; APA Anthrozoology)",
+        "Use simple training for engagement. (APA Behavior)",
+        "Keep a routine for care. (CDC; WHO)",
+        "Go outside together for sunlight and movement. (NIH; CDC)",
+        "Share pet moments with friends or family. (CDC Social Health)",
+        "Track care tasks to stay consistent. (APA Habits)"
       ],
       "negative": [
-        "Simplify routines; prioritize essentials during low energy days. (APA Self-Regulation)",
-        "Ask for help from family/friends when overwhelmed. (CDC; APA)",
-        "Do short play or gentle walks to maintain connection. (NIH; APA)",
-        "Use calm environments to reduce sensory overload. (NIOSH; APA)",
-        "Join supportive online communities for tips and morale. (APA Cyberpsychology)",
-        "Consult a vet or trainer for persistent issues. (CDC; Professional guidance)"
+        "Simplify routines on low-energy days. (APA Self-Regulation)",
+        "Ask family or friends for help. (CDC Social Health)",
+        "Do short play or gentle walks. (NIH Physical Activity)",
+        "Use calm, quiet spaces to reduce stress. (NIOSH; APA)",
+        "Join supportive pet communities. (APA Cyberpsychology)",
+        "Ask a vet or trainer for guidance when needed. (CDC)"
       ]
     }
   },
   "Health": {
     "jog": {
       "positive": [
-        "Follow gradual progression (10% rule) to avoid injury and sustain habit. (ACSM; CDC, 2022)",
-        "Warm-up and cool-down to improve performance and recovery. (ACSM; NIH)",
-        "Track distance/time to reinforce progress. (Behavioral Psych; APA)",
-        "Hydrate and fuel appropriately for energy. (CDC Nutrition; WHO)",
-        "Use scenic paths to increase enjoyment. (APA Environmental Psych)",
-        "Pair jogging with music that fits pace. (APA; Performance psychology)"
+        "Increase distance slowly over time. (ACSM; CDC)",
+        "Warm up and cool down each session. (ACSM; NIH)",
+        "Track your runs to see progress. (APA Habits)",
+        "Hydrate and fuel simply. (CDC Nutrition)",
+        "Pick routes you enjoy. (APA Environment)",
+        "Match music to your pace. (APA Performance)"
       ],
       "negative": [
-        "Switch to brisk walking or low-impact activity when fatigued. (CDC; WHO)",
-        "Set small, realistic targets to rebuild consistency. (APA Goal Setting)",
-        "Check footwear and surfaces to reduce discomfort. (NIH; ACSM)",
-        "Stretch lightly; consider mobility work. (NIH; ACSM)",
-        "Track mood and energy to adjust training. (APA Self-Monitoring)",
-        "Consult a professional if pain persists. (CDC; Clinical guidance)"
+        "Switch to brisk walking when tired. (CDC; WHO)",
+        "Set small goals to rebuild consistency. (APA Goals)",
+        "Check shoes and running surface. (ACSM; NIH)",
+        "Add light stretching or mobility. (NIH; ACSM)",
+        "Track mood and energy to adjust. (APA Self-Monitoring)",
+        "See a pro if pain sticks around. (CDC Clinical)"
       ]
     },
     "walk": {
       "positive": [
-        "Aim for 150+ minutes/week of moderate activity. (CDC Physical Activity Guidelines, 2022)",
-        "Add nature walks for extra mood benefits. (APA; NIH)",
-        "Walk with a friend for social and accountability boosts. (CDC Social Health)",
-        "Use intervals (fast/slow) for variety. (ACSM; CDC)",
-        "Wear supportive shoes and hydrate. (NIH; ACSM)",
-        "Track steps for feedback and motivation. (Behavioral Psych; APA)"
+        "Aim for regular weekly walking time. (CDC)",
+        "Try nature walks for a mood lift. (NIH; APA)",
+        "Walk with a friend for support. (CDC Social Health)",
+        "Use fast/slow intervals for variety. (ACSM; CDC)",
+        "Wear comfy shoes and hydrate. (NIH; ACSM)",
+        "Track steps for motivation. (APA Habits)"
       ],
       "negative": [
-        "Try shorter, more frequent walks if long ones feel hard. (CDC; APA)",
-        "Explore new routes to keep engagement up. (APA Motivation)",
-        "Pair walking with uplifting audio. (APA Media Psychology)",
-        "Schedule walks at consistent times to build habit. (APA Habit Formation)",
-        "Do gentle stretches post-walk if stiff. (NIH; ACSM)",
-        "Use indoor options if weather or safety is an issue. (CDC; WHO)"
+        "Do shorter, more frequent walks. (CDC)",
+        "Explore new routes. (APA Motivation)",
+        "Pair walking with uplifting audio. (APA Media)",
+        "Walk at a regular time each day. (APA Routine)",
+        "Do gentle stretches after if stiff. (NIH; ACSM)",
+        "Use indoor options if needed. (CDC)"
       ]
     },
     "exercise": {
       "positive": [
-        "Mix cardio, strength, and flexibility weekly. (CDC; ACSM)",
-        "Progress gradually and track workouts. (ACSM; APA)",
-        "Use buddy systems or classes to boost adherence. (CDC Social Health)",
-        "Fuel and hydrate to support performance. (CDC Nutrition; WHO)",
-        "Recover adequately and sleep well. (Sleep Foundation; NIH)",
-        "Celebrate small milestones regularly. (Positive Psych; APA)"
+        "Mix cardio, strength, and stretching. (CDC; ACSM)",
+        "Progress slowly and track workouts. (ACSM; APA)",
+        "Use a buddy or class for motivation. (CDC Social Health)",
+        "Eat and hydrate to support workouts. (CDC Nutrition)",
+        "Rest well and sleep enough. (Sleep Foundation; NIH)",
+        "Celebrate small milestones. (APA Positive Psych)"
       ],
       "negative": [
-        "Start with short, low-intensity sessions and build up. (CDC; ACSM)",
-        "Choose enjoyable forms to reduce resistance. (APA Motivation; SDT)",
-        "Use checklists or apps to plan sessions. (APA Time Management)",
-        "Be self-compassionate if you miss days; resume gently. (APA Self-Compassion)",
-        "Stretch or do mobility routines on off days. (ACSM; NIH)",
-        "Consult professionals for persistent pain or barriers. (CDC; Clinical guidance)"
-      ]
-    },
-    "meditate": {
-      "positive": [
-        "Practice 5–10 minutes daily to build consistency. (APA; NHS Mindfulness)",
-        "Try different styles (breath, body scan, loving-kindness). (APA; MBSR)",
-        "Use guided sessions to deepen practice. (APA; NHS)",
-        "Pair with gentle stretching before/after. (NIH; CDC)",
-        "Keep non-judgmental awareness and patience. (APA Mindfulness)",
-        "Track mood changes to tailor sessions. (APA Self-Monitoring)"
-      ],
-      "negative": [
-        "Start very short (2–3 minutes) if longer feels hard. (APA; Behavior shaping)",
-        "Use apps with beginner programs. (APA; NHS)",
-        "Shift to calming activities (walks, music) on tough days. (APA Behavioral Activation)",
-        "Practice breathing techniques during daily tasks. (APA Anxiety tools)",
-        "Avoid self-criticism; progress comes with practice. (APA Self-Compassion)",
-        "Seek guidance if distress increases. (APA; Clinical support)"
+        "Start with short, easy sessions. (CDC; ACSM)",
+        "Pick activities you enjoy. (APA Motivation)",
+        "Plan sessions with a simple checklist. (APA Time Management)",
+        "Be kind if you miss a day; restart gently. (APA Self-Compassion)",
+        "Do mobility or stretching on off days. (ACSM; NIH)",
+        "Ask a pro if pain or barriers persist. (CDC Clinical)"
       ]
     },
     "sports": {
       "positive": [
-        "Focus on learning and teamwork, not just outcomes. (APA Sport Psych)",
-        "Warm-up, cool-down, and hydrate for performance. (ACSM; CDC)",
-        "Use positive self-talk and visualization. (APA Performance Psych)",
-        "Set skill goals and monitor progress. (APA Goal Setting)",
-        "Balance training load with rest. (NIH; ACSM)",
-        "Foster supportive team culture. (APA Group Dynamics)"
+        "Focus on learning and teamwork. (APA Sport Psych)",
+        "Warm up, cool down, and hydrate. (ACSM; CDC)",
+        "Use positive self-talk. (APA Performance)",
+        "Set simple skill goals. (APA Goals)",
+        "Balance training with rest. (NIH; ACSM)",
+        "Build a supportive team vibe. (APA Groups)"
       ],
       "negative": [
-        "Reframe pressure and seek coach feedback. (APA Sport Psych)",
-        "Use stress management techniques pre-game. (APA Anxiety tools)",
-        "Cross-train or reduce intensity if fatigued. (ACSM; CDC)",
-        "Address conflicts with calm communication. (APA Communication)",
-        "Prioritize recovery for mood stability. (NIH; Sleep Foundation)",
-        "Consult professionals for persistent performance anxiety. (APA; Clinical support)"
+        "Reframe pressure; ask coach for tips. (APA Sport Psych)",
+        "Use stress tools before games. (APA Anxiety Tools)",
+        "Cross-train or lower intensity when tired. (ACSM; CDC)",
+        "Handle conflicts with calm talk. (APA Communication)",
+        "Prioritize recovery for stable mood. (Sleep Foundation)",
+        "Get support for performance anxiety if needed. (APA Counseling)"
+      ]
+    },
+    "meditate": {
+      "positive": [
+        "Practice 5–10 minutes daily. (NHS; APA)",
+        "Try different styles to see what fits. (APA Mindfulness)",
+        "Use guided sessions to stay on track. (NHS; APA)",
+        "Stretch lightly before or after. (NIH Physical Activity)",
+        "Keep a patient, non-judgmental mindset. (APA Mindfulness)",
+        "Note mood changes to guide practice. (APA Self-Monitoring)"
+      ],
+      "negative": [
+        "Start super short (2–3 minutes). (APA Habits)",
+        "Use beginner-friendly apps. (NHS; APA)",
+        "Switch to calming activities if needed. (APA Activation)",
+        "Practice simple breathing during daily tasks. (APA Anxiety Tools)",
+        "Avoid self-criticism; progress is gradual. (APA Self-Compassion)",
+        "Seek help if distress grows. (NHS; APA)"
       ]
     },
     "eat-healthy": {
       "positive": [
-        "Follow balanced plates: fruits/veg, whole grains, lean proteins. (CDC; WHO Nutrition)",
-        "Plan meals ahead to reduce stress and improve choices. (APA Time Management)",
-        "Hydrate and limit sugary beverages. (CDC; WHO)",
-        "Add fiber-rich foods for energy stability. (NIH; CDC)",
-        "Experiment with healthy recipes to keep meals interesting. (Mayo Clinic; APA)",
-        "Practice mindful eating to enjoy and regulate intake. (APA Mindfulness)"
+        "Balance your plate with fruits, grains, and protein. (CDC; WHO)",
+        "Plan quick meals ahead. (APA Time Management)",
+        "Drink water more often. (CDC Nutrition)",
+        "Add fiber for steady energy. (NIH; CDC)",
+        "Try simple healthy recipes. (Mayo Clinic)",
+        "Eat mindfully and enjoy your food. (APA Mindful Eating)"
       ],
       "negative": [
-        "Make gradual substitutions (water for soda, fruits for candy). (CDC; WHO)",
-        "Prepare easy healthy snacks (nuts, yogurt, fruit). (NIH; CDC)",
-        "Limit ultra-processed foods; read labels. (WHO; CDC)",
-        "Keep regular meal times to stabilize energy. (NIH; Sleep Foundation)",
-        "Use smaller portions and slow eating pace. (APA Mindful Eating)",
-        "Consult a professional for tailored guidance if needed. (Registered Dietitian; CDC)"
-      ]
-    },
-    "no-physical": {
-      "positive": [
-        "Use rest days for recovery and gentle mobility. (ACSM; NIH)",
-        "Practice light stretching or mindful breathing. (APA; CDC)",
-        "Engage in relaxing hobbies to restore mental energy. (APA; Positive Psych)",
-        "Go outside briefly for sunlight and mood lift. (NIH; APA)",
-        "Plan your next activity day to build anticipation. (APA Goal Setting)",
-        "Keep hydration and sleep consistent. (Sleep Foundation; CDC)"
-      ],
-      "negative": [
-        "Start with very light movement (5–10 minutes). (CDC; ACSM)",
-        "Set small, realistic activity goals. (APA Goal Setting)",
-        "Use reminders to move briefly each hour. (NIOSH; APA)",
-        "Pair movement with music for enjoyment. (APA Behavioral Activation)",
-        "Track mood and energy—celebrate tiny wins. (APA Self-Monitoring)",
-        "Consult professionals if barriers persist. (CDC; Clinical guidance)"
+        "Make small swaps (water for soda). (CDC; WHO)",
+        "Prep easy healthy snacks. (CDC; NIH)",
+        "Limit ultra-processed foods. (WHO; CDC)",
+        "Keep regular meal times. (Sleep Foundation; NIH)",
+        "Use smaller portions and slow down. (APA Mindful Eating)",
+        "Ask a dietitian for help if needed. (CDC Clinical)"
       ]
     },
     "eat-unhealthy": {
@@ -515,42 +515,78 @@
         "Pair treats with protein or fiber to stabilize energy. (NIH; CDC)",
         "Schedule treat windows to reduce impulsive snacking. (Behavioral Economics; APA)",
         "Savor slowly to increase satisfaction. (APA Mindful Eating)",
-        "Offset with hydration and activity later. (CDC; WHO)"
+        "Offset with hydration and light activity later. (CDC; WHO)"
       ],
       "negative": [
-        "Plan meals/snacks to avoid last-minute choices. (CDC; APA)",
-        "Swap a few items for healthier options progressively. (WHO; CDC)",
-        "Keep tempting foods out of immediate reach. (Behavioral Psych; APA)",
-        "Use mindful eating to recognize fullness. (APA; NIH)",
-        "Hydrate and add fruits/veg to rebalance. (CDC; WHO)",
-        "Seek nutrition guidance if patterns persist. (Registered Dietitian; CDC)"
+        "Plan meals to avoid last-minute choices. (CDC; APA)",
+        "Swap a few items for healthier options. (WHO; CDC)",
+        "Keep tempting foods out of reach. (APA Behavioral)",
+        "Use mindful eating to notice fullness. (APA; NIH)",
+        "Drink water and add fruits or veggies. (CDC; WHO)",
+        "Ask for nutrition help if patterns persist. (CDC Clinical)"
+      ]
+    },
+    "no-physical": {
+      "positive": [
+        "Use rest days for recovery. (ACSM; NIH)",
+        "Do light stretching or calm breathing. (APA; CDC)",
+        "Pick relaxing hobbies to recharge. (APA Positive Psych)",
+        "Step outside briefly for sunlight. (NIH; APA)",
+        "Plan your next activity day. (APA Goal Setting)",
+        "Keep hydration and sleep steady. (Sleep Foundation; CDC)"
+      ],
+      "negative": [
+        "Start with very light movement (5–10 min). (CDC; ACSM)",
+        "Set small activity goals. (APA Goals)",
+        "Use reminders to move briefly each hour. (NIOSH; APA)",
+        "Pair movement with music. (APA Activation)",
+        "Track tiny wins to stay motivated. (APA Self-Monitoring)",
+        "Get help if barriers keep you stuck. (CDC Clinical)"
+      ]
+    },
+    "drink-alcohol": {
+      "positive": [
+        "If you choose to drink, set a low limit and pace yourself. (CDC Alcohol; WHO)",
+        "Eat before and hydrate during. (CDC Nutrition)",
+        "Alternate alcoholic and non-alcoholic drinks. (CDC Alcohol)",
+        "Avoid drinking when stressed or sleep-deprived. (APA Self-Regulation; Sleep Foundation)",
+        "Plan safe transport and a cutoff time. (CDC Safety)",
+        "If unsure, choose not to drink. (WHO; CDC)"
+      ],
+      "negative": [
+        "Skip alcohol today and choose a relaxing activity. (WHO; APA)",
+        "If drinking patterns worry you, talk to a professional. (CDC Clinical; WHO)",
+        "Set a screen or social cutoff to avoid pressure. (APA Boundaries)",
+        "Hydrate and get good sleep to recover. (CDC; Sleep Foundation)",
+        "Use a support buddy for social events. (CDC Social Health)",
+        "Learn low-risk guidelines for your region. (WHO; CDC)"
       ]
     }
   },
   "Sleep": {
     "less": [
-      "Aim for 7–9 hours; prioritize consistent bed/wake times. (Sleep Foundation, 2022; NIH)",
-      "Create a wind-down routine (dim lights, calm audio). (Sleep Foundation; NHS)",
-      "Limit caffeine late in the day. (NIH; WHO)",
-      "Reduce screens 60 minutes before bed; use night mode if needed. (Sleep Foundation; WHO)",
-      "Keep bedroom cool, dark, and quiet. (Sleep Foundation; WHO)",
-      "Expose yourself to morning light to anchor circadian rhythm. (NIH; Sleep research)"
+      "Aim for 7–9 hours with a steady schedule. (Sleep Foundation; NIH)",
+      "Create a simple wind-down routine. (Sleep Foundation; NHS)",
+      "Limit caffeine later in the day. (NIH; WHO)",
+      "Cut screens an hour before bed. (Sleep Foundation)",
+      "Keep your room cool, dark, and quiet. (Sleep Foundation; WHO)",
+      "Get morning light to set your body clock. (NIH)"
     ],
     "enough": [
-      "Maintain your routine; protect sleep windows. (Sleep Foundation; NIH)",
-      "Keep consistent timing even on weekends. (Sleep Foundation; APA)",
-      "Use light stretching and breath exercises before bed if desired. (APA; NIH)",
-      "Avoid heavy meals and late intense exercise close to bedtime. (NIH; Sleep Foundation)",
-      "Monitor sleep quality and adjust environment (noise, light). (WHO; Sleep Foundation)",
-      "Continue balancing daytime activity and rest. (CDC; NIH)"
+      "Protect your usual sleep window. (Sleep Foundation)",
+      "Keep timing steady, even on weekends. (Sleep Foundation; APA)",
+      "Try light stretching or calm breathing before bed. (APA; NIH)",
+      "Avoid heavy meals or late intense workouts. (NIH; Sleep Foundation)",
+      "Adjust noise and light for better sleep. (Sleep Foundation; WHO)",
+      "Balance activity and rest during the day. (CDC)"
     ],
     "more": [
-      "If oversleeping, set consistent alarms and morning activity. (Sleep Foundation; NIH)",
-      "Increase daytime light and movement to regulate rhythm. (CDC; WHO)",
-      "Assess stress/schedule; oversleeping may signal imbalance. (APA; NIH)",
-      "Avoid excessive naps; keep naps short and early. (Sleep Foundation)",
-      "Talk to a provider if excessive sleep persists with fatigue. (NIH; Clinical guidance)",
-      "Gradually adjust bedtime/wake time to desired schedule. (Sleep Foundation; APA)"
+      "Set a consistent wake-up time and morning plan. (Sleep Foundation)",
+      "Get more daylight and movement. (CDC; NIH)",
+      "Check stress and schedule; adjust if needed. (APA)",
+      "Limit naps; keep them short and earlier. (Sleep Foundation)",
+      "Talk to a provider if oversleeping persists. (NIH; CDC Clinical)",
+      "Shift bedtime and wake time gradually. (Sleep Foundation)"
     ]
   }
 }
