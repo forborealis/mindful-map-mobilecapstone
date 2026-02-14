@@ -891,7 +891,7 @@ export default function DailyMoodHabitAnalysis() {
         }}
       >
         <TouchableOpacity
-          onPress={() => navigation.goBack()}
+          onPress={() => navigation.navigate('StatisticsDashboard')}
           hitSlop={{ top: 16, bottom: 16, left: 16, right: 16 }}
         >
           <Ionicons name="arrow-back" size={26} color="#222" />

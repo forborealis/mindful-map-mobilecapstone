@@ -132,7 +132,7 @@ export default function Recommendation() {
         }}
       >
         <TouchableOpacity
-          onPress={() => navigation.goBack()}
+          onPress={() => navigation.navigate('MoodHabitAnalysis')}
           hitSlop={{ top: 16, bottom: 16, left: 16, right: 16 }}
           style={{ flexDirection: 'row', alignItems: 'center' }}
         >
