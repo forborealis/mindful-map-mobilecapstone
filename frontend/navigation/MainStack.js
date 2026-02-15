@@ -3,6 +3,7 @@ import { createStackNavigator } from '@react-navigation/stack';
 import LoginScreen from '../screens/Login';
 import SignupScreen from '../screens/Signup';
 import LandingScreen from '../screens/Landing';
+import AboutScreen from '../screens/About';
 import DailyQuote from '../screens/User/DailyQuote';
 import TeacherDrawer from './TeacherDrawer';
 import AdminDrawer from './AdminDrawer';
@@ -48,7 +49,10 @@ import PomodoroTechnique from '../screens/User/Activities/PomodoroTechnique';
 import GuidedMeditation from '../screens/User/Activities/GuidedMeditation';
 import CalmingMusic from '../screens/User/Activities/CalmingMusic';
 import MentalHealthResources from '../screens/User/MentalHealthResources';
-
+import JournalChallenge from '../screens/User/Journal/JournalChallenge';
+import CreateJournalEntry from '../screens/User/Journal/CreateJournalEntry';
+import EditJournal from '../screens/User/Journal/EditJournal';
+import ViewJournal from '../screens/User/Journal/ViewJournal';
 const Stack = createStackNavigator();
 
 export default function MainStack({ initialRoute }) {
@@ -57,6 +61,11 @@ export default function MainStack({ initialRoute }) {
         <Stack.Screen 
         name="Landing" 
         component={LandingScreen}
+        options={{ headerShown: false }}
+      />
+      <Stack.Screen 
+        name="About" 
+        component={AboutScreen}
         options={{ headerShown: false }}
       />
       <Stack.Screen 
@@ -247,6 +256,26 @@ export default function MainStack({ initialRoute }) {
       <Stack.Screen
         name="CategoryPrediction"
         component={CategoryPrediction}
+        options={{ headerShown: false }}
+      />
+      <Stack.Screen
+        name="JournalChallenge"
+        component={JournalChallenge}
+        options={{ headerShown: false }}
+      />
+      <Stack.Screen
+        name="CreateJournalEntry"
+        component={CreateJournalEntry}
+        options={{ headerShown: false }}
+      />
+      <Stack.Screen
+        name="EditJournal"
+        component={EditJournal}
+        options={{ headerShown: false }}
+      />
+      <Stack.Screen
+        name="ViewJournal"
+        component={ViewJournal}
         options={{ headerShown: false }}
       />
       <Stack.Screen

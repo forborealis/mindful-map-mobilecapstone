@@ -141,6 +141,15 @@ export default function SideBarNav() {
           ),
         }}
       />
+     <Drawer.Screen
+        name="Statistics"
+        component={StatisticsDashboard}
+        options={{
+          drawerIcon: ({ color, size }) => (
+            <Ionicons name="bar-chart" size={size} color={color} />
+          ),
+        }}
+      />
       <Drawer.Screen
         name="Activities"
         component={Activities}
@@ -156,15 +165,6 @@ export default function SideBarNav() {
         options={{
           drawerIcon: ({ color, size }) => (
             <Ionicons name="calendar" size={size} color={color} />
-          ),
-        }}
-      />
-      <Drawer.Screen
-        name="Statistics"
-        component={StatisticsDashboard}
-        options={{
-          drawerIcon: ({ color, size }) => (
-            <Ionicons name="bar-chart" size={size} color={color} />
           ),
         }}
       />

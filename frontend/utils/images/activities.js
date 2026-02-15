@@ -23,6 +23,7 @@ const activityImages = {
   pet: require('../../assets/images/mood/pet.png'),
   jog: require('../../assets/images/mood/jog.png'),
   walk: require('../../assets/images/mood/walk.png'),
+  sports: require('../../assets/images/mood/sports.png'),
   exercise: require('../../assets/images/mood/exercise.png'),
   meditate: require('../../assets/images/mood/meditate.png'),
   'eat-healthy': require('../../assets/images/mood/eatHealthy.png'),
