@@ -414,15 +414,7 @@ export default function Login() {
                   className="mb-4" 
                   disabled={loading || googleLoading}
                 >
-                  <Text
-                    className="text-base"
-                    style={{ 
-                      fontFamily: fonts.regular, 
-                      color: (loading || googleLoading) ? colors.primary + '50' : colors.primary 
-                    }}
-                  >
-                    Forgot Password?
-                  </Text>
+
                 </TouchableOpacity>
                 
                 <View className="flex-row items-center">

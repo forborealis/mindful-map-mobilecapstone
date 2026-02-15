@@ -3,6 +3,7 @@ import { createStackNavigator } from '@react-navigation/stack';
 import LoginScreen from '../screens/Login';
 import SignupScreen from '../screens/Signup';
 import LandingScreen from '../screens/Landing';
+import AboutScreen from '../screens/About';
 import DailyQuote from '../screens/User/DailyQuote';
 import TeacherDrawer from './TeacherDrawer';
 import AdminDrawer from './AdminDrawer';
@@ -60,6 +61,11 @@ export default function MainStack({ initialRoute }) {
         <Stack.Screen 
         name="Landing" 
         component={LandingScreen}
+        options={{ headerShown: false }}
+      />
+      <Stack.Screen 
+        name="About" 
+        component={AboutScreen}
         options={{ headerShown: false }}
       />
       <Stack.Screen 
