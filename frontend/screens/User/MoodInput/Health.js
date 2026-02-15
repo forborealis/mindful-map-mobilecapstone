@@ -27,7 +27,6 @@ const Health = ({ navigation, route }) => {
     { id: 'eat-healthy', title: 'Eat Healthy' },
     { id: 'no-physical', title: 'No Physical Activity' },
     { id: 'eat-unhealthy', title: 'Eat Unhealthy' },
-    { id: 'drink-alcohol', title: 'Drink Alcohol' }
   ];
 
   const rows = chunkArray(healthActivities, 3);

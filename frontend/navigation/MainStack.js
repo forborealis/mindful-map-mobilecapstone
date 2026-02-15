@@ -48,7 +48,10 @@ import PomodoroTechnique from '../screens/User/Activities/PomodoroTechnique';
 import GuidedMeditation from '../screens/User/Activities/GuidedMeditation';
 import CalmingMusic from '../screens/User/Activities/CalmingMusic';
 import MentalHealthResources from '../screens/User/MentalHealthResources';
-
+import JournalChallenge from '../screens/User/Journal/JournalChallenge';
+import CreateJournalEntry from '../screens/User/Journal/CreateJournalEntry';
+import EditJournal from '../screens/User/Journal/EditJournal';
+import ViewJournal from '../screens/User/Journal/ViewJournal';
 const Stack = createStackNavigator();
 
 export default function MainStack({ initialRoute }) {
@@ -247,6 +250,26 @@ export default function MainStack({ initialRoute }) {
       <Stack.Screen
         name="CategoryPrediction"
         component={CategoryPrediction}
+        options={{ headerShown: false }}
+      />
+      <Stack.Screen
+        name="JournalChallenge"
+        component={JournalChallenge}
+        options={{ headerShown: false }}
+      />
+      <Stack.Screen
+        name="CreateJournalEntry"
+        component={CreateJournalEntry}
+        options={{ headerShown: false }}
+      />
+      <Stack.Screen
+        name="EditJournal"
+        component={EditJournal}
+        options={{ headerShown: false }}
+      />
+      <Stack.Screen
+        name="ViewJournal"
+        component={ViewJournal}
         options={{ headerShown: false }}
       />
       <Stack.Screen
