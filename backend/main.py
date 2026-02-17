@@ -1,6 +1,7 @@
 from flask import Flask
 from flask_cors import CORS
 import logging
+import os
 
 from recommendation_sentiment import bp as sentiment_bp
 from prediction import bp as prediction_bp
@@ -17,6 +18,10 @@ app.register_blueprint(ccc_bp)
 app.register_blueprint(prediction_bp)
 
 
+@app.route('/', methods=['GET'])
+def root():
+    return {'message': 'Backend is running!'}
+
 @app.route('/health', methods=['GET'])
 def health():
     return {'status': 'healthy', 'service': 'combined-python-services'}
@@ -24,4 +29,5 @@ def health():
 
 if __name__ == '__main__':
     print("Starting Combined Python Services on port 5001...")
-    app.run(debug=True, host='0.0.0.0', port=5001)
+    port = int(os.environ.get("PORT", 5001))
+    app.run(host='0.0.0.0', port=port)

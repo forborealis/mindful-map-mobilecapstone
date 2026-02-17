@@ -518,7 +518,7 @@ const calculateAndSavePredictionsForUser = async (userId) => {
       timestamp: log.date.toISOString()
     }));
 
-    const pythonApiUrl = process.env.PYTHON_API_URL || 'http://localhost:5003';
+    const pythonApiUrl = process.env.PYTHON_API_URL;
     const response = await fetch(`${pythonApiUrl}/api/predict-mood-all-categories`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },

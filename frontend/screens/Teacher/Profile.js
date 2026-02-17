@@ -20,7 +20,7 @@ import { fonts } from '../../utils/fonts/fonts';
 import { colors } from '../../utils/colors/colors';
 import { authService } from '../../services/authService';
 
-const API_BASE_URL = process.env.EXPO_PUBLIC_API_URL || 'http://localhost:5001';
+const API_BASE_URL = process.env.EXPO_PUBLIC_API_URL;
 
 const TeacherProfile = () => {
   const navigation = useNavigation();

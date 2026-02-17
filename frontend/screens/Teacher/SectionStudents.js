@@ -20,7 +20,7 @@ import { colors } from '../../utils/colors/colors';
 import { authService } from '../../services/authService';
 import { downloadStudentLogsPDF } from '../../components/PDFTemplate/StudentLogsPDF';
 
-const API_BASE_URL = process.env.EXPO_PUBLIC_API_URL || 'http://localhost:5001';
+const API_BASE_URL = process.env.EXPO_PUBLIC_API_URL;
 const PAGE_SIZE = 10;
 
 const SectionStudents = () => {

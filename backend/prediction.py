@@ -15,7 +15,7 @@ logger = logging.getLogger(__name__)
 bp = Blueprint('prediction', __name__)
 
 # Configuration
-NODE_API_URL = os.getenv('NODE_API_URL', 'http://localhost:5002')
+NODE_API_URL = os.getenv('NODE_API_URL', 'http://localhost:5000')
 
 class CategoryMoodPredictor:
     def __init__(self):

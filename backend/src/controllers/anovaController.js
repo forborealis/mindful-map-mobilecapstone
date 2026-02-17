@@ -237,7 +237,7 @@ exports.runAnovaForUser = async (req, res) => {
         continue;
       }
 
-      const pythonApiUrl = process.env.PYTHON_API_URL || 'http://localhost:5001';
+      const pythonApiUrl = process.env.PYTHON_API_URL;
       const token = req.headers.authorization || '';
 
       const pythonResponse = await fetch(`${pythonApiUrl}/api/run-anova`, {

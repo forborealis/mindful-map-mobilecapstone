@@ -234,7 +234,7 @@ exports.runConcordanceForUser = async (req, res) => {
     }
 
     // Call Python CCC service
-    const pythonApiUrl = process.env.PYTHON_API_URL || 'http://localhost:5001';
+    const pythonApiUrl = process.env.PYTHON_API_URL;
     const thresholds = {
       pos: Number(clientThresholds?.pos ?? 10),
       neg: Number(clientThresholds?.neg ?? -10),

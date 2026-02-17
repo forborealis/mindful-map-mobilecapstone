@@ -1,7 +1,7 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { authService } from './authService';
 
-const API_BASE_URL = process.env.EXPO_PUBLIC_API_URL || 'http://localhost:5001';
+const API_BASE_URL = process.env.EXPO_PUBLIC_API_URL;
 
 const makeAuthenticatedRequest = async (url, options = {}) => {
   try {

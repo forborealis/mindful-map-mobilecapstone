@@ -19,7 +19,7 @@ import { colors } from '../../utils/colors/colors';
 import { authService } from '../../services/authService';
 import { downloadChartPDF } from '../../components/PDFTemplate/DashboardPDFs';
 
-const API_BASE_URL = process.env.EXPO_PUBLIC_API_URL || 'http://localhost:5001';
+const API_BASE_URL = process.env.EXPO_PUBLIC_API_URL;
 const screenWidth = Dimensions.get('window').width;
 
 const AdminDashboard = () => {

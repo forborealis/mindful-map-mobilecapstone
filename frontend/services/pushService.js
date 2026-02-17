@@ -1,6 +1,6 @@
 import { getSession } from './sessionService';
 
-const API_BASE_URL = process.env.EXPO_PUBLIC_API_URL || 'http://localhost:5001';
+const API_BASE_URL = process.env.EXPO_PUBLIC_API_URL;
 
 export async function registerPushToken(expoPushToken) {
   try {
