@@ -6,7 +6,7 @@ const { initializeFirebase, getAuth, getFirestore } = require('./config/firebase
 require('dotenv').config();
 
 const app = express();
-const PORT = process.env.PORT || 5001;
+const PORT = process.env.PORT;
 
 
 app.use(cors({
