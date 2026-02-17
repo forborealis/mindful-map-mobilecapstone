@@ -1,10 +1,10 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
-const API_BASE_URL = process.env.EXPO_PUBLIC_PYTHON_API_URL;
+const API_BASE_URL = process.env.EXPO_PUBLIC_NODE_API_URL;
 
 export async function runConcordance(date) {
   const token = await AsyncStorage.getItem('token');
-  const resp = await fetch(`${API_BASE_URL}/api/ccc/run`, {
+  const resp = await fetch(`${API_BASE_URL}/api/concordance/run`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
@@ -21,7 +21,7 @@ export async function runConcordance(date) {
 export async function getConcordanceHistory(startDate, endDate) {
   const token = await AsyncStorage.getItem('token');
   const params = new URLSearchParams({ startDate, endDate }).toString();
-  const resp = await fetch(`${API_BASE_URL}/api/ccc/history?${params}`, {
+  const resp = await fetch(`${API_BASE_URL}/api/concordance/history?${params}`, {
     headers: { Authorization: `Bearer ${token}` },
   });
 
