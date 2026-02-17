@@ -28,11 +28,7 @@
       "edgeToEdgeEnabled": true,
       "permissions": [
         "NOTIFICATIONS"
-      ],
-      "notification": {
-        "icon": "./assets/notification-icon.png",
-        "color": "#4CAF50"
-      }
+      ]
     },
     "web": {
       "favicon": "./assets/favicon.png"
@@ -40,7 +36,8 @@
     "plugins": [
       "@react-native-google-signin/google-signin",
       "expo-notifications",
-      "expo-audio"
+      "expo-audio",
+      "expo-asset"
     ],
     "owner": "forborealis",
     "extra": {
