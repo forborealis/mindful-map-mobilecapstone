@@ -31,6 +31,7 @@
     "expo-print": "~15.0.7",
     "expo-sharing": "~14.0.8",
     "expo-status-bar": "~3.0.8",
+    "expo-updates": "~29.0.16",
     "firebase": "^12.4.0",
     "formik": "^2.4.6",
     "leo-profanity": "^1.8.0",
