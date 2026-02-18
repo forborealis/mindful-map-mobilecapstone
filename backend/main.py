@@ -28,6 +28,6 @@ def health():
 
 
 if __name__ == '__main__':
-    print("Starting Combined Python Services on port 5003...")
-    port = int(os.environ.get("PORT", 5003))
-    app.run(host='0.0.0.0', port=port)
+    print("Starting Combined Python Services on port 5001...")
+    port = int(os.environ.get("PYTHON_PORT", 5001))
+    print(f"Starting Combined Python Services on port {port}...")
