@@ -44,6 +44,12 @@ app.use('/api/recommendations', recommendationRoutes);
 app.use('/api/journal', journalRoutes);
 app.use('/api/teacher', teacherRoutes);
 app.use('/api/admin', adminRoutes);
+
+// Root endpoint for uptime monitoring (prevents cold starts)
+app.get('/', (req, res) => {
+  res.status(200).json({ status: 'ok', message: 'Mindful Map Mobile API is running' });
+});
+
 app.get('/api/health', async (req, res) => {
   try {
     const dbState = mongoose.connection.readyState;
