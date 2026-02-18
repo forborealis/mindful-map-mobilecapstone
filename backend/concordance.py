@@ -182,7 +182,7 @@ def analyze_category(groups, cfg):
     }
 
 
-@ccc_bp.route('/api/concordance/run', methods=['POST'])
+@ccc_bp.route('/api/ccc/run', methods=['POST'])
 def run_ccc():
     """
     Body:
