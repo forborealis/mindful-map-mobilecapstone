@@ -3,7 +3,7 @@
   const positiveMoods = ['happy', 'calm', 'excited', 'pleased', 'relaxed'];
   const negativeMoods = ['angry', 'bored', 'sad', 'disappointed', 'tense'];
 
-  const API_BASE_URL = process.env.EXPO_PUBLIC_NODE_API_URL;
+  const API_BASE_URL = process.env.EXPO_PUBLIC_API_URL
 
   export const moodDataService = {
     async getStoredUserId() {
