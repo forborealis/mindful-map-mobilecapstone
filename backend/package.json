@@ -4,11 +4,11 @@
   "description": "Backend for Mindful Map mobile app",
   "main": "src/app.js",
 "scripts": {
-  "start": "node src/app.js",
+  "start": "concurrently \"node src/app.js\" \"python main.py\"",
   "dev": "nodemon src/app.js",
   "node": "node src/app.js",
   "node:dev": "nodemon src/app.js",
-  "python": "python main.py",
+  "python": "gunicorn main:app --bind 0.0.0.0:5001",
   "test:db": "node src/utils/db-test.js",
   "test:firebase-simple": "node src/utils/firebase-simple-test.js",
   "test:login": "node src/utils/test-login-simulation.js"
